@@ -140,5 +140,6 @@ else
   title "${a102:-Instalacion Exitosa}"
   msg -bar
   print_center -ama "${a103:-Presiona Enter...}"
-  menu
+  
 fi
+menu
