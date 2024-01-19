@@ -1,154 +1,4 @@
 #!/bin/bash
-menu_func(){
-  local options=${#@}
-  local array
-  for((num=1; num<=$options; num++)); do
-    echo -ne "$(msg -verd " [$num]") $(msg -verm2 ">") "
-    array=(${!num})
-    case ${array[0]} in
-      "-vd")echo -e "\033[1;33m[!]\033[1;32m ${array[@]:1}";;
-      "-vm")echo -e "\033[1;33m[!]\033[1;31m ${array[@]:1}";;
-      "-fi")echo -e "${array[@]:2} ${array[1]}";;
-      -bar|-bar|-bar|-bar4)echo -e "\033[1;37m${array[@]:1}\n$(msg ${array[0]})";;
-      *)echo -e "\033[1;37m${array[@]}";;
-    esac
-  done
- }
-
-selection_fun () {
-local selection="null"
-local range
-for((i=0; i<=$1; i++)); do range[$i]="$i "; done
-while [[ ! $(echo ${range[*]}|grep -w "$selection") ]]; do
-echo -ne "\033[38;5;150m ╰► Seleccione su opción: " >&2
-read selection
-tput cuu1 >&2 && tput dl1 >&2
-done
-echo $selection
-}
-
-tittle () {
-    clear&&clear
-    msg -bar
-    echo -e "\033[1;44;40m   \033[1;33m=====>>►► 🦖 ChuKK-SCRIPT 📍 [@botlatmx] 🦖  ◄◄<<=====  \033[0m"
-    msg -bar
-}
-in_opcion(){
-  unset opcion
-  if [[ -z $2 ]]; then
-      msg -nazu " $1: " >&2
-  else
-      msg $1 " $2: " >&2
-  fi
-  read opcion
-  echo "$opcion"
-}
-# centrado de texto
-print_center(){
-  if [[ -z $2 ]]; then
-    text="$1"
-  else
-    col="$1"
-    text="$2"
-  fi
-
-  while read line; do
-    unset space
-    x=$(( ( 54 - ${#line}) / 2))
-    for (( i = 0; i < $x; i++ )); do
-      space+=' '
-    done
-    space+="$line"
-    if [[ -z $2 ]]; then
-      msg -azu "$space"
-    else
-      msg "$col" "$space"
-    fi
-  done <<< $(echo -e "$text")
-}
-# titulos y encabesados
-title(){
-    clear
-    msg -bar
-    if [[ -z $2 ]]; then
-      print_center -azu "$1"
-    else
-      print_center "$1" "$2"
-    fi
-    msg -bar
- }
-
-# finalizacion de tareas
- enter(){
-  msg -bar
-  text="►► Presione enter para continuar ◄◄"
-  if [[ -z $1 ]]; then
-    print_center -ama "$text"
-  else
-    print_center "$1" "$text"
-  fi
-  read
- }
-
-# opcion, regresar volver/atras
-back(){
-    msg -bar
-    echo -ne "$(msg -verd " [0]") $(msg -verm2 ">") " && msg -bra "\033[1;41mVOLVER"
-    msg -bar
- }
-
-function msg(){
-  ##-->> ACTULIZADOR Y VERCION
-  [[ ! -e /etc/SCRIPT-LATAM/temp/version_instalacion ]] && printf '1\n' >/etc/SCRIPT-LATAM/temp/version_instalacion
-  v11=$(cat /etc/SCRIPT-LATAM/temp/version_actual)
-  v22=$(cat /etc/SCRIPT-LATAM/temp/version_instalacion)
-  if [[ $v11 = $v22 ]]; then
-    vesaoSCT="\e[1;31m[\033[1;37m Ver.\033[1;32m $v22 \033[1;31m]"
-  else
-    vesaoSCT="\e[1;31m[\e[31m ACTUALIZAR \e[25m\033[1;31m]"
-  fi
-  ##-->> COLORES
-local colors="/etc/SCRIPT-LATAM/colors"
-  if [[ ! -e $colors ]]; then
-    COLOR[0]='\033[1;37m' #GRIS='\033[1;37m'
-    COLOR[1]='\e[31m'     #ROJO='\e[31m'
-    COLOR[2]='\e[32m'     #VERDE='\e[32m'
-    COLOR[3]='\e[33m'     #AMARILLO='\e[33m'
-    COLOR[4]='\e[34m'     #AZUL='\e[34m'
-    COLOR[5]='\e[91m'     #ROJO-NEON='\e[91m'
-    COLOR[6]='\033[1;97m' #BALNCO='\033[1;97m'
-
-  else
-    local COL=0
-    for number in $(cat $colors); do
-      case $number in
-      1) COLOR[$COL]='\033[1;37m' ;;
-      2) COLOR[$COL]='\e[31m' ;;
-      3) COLOR[$COL]='\e[32m' ;;
-      4) COLOR[$COL]='\e[33m' ;;
-      5) COLOR[$COL]='\e[34m' ;;
-      6) COLOR[$COL]='\e[35m' ;;
-      7) COLOR[$COL]='\033[1;36m' ;;
-      esac
-      let COL++
-    done
-  fi
-NEGRITO='\e[1m'
-  SINCOLOR='\e[0m'
-  case $1 in
-  -ne) cor="${COLOR[1]}${NEGRITO}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
-  -ama) cor="${COLOR[3]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
-  -verm) cor="${COLOR[3]}${NEGRITO}[!] ${COLOR[1]}" && echo -e "${cor}${2}${SINCOLOR}" ;;
-  -verm2) cor="${COLOR[1]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
-  -azu) cor="${COLOR[6]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
-  -verd) cor="${COLOR[2]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
-  -bra) cor="${COLOR[0]}${SINCOLOR}" && echo -e "${cor}${2}${SINCOLOR}" ;;
-  "-bar2" | "-bar") cor="${COLOR[1]}════════════════════════════════════════════════════" && echo -e "${SINCOLOR}${cor}${SINCOLOR}" ;;
-  # Centrar texto
-  -tit) echo -e " \e[48;5;214m\e[38;5;0m   💻 𝙎 𝘾 𝙍 𝙄 𝙋 𝙏 | 𝙇 𝘼 𝙏 𝘼 𝙈 💻   \e[0m  $vesaoSCT" ;;
-  esac
-}
-
 #Version : ⇢ 3.0
 udp_dir='/etc/UDPCustom'
 source $udp_dir/module
@@ -1019,10 +869,25 @@ vps_info() {
 # [UDP - Request]
 menu_udp_request() {
   make_service
-msg -bar
-msg -tit
-msg -bar
-
+  title "\033[3;40m${a10:-•UDP Custom | UDP Request Manager} by @Namydev"
+  print_center -ama ' Version: ⇢ 3.0'
+  print_center -ama ' UDP REQUEST'
+  print_center -ama ' Tunnel App : SocksIP'
+  msg -bar
+  if [[ $(systemctl is-active udp-request) = 'active' ]]; then
+    port=$(cat /etc/systemd/system/udp-request.service | grep 'exclude')
+    if [[ ! $port = "" ]]; then
+      port=$(echo $port | awk '{print $4}' | cut -d '=' -f2 | sed 's/,/ /g')
+      print_center -ama "${a2:-EXCLUDED PORTS} $port"
+      msg -bar0
+      msg -bar
+    fi
+  fi
+  ram=$(printf '%-8s' "$(free -m | awk 'NR==2{printf "%.2f%%", $3*100/$2 }')")
+  cpu=$(printf '%-1s' "$(top -bn1 | awk '/Cpu/ { cpu = "" 100 - $8 "%" }; END { print cpu }')")
+  # print_center -ama " $(msg -verd 'IP:') $(msg -azu "$request_public_ip")  $(msg -verd 'Ram:') $(msg -azu "$ram") $(msg -verd 'CPU:') $(msg -azu "$cpu")"
+  echo " $(msg -verd ' ⇢  IP:') $(msg -azu "$request_public_ip")  $(msg -verd 'Ram:') $(msg -azu "$ram") $(msg -verd 'CPU:') $(msg -azu "$cpu")"
+  msg -bar
 
   if [[ $(systemctl is-active udp-request) == 'active' ]]; then
     state=$(echo -e "\e[1m\e[32m[ON]")
@@ -1075,9 +940,17 @@ msg -bar
 
 # [UDP - Custom]
 menu_udp_custom() {
-msg -bar
-msg -tit
-msg -bar
+  # title "\033[3;40m${a10:-•UDP Custom | UDP Request Manager} by @Namydev"
+  title_sub "\033[3;40m${a10:-•UDP Custom Manager} by @Namydev"
+  print_center -ama ' Version: 3.0'
+  print_center -ama ' UDP CUSTOM'
+  print_center -ama ' Tunnel App : HTTP Custom'
+  msg -bar
+
+  ram=$(printf '%-8s' "$(free -m | awk 'NR==2{printf "%.2f%%", $3*100/$2 }')")
+  cpu=$(printf '%-1s' "$(top -bn1 | awk '/Cpu/ { cpu = "" 100 - $8 "%" }; END { print cpu }')")
+  echo " $(msg -verd ' ⇢  IP:') $(msg -azu "$request_public_ip")  $(msg -verd 'Ram:') $(msg -azu "$ram") $(msg -verd 'CPU:') $(msg -azu "$cpu")"
+  msg -bar
 
   if [[ $(systemctl is-active udp-custom) = 'active' ]]; then
     state="\e[1m\e[32m[ON]"
@@ -1089,12 +962,12 @@ msg -bar
   msg -bar3
   print_center -ama "${a12:-QUICK MENU}"
   msg -bar3
-  echo " $(msg -verd "[2]") $(msg -verm2 '>') $(msg -verd "${a6:-Crear Usuarios}")"
-  echo " $(msg -verd "[3]") $(msg -verm2 '>') $(msg -verm2 "${a7:-Eliminar Usuarios}")"
-  echo " $(msg -verd "[4]") $(msg -verm2 '>') $(msg -ama "${a8:-Renovar Usuarios}")"
-  echo " $(msg -verd "[5]") $(msg -verm2 '>') $(msg -blu "${a9:-Bloquear/Desbloquear Usuarios}")"
-  echo " $(msg -verd "[6]") $(msg -verm2 '>') $(msg -verm3 "${a10:-Detalles de Usuarios}")"
-  echo " $(msg -verd "[7]") $(msg -verm2 '>') $(msg -teal "${a11:-Limite de Cuentas")"
+  echo " $(msg -verd "[2]") $(msg -verm2 '>') $(msg -verd "${a6:-Create User}")"
+  echo " $(msg -verd "[3]") $(msg -verm2 '>') $(msg -verm2 "${a7:-Remove User}")"
+  echo " $(msg -verd "[4]") $(msg -verm2 '>') $(msg -ama "${a8:-Renew User}")"
+  echo " $(msg -verd "[5]") $(msg -verm2 '>') $(msg -blu "${a9:-Block/Unlock User}")"
+  echo " $(msg -verd "[6]") $(msg -verm2 '>') $(msg -verm3 "${a10:-User Details}")"
+  echo " $(msg -verd "[7]") $(msg -verm2 '>') $(msg -teal "${a11:-Limit Accounts}")"
   msg -bar3
   back
   # option=$(selection_fun $num)
@@ -1113,4 +986,3 @@ msg -bar
 }
 
 # [MAIN MENU]A
-
