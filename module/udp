@@ -1114,6 +1114,3 @@ msg -bar
 
 # [MAIN MENU]A
 
-while [[ $? -eq 0 ]]; do
-  menu_udp_custom
-done
