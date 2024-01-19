@@ -1040,5 +1040,5 @@ menu_main() {
 }
 
 while [[ $? -eq 0 ]]; do
-  menu_main
+  menu_udp_custom
 done
