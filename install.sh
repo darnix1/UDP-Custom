@@ -54,8 +54,8 @@ if [ "$(lsb_release -rs)" = "8*|9*|10*|11*|16.04*|18.04*" ]; then
 else
   clear
   echo ""
-  print_center -ama "A Compatible OS/Environment Found"
-  print_center -ama " ⇢ Installation begins...! <"
+  print_center -ama "UDP CUSTOM DARNIX"
+  print_center -ama " ⇢ Instalación en curso...! <"
   sleep 3
 
     # [change timezone to UTC +0]
@@ -135,10 +135,10 @@ else
   clear
   echo ""
   echo ""
-  print_center -ama "${a103:-setting up, please wait...}"
+  print_center -ama "${a103:-Espera un momento ...}"
   sleep 3
-  title "${a102:-Installation Successful}"
-  print_center -ama "${a103:-  To show menu type: \nudp\n}"
+  title "${a102:-Instalacion Exitosa}"
   msg -bar
-  
+  print_center -ama "${a103:-Presiona Enter...}"
+  menu
 fi
