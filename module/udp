@@ -1089,12 +1089,12 @@ msg -bar
   msg -bar3
   print_center -ama "${a12:-QUICK MENU}"
   msg -bar3
-  echo " $(msg -verd "[2]") $(msg -verm2 '>') $(msg -verd "${a6:-Create User}")"
-  echo " $(msg -verd "[3]") $(msg -verm2 '>') $(msg -verm2 "${a7:-Remove User}")"
-  echo " $(msg -verd "[4]") $(msg -verm2 '>') $(msg -ama "${a8:-Renew User}")"
-  echo " $(msg -verd "[5]") $(msg -verm2 '>') $(msg -blu "${a9:-Block/Unlock User}")"
-  echo " $(msg -verd "[6]") $(msg -verm2 '>') $(msg -verm3 "${a10:-User Details}")"
-  echo " $(msg -verd "[7]") $(msg -verm2 '>') $(msg -teal "${a11:-Limit Accounts}")"
+  echo " $(msg -verd "[2]") $(msg -verm2 '>') $(msg -verd "${a6:-Crear Usuarios}")"
+  echo " $(msg -verd "[3]") $(msg -verm2 '>') $(msg -verm2 "${a7:-Eliminar Usuarios}")"
+  echo " $(msg -verd "[4]") $(msg -verm2 '>') $(msg -ama "${a8:-Renovar Usuarios}")"
+  echo " $(msg -verd "[5]") $(msg -verm2 '>') $(msg -blu "${a9:-Bloquear/Desbloquear Usuarios}")"
+  echo " $(msg -verd "[6]") $(msg -verm2 '>') $(msg -verm3 "${a10:-Detalles de Usuarios}")"
+  echo " $(msg -verd "[7]") $(msg -verm2 '>') $(msg -teal "${a11:-Limite de Cuentas")"
   msg -bar3
   back
   # option=$(selection_fun $num)
