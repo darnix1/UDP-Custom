@@ -142,4 +142,16 @@ else
   print_center -ama "${a103:-Presiona Enter...}"
   
 fi
+# ... Código previo ...
+
+
+
+# Imprimir un mensaje utilizando print_center
+print_center -ama "${a103:-Presiona Enter Para Volver al MENU...}"
+
+# Esperar la entrada del usuario antes de ir al menú
+read -p ""
+
+# Ir al menú
 menu
+
