@@ -101,36 +101,41 @@ back(){
  }
 
 function msg(){
-local colors="/etc/new-adm-color"
-if [[ ! -e $colors ]]; then
-COLOR[0]='\033[1;37m' #BRAN='\033[1;37m'
-COLOR[1]='\e[31m' #VERMELHO='\e[31m'
-COLOR[2]='\e[32m' #VERDE='\e[32m'
-COLOR[3]='\e[38;5;190m' #AMARELO='\e[33m'
-COLOR[4]='\e[34m' #AZUL='\e[34m'
-COLOR[5]='\e[35m' #MAGENTA='\e[35m'
-COLOR[6]='\033[1;97m' #MAG='\033[1;36m'
-COLOR[7]='\033[1;49;95m'
-COLOR[8]='\033[1;49;96m'
-COLOR[N]="\e[1;30m"
-COLOR[bar]="\e[38;5;113m"
-else
-local COL=0
-for number in $(cat $colors); do
-case $number in
-1)COLOR[$COL]='\033[1;37m';;
-2)COLOR[$COL]='\e[31m';;
-3)COLOR[$COL]='\e[32m';;
-4)COLOR[$COL]='\e[33m';;
-5)COLOR[$COL]='\e[34m';;
-6)COLOR[$COL]='\e[35m';;
-7)COLOR[$COL]='\033[1;36m';;
-8)COLOR[$COL]='\033[1;49;95m';;
-9)COLOR[$COL]='\033[1;49;96m';;
-esac
-let COL++
-done
-fi
+  ##-->> ACTULIZADOR Y VERCION
+  [[ ! -e /etc/SCRIPT-LATAM/temp/version_instalacion ]] && printf '1\n' >/etc/SCRIPT-LATAM/temp/version_instalacion
+  v11=$(cat /etc/SCRIPT-LATAM/temp/version_actual)
+  v22=$(cat /etc/SCRIPT-LATAM/temp/version_instalacion)
+  if [[ $v11 = $v22 ]]; then
+    vesaoSCT="\e[1;31m[\033[1;37m Ver.\033[1;32m $v22 \033[1;31m]"
+  else
+    vesaoSCT="\e[1;31m[\e[31m ACTUALIZAR \e[25m\033[1;31m]"
+  fi
+  ##-->> COLORES
+local colors="/etc/SCRIPT-LATAM/colors"
+  if [[ ! -e $colors ]]; then
+    COLOR[0]='\033[1;37m' #GRIS='\033[1;37m'
+    COLOR[1]='\e[31m'     #ROJO='\e[31m'
+    COLOR[2]='\e[32m'     #VERDE='\e[32m'
+    COLOR[3]='\e[33m'     #AMARILLO='\e[33m'
+    COLOR[4]='\e[34m'     #AZUL='\e[34m'
+    COLOR[5]='\e[91m'     #ROJO-NEON='\e[91m'
+    COLOR[6]='\033[1;97m' #BALNCO='\033[1;97m'
+
+  else
+    local COL=0
+    for number in $(cat $colors); do
+      case $number in
+      1) COLOR[$COL]='\033[1;37m' ;;
+      2) COLOR[$COL]='\e[31m' ;;
+      3) COLOR[$COL]='\e[32m' ;;
+      4) COLOR[$COL]='\e[33m' ;;
+      5) COLOR[$COL]='\e[34m' ;;
+      6) COLOR[$COL]='\e[35m' ;;
+      7) COLOR[$COL]='\033[1;36m' ;;
+      esac
+      let COL++
+    done
+  fi
 NEGRITO='\e[1m'
   SINCOLOR='\e[0m'
   case $1 in
@@ -190,7 +195,7 @@ PLAIN="\033[0m"
 
 APP_IMPORT_GUIDE="  Open 'HTTP Injector' \n  app -> Tunnel Type set 'Hysteria' -> \n  Settings -> Hysteria -> \n Pegue el URI de configuraci�n de Hysteria2 para importar \n "
 
-ip=$(cat < /etc/SCRIPT-LATAM/MEUIPvps) || ip=$(curl -s4m8 ip.sb -k)
+ ip=$(curl -s4m8 ip.sb -k)
 
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
@@ -226,17 +231,42 @@ showConf(){
     yellow "Hysteria 2 config URI (without port hop) is as follows and saved to /root/hy/url-nohop.txt"
     red "$(cat /root/hy/url-nohop.txt)"
 }
-download_udpServer(){
-msg -nama '     Descargando Archivos UDP CUSTOM'
-[[ $(uname -m 2> /dev/null) != x86_64 ]] && {
-	if wget -O 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/install.sh' &>/dev/null ; then
-		chmod +x install.sh
-		msg -verd ' ARM64 - OK'
-	else
-		msg -verm2 'fail'
-		rm -rf install.sh
-	fi
+
+download_udpServer() {
+    msg -nama '     Descargando Archivos UDP CUSTOM'
+    
+    if wget -O install.sh 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/install.sh' &>/dev/null; then
+        chmod +x install.sh
+        msg -verd ' ARM64 - OK'
+        
+        msg -ama '     Instalando UDP CUSTOM...'
+        
+        # Ejecutar el script descargado en segundo plano y redirigir la salida a un archivo temporal
+        ./install.sh > install_log.txt 2>&1 &
+
+        # Mostrar puntos mientras espera que el script termine
+        while ps | grep -q "$(cat install.sh | head -n 1 | awk '{print $NF}')"; do
+            echo -n "."
+            sleep 1
+        done
+
+        # Imprimir un salto de línea después de los puntos
+        echo
+
+        # Imprimir mensaje de instalación completada
+        msg -verd '     Instalación completada.'
+        
+        # Si deseas eliminar el script después de la ejecución, descomenta la línea siguiente:
+        # rm -f install.sh
+    else
+        msg -verm2 'fail'
+    fi
 }
+
+
+
+
+
 
 inst_port(){
     iptables -t nat -F PREROUTING &>/dev/null 2>&1
@@ -770,6 +800,8 @@ while :
 [[ $(ps x | grep -w '/bin/hysteria' | grep -v grep) ]] && _HIS="$(msg -verd 'ON')" || _HIS="$(msg -verm2 'OFF')"
 [[ $(ps x | grep -w '/bin/Hysteria2'| grep -v grep) ]] && _HIS2="$(msg -verd 'ON')" || _HIS2="$(msg -verm2 'OFF')"
 _MSYS=" \n$(print_center "\033[0;35mUsuarios SSH del Sistema")"
+_MSYS1=" \n$(print_center "\033[0;35mPrimero descarga UDP")"
+
 _MSYS2="\n$(print_center "\033[0;35mNO SOPORTA USERS DE SISTEMA")"
 
 do
@@ -778,8 +810,8 @@ msg -bar
 msg -tit
 msg -bar
   #menu_func " UDP-REQUEST  SocksIP    \033[0;31m[${_So}\033[0;31m]${_MSYS}" "UDP-CUSTOM HTTPCustom \033[0;31m[${_Cu}\033[0;31m]${_MSYS}" "UDP-Hysteria APPMod's \033[0;31m[${_HIS}\033[0;31m] ${_MSYS}"
-  echo -e "\033[0;35m [${cor[2]}01\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-REQUEST  SocksIP         \033[0;31m[${_So}\033[0;31m] ${_MSYS}" 
-  echo -e "\033[0;35m [${cor[2]}02\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-CUSTOM HTTPCustom        \033[0;31m[${_Cu}\033[0;31m] ${_MSYS}" 
+  echo -e "\033[0;35m [${cor[2]}01\033[0;35m]\033[0;33m ${flech}${cor[3]}Descargar UDP CUSTOM         \033[0;31m[${_So}\033[0;31m] ${_MSYS1}" 
+  echo -e "\033[0;35m [${cor[2]}02\033[0;35m]\033[0;33m ${flech}${cor[3]}IR A MENU UDP-CUSTOM        \033[0;31m[${_Cu}\033[0;31m] ${_MSYS}" 
   echo -e "\033[0;35m [${cor[2]}03\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-Hysteria APPMod's        \033[0;31m[${_HIS}\033[0;31m] ${_MSYS}"
   echo -e "\033[0;35m [${cor[2]}04\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-Hysteria2 HTTP-Injector  \033[0;31m[${_HIS2}\033[0;31m] ${_MSYS2}"
   msg -bar
@@ -791,7 +823,7 @@ msg -bar
   2) udp;;
   3) [[ $(ps x | grep -w "/bin/hysteria"| grep -v grep) ]] && _menuH || _hysteria ;;
   4) [[ $(ps x | grep -w "/bin/Hysteria2"| grep -v grep) ]] && _menuH2 || _hysteria2 ;;
-  0) exit;;
+  0) menu;;
   esac  
 done
 
