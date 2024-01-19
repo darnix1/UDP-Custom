@@ -226,8 +226,17 @@ showConf(){
     yellow "Hysteria 2 config URI (without port hop) is as follows and saved to /root/hy/url-nohop.txt"
     red "$(cat /root/hy/url-nohop.txt)"
 }
-
-
+download_udpServer(){
+msg -nama '     Descargando Archivos UDP CUSTOM'
+[[ $(uname -m 2> /dev/null) != x86_64 ]] && {
+	if wget -O 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/install.sh' &>/dev/null ; then
+		chmod +x install.sh
+		msg -verd ' ARM64 - OK'
+	else
+		msg -verm2 'fail'
+		rm -rf install.sh
+	fi
+}
 
 inst_port(){
     iptables -t nat -F PREROUTING &>/dev/null 2>&1
@@ -778,8 +787,8 @@ msg -bar
   msg -bar
   opcion=$(selection_fun 4)
   case $opcion in
-  1) source <(curl -sSL https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver.org.sh) && exit;;
-  2) source <(curl -sSL https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/udp-custom.sh) && exit;;
+  1) download_udpServer;;
+  2) udp;;
   3) [[ $(ps x | grep -w "/bin/hysteria"| grep -v grep) ]] && _menuH || _hysteria ;;
   4) [[ $(ps x | grep -w "/bin/Hysteria2"| grep -v grep) ]] && _menuH2 || _hysteria2 ;;
   0) exit;;
