@@ -1,146 +1,243 @@
 #!/bin/bash
 
-# Run as root
-[[ "$(whoami)" != "root" ]] && {
-    echo -e "\033[1;33m[\033[1;31mErro\033[1;33m] \033[1;37m- \033[1;33myou need to run as root\033[0m"
-    rm /home/ubuntu/install.sh &>/dev/null
-    exit 0
-}
+dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
 
-#=== setup ===
-cd 
-rm -rf /root/udp
-mkdir -p /root/udp
-rm -rf /etc/UDPCustom
-mkdir -p /etc/UDPCustom
-sudo touch /etc/UDPCustom/udp-custom
-udp_dir='/etc/UDPCustom'
-udp_file='/etc/UDPCustom/udp-custom'
+############# LawNET #############
+#Text Coloring
+clear
+red='\e[1;31m'
+green='\e[0;32m'
+yell='\e[1;33m'
+tyblue='\e[1;36m'
+NC='\e[0m'
+purple() { echo -e "\\033[35;1m${*}\\033[0m"; }
+tyblue() { echo -e "\\033[36;1m${*}\\033[0m"; }
+yellow() { echo -e "\\033[33;1m${*}\\033[0m"; }
+green() { echo -e "\\033[32;1m${*}\\033[0m"; }
+red() { echo -e "\\033[31;1m${*}\\033[0m"; }
+############# LawNET #############
 
-sudo apt update -y
-sudo apt upgrade -y
-sudo apt install -y wget
-sudo apt install -y curl
-sudo apt install -y dos2unix
-sudo apt install -y neofetch
-sudo apt install -y cron
-
-source <(curl -sSL 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/module')
-
-time_reboot() {
-  print_center -ama "${a92:-System/Server Reboot In} $1 ${a93:-Seconds}"
-  REBOOT_TIMEOUT="$1"
-
-  while [ $REBOOT_TIMEOUT -gt 0 ]; do
-    print_center -ne "-$REBOOT_TIMEOUT-\r"
-    sleep 1
-    : $((REBOOT_TIMEOUT--))
-  done
-  rm /home/ubuntu/install.sh &>/dev/null
-  rm /root/install.sh &>/dev/null
-  echo -e "\033[01;31m\033[1;33m More Updates, Follow Us On \033[1;31m(\033[1;36mTelegram\033[1;31m): \033[1;37m@Namydev\033[0m"
-  reboot
-}
-
-# Check Ubuntu version
-if [ "$(lsb_release -rs)" = "8*|9*|10*|11*|16.04*|18.04*" ]; then
-  clear
-  print_center -ama -e "\e[1m\e[31m=====================================================\e[0m"
-  print_center -ama -e "\e[1m\e[33m${a94:-this script is not compatible with your operating system}\e[0m"
-  print_center -ama -e "\e[1m\e[33m ${a95:-Use Ubuntu 20 or higher}\e[0m"
-  print_center -ama -e "\e[1m\e[31m=====================================================\e[0m"
-  rm /home/ubuntu/install.sh
-  exit 1
-else
-  clear
-  echo ""
-  print_center -ama "UDP CUSTOM DARNIX"
-  print_center -ama " ⇢ Instalación en curso...! <"
-  sleep 3
-
-    # [change timezone to UTC +0]
-  echo ""
-  echo " ⇢ Change timezone to UTC +0"
-  echo " ⇢ for Africa/Accra [GH] GMT +7:00"
-  ln -fs /usr/share/zoneinfo/Africa/Accra /etc/localtime
-  sleep 3
-
-  # [+clean up+]
-  rm -rf $udp_file &>/dev/null
-  rm -rf /etc/UDPCustom/udp-custom &>/dev/null
-  # rm -rf /usr/bin/udp-request &>/dev/null
-  rm -rf /etc/limiter.sh &>/dev/null
-  rm -rf /etc/UDPCustom/limiter.sh &>/dev/null
-   rm -rf /etc/cek.sh &>/dev/null
-  rm -rf /etc/UDPCustom/cek.sh &>/dev/null
-  rm -rf /etc/UDPCustom/module &>/dev/null
-  rm -rf /usr/bin/udp &>/dev/null
-  rm -rf /etc/UDPCustom/udpgw.service &>/dev/null
-  rm -rf /etc/udpgw.service &>/dev/null
-  systemctl stop udpgw &>/dev/null
-  systemctl stop udp-custom &>/dev/null
-  # systemctl stop udp-request &>/dev/null
-
- # [+get files ⇣⇣⇣+]
-  source <(curl -sSL 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/module') &>/dev/null
-  wget -O /etc/UDPCustom/module 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/module' &>/dev/null
-  chmod +x /etc/UDPCustom/module
-
-  wget "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/bin/udp-custom-linux-amd64" -O /root/udp/udp-custom &>/dev/null
-  # wget "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/bin/udp-request-linux-amd64" -O /usr/bin/udp-request &>/dev/null
-  chmod +x /root/udp/udp-custom
-  # chmod +x /usr/bin/udp-request
-
-  wget -O /etc/limiter.sh 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/limiter.sh'
-  cp /etc/limiter.sh /etc/UDPCustom
-  chmod +x /etc/limiter.sh
-  chmod +x /etc/UDPCustom
-
-    wget -O /etc/cek.sh 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/cek.sh'
-  cp /etc/cek.sh /etc/UDPCustom
-  chmod +x /etc/cek.sh
-  chmod +x /etc/UDPCustom
-  
-  # [+udpgw+]
-  wget -O /etc/udpgw 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/udpgw'
-  mv /etc/udpgw /bin
-  chmod +x /bin/udpgw
-
-  # [+service+]
-  wget -O /etc/udpgw.service 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/config/udpgw.service'
-  wget -O /etc/udp-custom.service 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/config/udp-custom.service'
-  
-  mv /etc/udpgw.service /etc/systemd/system
-  mv /etc/udp-custom.service /etc/systemd/system
-
-  chmod 640 /etc/systemd/system/udpgw.service
-  chmod 640 /etc/systemd/system/udp-custom.service
-  
-  systemctl daemon-reload &>/dev/null
-  systemctl enable udpgw &>/dev/null
-  systemctl start udpgw &>/dev/null
-  systemctl enable udp-custom &>/dev/null
-  systemctl start udp-custom &>/dev/null
-
-  # [+config+]
-  wget "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/config/config.json" -O /root/udp/config.json &>/dev/null
-  chmod +x /root/udp/config.json
-
-  # [+menu+]
-  wget -O /usr/bin/udp 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/module/udp' 
-  chmod +x /usr/bin/udp
-  ufw disable &>/dev/null
-  sudo apt-get remove --purge ufw firewalld -y
-  apt remove netfilter-persistent -y
-  clear
-  echo ""
-  echo ""
-  print_center -ama "${a103:-Espera un momento ...}"
-  sleep 3
-  title "${a102:-Instalacion Exitosa}"
-  msg -bar
-  print_center -ama "${a103:-Presiona Enter...}"
-  
+#System version number
+cd
+if [ "${EUID}" -ne 0 ]; then
+		echo "You need to run this script as root"
+		exit 1
+fi
+if [ "$(systemd-detect-virt)" == "openvz" ]; then
+		echo "OpenVZ is not supported"
+		exit 1
 fi
 
+localip=$(hostname -I | cut -d\  -f1)
+hst=( `hostname` )
+dart=$(cat /etc/hosts | grep -w `hostname` | awk '{print $2}')
+if [[ "$hst" != "$dart" ]]; then
+echo "$localip $(hostname)" >> /etc/hosts
+fi
+mkdir -p /etc/xray
 
+clear
+echo -e "[ ${tyblue}NOTE${NC} ] AUTO INSTALL SCRIPT.... "
+sleep 1
+echo -e "[ ${tyblue}NOTE${NC} ] Multi path, Multi port, support debian 10 , Ubuntu 20-18"
+sleep 2
+echo -e "[ ${green}INFO${NC} ] By LawNET"
+sleep 1
+echo -e "[ ${green}INFO${NC} ] t.me/law_sky"
+sleep 5
+
+echo ""
+yellow "Add Your Domain"
+echo " "
+read -rp "Input your domain : " -e pp
+echo "$pp" > /root/domain
+echo "$pp" > /root/scdomain
+echo "$pp" > /etc/xray/domain
+echo "$pp" > /etc/xray/scdomain
+#echo "IP=$pp" > /var/lib/yudhynetwork-pro/ipvps.conf
+echo ""
+
+secs_to_human() {
+    echo "Installation time : $(( ${1} / 3600 )) hours $(( (${1} / 60) % 60 )) minute's $(( ${1} % 60 )) seconds"
+}
+start=$(date +%s)
+ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null 2>&1
+sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
+
+coreselect=''
+cat> /root/.profile << END
+# ~/.profile: executed by Bourne-compatible login shells.
+
+if [ "$BASH" ]; then
+  if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+  fi
+fi
+
+mesg n || true
+clear
+END
+
+chmod 644 /root/.profile
+
+echo -e "[ ${green}INFO${NC} ] Preparing the install file 🛠"
+apt install git curl -y >/dev/null 2>&1
+echo -e "[ ${green}INFO${NC} ] Alright good ... installation file is ready 📡"
+sleep 2
+echo -ne "[ ${green}INFO${NC} ] Check permission : success 😁"
+sleep 3
+mkdir -p /etc/yudhynetwork
+mkdir -p /etc/yudhynetwork/theme
+mkdir -p /var/lib/yudhynetwork-pro >/dev/null 2>&1
+echo "IP=" >> /var/lib/yudhynetwork-pro/ipvps.conf
+
+if [ -f "/etc/xray/config.json" ]; then
+echo ""
+echo -e "[ ${green}INFO${NC} ] Script Already Installed"
+echo -ne "[ ${yell}WARNING${NC} ] Do you want to install again ? (y/n)? "
+read answer
+if [ "$answer" == "${answer#[Yy]}" ] ;then
+rm setup.sh
+sleep 10
+exit 0
+else
+clear
+fi
+fi
+
+echo ""
+wget -q https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/dependencies.sh;chmod +x dependencies.sh;./dependencies.sh
+rm dependencies.sh
+clear
+
+############# LawNET #############
+#THEME RED
+cat <<EOF>> /etc/yudhynetwork/theme/red
+BG : \E[40;1;41m
+TEXT : \033[0;31m
+EOF
+#THEME BLUE
+cat <<EOF>> /etc/yudhynetwork/theme/blue
+BG : \E[40;1;44m
+TEXT : \033[0;34m
+EOF
+#THEME GREEN
+cat <<EOF>> /etc/yudhynetwork/theme/green
+BG : \E[40;1;42m
+TEXT : \033[0;32m
+EOF
+#THEME YELLOW
+cat <<EOF>> /etc/yudhynetwork/theme/yellow
+BG : \E[40;1;43m
+TEXT : \033[0;33m
+EOF
+#THEME MAGENTA
+cat <<EOF>> /etc/yudhynetwork/theme/magenta
+BG : \E[40;1;43m
+TEXT : \033[0;33m
+EOF
+#THEME CYAN
+cat <<EOF>> /etc/yudhynetwork/theme/cyan
+BG : \E[40;1;46m
+TEXT : \033[0;36m
+EOF
+#THEME CONFIG
+cat <<EOF>> /etc/yudhynetwork/theme/color.conf
+blue
+EOF
+############# LawNET #############
+
+#install ssh ovpn
+
+#Install Xray
+echo -e "${tyblue}.------------------------------------------.${NC}"
+echo -e "${tyblue}|          PROCESS INSTALLED XRAY          |${NC}"
+echo -e "${tyblue}'------------------------------------------'${NC}"
+sleep 2
+clear
+wget https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/ins-xray.sh && chmod +x ins-xray.sh && ./ins-xray.sh
+#Install SSH Websocket
+
+clear
+
+
+############# LawNET #############
+
+cat> /root/.profile << END
+# ~/.profile: executed by Bourne-compatible login shells.
+
+if [ "$BASH" ]; then
+  if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+  fi
+fi
+
+mesg n || true
+clear
+#menu
+vnstat -d
+vnstat -m
+END
+chmod 644 /root/.profile
+
+############# LawNET #############
+
+if [ -f "/root/log-install.txt" ]; then
+rm /root/log-install.txt > /dev/null 2>&1
+fi
+if [ -f "/etc/afak.conf" ]; then
+rm /etc/afak.conf > /dev/null 2>&1
+fi
+if [ ! -f "/etc/log-create-user.log" ]; then
+echo "Log All Account " > /etc/log-create-user.log
+fi
+history -c
+serverV=$( curl -sS https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/version  )
+echo $serverV > /opt/.ver
+aureb=$(cat /home/re_otm)
+b=11
+if [ $aureb -gt $b ]
+then
+gg="PM"
+else
+gg="AM"
+fi
+curl -sS ifconfig.me > /etc/myipvps
+
+############# LawNET #############
+
+echo " "
+echo "Installation has been completed!!"
+echo "=========================[SCRIPT PREMIUM]========================"
+echo ""
+sleep 3
+echo -e "    ${tyblue}.------------------------------------------.${NC}"
+echo -e "    ${tyblue}|     SUCCESFULLY INSTALLED THE SCRIPT     |${NC}"
+echo -e "    ${tyblue}'------------------------------------------'${NC}"
+
+rm /root/cf.sh >/dev/null 2>&1
+rm /root/setup.sh >/dev/null 2>&1
+rm /root/insshws.sh 
+rm /root/update.sh
+
+echo ""
+echo -e "Setting up autorefresh on xray user login"
+#echo -ne "Choose between 1-30 minutes: "; read afresh
+wget -q -O /usr/bin/clear-log raw.githubusercontent.com/LawNetwork/Autoscript/main/xray/clear-log
+chmod +x /usr/bin/clear-log; cd
+
+echo "#!/bin/bash
+bash <(curl -L -s https://s.id/netflixchecker) -E -M 4" > /usr/bin/regionchecker
+chmod +x /usr/bin/regionchecker
+
+echo "Changing the version to the oldest so you can update manually.."
+echo "0.0.1" > /opt/.ver; sleep 2
+echo "Changing the version to the oldest so you can update manually.. done"
+
+echo ""
+echo -e "   ${tyblue}Your VPS Will Be Automatical Reboot In 10 seconds${NC}"
+
+sleep 10
+reboot
