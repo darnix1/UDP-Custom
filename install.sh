@@ -162,6 +162,13 @@ wget https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/ins-xray.sh && 
 
 clear
 
+echo -e "${tyblue}.------------------------------------------.${NC}"
+echo -e "${tyblue}|           DOWNLOAD EXTRA MENU            |${NC}"
+echo -e "${tyblue}'------------------------------------------'${NC}"
+sleep 2
+wget https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/update.sh && chmod +x update.sh && ./update.sh
+clear
+
 
 ############# LawNET #############
 
