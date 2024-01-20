@@ -1,1027 +1,360 @@
 #!/bin/bash
-# @drowkid01 | t.me/drowkid01
-os_system(){ 
- system=$(cat -n /etc/issue |grep 1 |cut -d ' ' -f6,7,8 |sed 's/1//' |sed 's/      //') 
- distro=$(echo "$system"|awk '{print $1}') 
- case $distro in 
- Debian) vercion=$(echo $system|awk '{print $3}'|cut -d '.' -f1);; 
- Ubuntu) vercion=$(echo $system|awk '{print $2}'|cut -d '.' -f1,2);; 
- esac 
- }
-
-function udps(){
-
-RED="\033[31m" && GREEN="\033[32m" && YELLOW="\033[33m" && PLAIN="\033[0m"
-APP_IMPORT_GUIDE="  Open 'HTTP 	Injector' \n  app -> Tunnel Type set 'Hysteria' -> \n  Settings -> Hysteria -> \n Pegue el URI de configuraci�n de Hysteria2 para importar \n "
-ip=$(wget -qO- ifconfig.me)
-
-red(){
-    echo -e "\033[31m\033[01m$1\033[0m"
-}
-
-green(){
-    echo -e "\033[32m\033[01m$1\033[0m"
-}
-
-yellow(){
-    echo -e "\033[33m\033[01m$1\033[0m"
-}
-
-
-starthysteria(){
-    systemctl start hysteria-server &>/dev/null
-    systemctl enable hysteria-server &>/dev/null 2>&1
-}
-
-stophysteria(){
-    systemctl stop hysteria-server &>/dev/null
-    systemctl disable hysteria-server &>/dev/null 2>&1
-}
-
-showConf(){
-    #yellow "Hysteria 2 client YML configuration file hy-client.yaml is as follows and saved to /root/hy/hy-client.yaml"
-    #red "$(cat /root/hy/hy-client.yaml)"
-    #yellow "Hysteria 2 client JSON configuration file hy-client.json is as follows and saved to /root/hy/hy-client.json"
-    #red "$(cat /root/hy/hy-client.json)"
-    green "$APP_IMPORT_GUIDE"
-    yellow "Hysteria 2 config URI (with port hop) is as follows and saved to /root/hy/url.txt"
-    red "$(cat /root/hy/url.txt)"
-    yellow "Hysteria 2 config URI (without port hop) is as follows and saved to /root/hy/url-nohop.txt"
-    red "$(cat /root/hy/url-nohop.txt)"
-}
-
-
-
-inst_port(){
-    iptables -t nat -F PREROUTING &>/dev/null 2>&1
-	msg -bar
-	echo -e "Configure el puerto Hysteria2 entre [1-65535] "
-    read -p " (Enter para puerto aleatorio) : " port
-    [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
-    until [[ -z $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; do
-        if [[ -n $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; then
-            echo -e "${RED} $port ${PLAIN} El puerto ya est� ocupado por otro programa, �cambie el puerto e int�ntelo de nuevo! "
-            echo -e "Configure el puerto Hysteria2 entre [1-65535] "
-			read -p " (Enter para puerto aleatorio) : " port
-            [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
-        fi
-    done
-    inst_jump
-}
-
-inst_jump(){
-    green "El modo de uso del puerto Hysteria 2 es el siguiente:"
-    echo ""
-    echo -e " ${GREEN}1.${PLAIN} Puerto Unico ${YELLOW}410default411${PLAIN}"
-    echo -e " ${GREEN}2.${PLAIN} Puerto RANGOS/RAMDOM (INICIO-FIN )"
-    echo ""
-    read -rp "Escoge [1-2]: " jumpInput
-    if [[ $jumpInput == 2 ]]; then
-        read -p "Configure el puerto de inicio del puerto de rango (recomendado entre 10000-65535):" firstport
-        read -p "Configure el puerto final de un puerto de rango (recomendado entre 10000-65535, debe ser m�s grande que el puerto de inicio anterior):" endport
-        if [[ $firstport -ge $endport ]]; then
-            until [[ $firstport -le $endport ]]; do
-                if [[ $firstport -ge $endport ]]; then
-                    red "El puerto de inicio que configur� es menor que el puerto final; vuelva a ingresar el puerto inicial y final"
-                    read -p "Configure el puerto de inicio del puerto de rango (recomendado entre 10000-65535): " firstport
-                    read -p ":" endport
-                fi
-            done
-        fi
-        iptables -t nat -A PREROUTING -p udp --dport $firstport:$endport  -j DNAT --to-destination :$port
-        ip6tables -t nat -A PREROUTING -p udp --dport $firstport:$endport  -j DNAT --to-destination :$port
-        netfilter-persistent save &>/dev/null 2>&1
-    else
-        red " DEFAULD MODO UNICO PUERTO"
-    fi
-}
-
-
-install_bin(){
-clear&&clear
-msg -bar
-NAME=hysteria
-VERSION=$(curl -fsSL https://api.github.com/repos/apernet/hysteria/releases/latest | grep -w tag_name |sed -e 's/[^v.0-9 -]//ig'| tr -d '[:space:]')
-[[ $(uname -m 2> /dev/null) != x86_64 ]] && TARBALL="$NAME-linux-arm64" || TARBALL="$NAME-linux-amd64"
-msg -nama "     Descargando Modulo ${VERSION}.(Evozi)."
-if wget -O /bin/Hysteria2 https://github.com/apernet/hysteria/releases/download/app/${VERSION}/${TARBALL} &>/dev/null ; then
-		chmod +x /bin/Hysteria2
-		msg -verd ' OK'
-	else
-		msg -verm2 ' FAIL '
-		rm -f /bin/Hysteria2
-fi
-echo "
-[Unit]
-Description=Hysteria2 Server Service ChuKK-SCRIPT
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/bin/Hysteria2 server --config /etc/VPS-MX/HYSTERIA/config.yaml
-WorkingDirectory=~
-User=root
-Group=root
-Environment=HYSTERIA_LOG_LEVEL=info
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
-NoNewPrivileges=true
-
-[Install]
-WantedBy=multi-user.target
-" > /hysteria-server.service
-chmod +x /hysteria-server.service
-install -Dm644 /hysteria-server.service /etc/systemd/system
-#systemctl disable hysteria-server.service &>/dev/null
-#systemctl start hysteria-server.service &>/dev/null
-#systemctl enable hysteria-server.service &>/dev/null
-#rm -f /hysteria-server.service 
-}
-
-inst_pwd(){
-    read -p "Establecer contrase�a de Hysteria2 (ingrese para obtener una contrase�a aleatoria): " auth_pwd
-    [[ -z $auth_pwd ]] && auth_pwd=$(date +%s%N | md5sum | cut -c 1-8)
-}
-
-inst_site(){
-msg -bar
-echo -e "INGRESA SU SNI ( HOST FAKE ) "
-msg -bar
-    echo -e "Ingrese su Sitio WEB Falso A Hysteria 2 (elimine https://) "
-	read -rp  " [Default : plus.chukk-SCRIPT.online]: " proxysite
-    [[ -z $proxysite ]] && proxysite='plus.chukk-SCRIPT.online'
-}
-
-inst_cert(){
-msg -bar
-echo -ne " Ingresa Tu Dominio Enlazado a este IP ( Omite con Enter ) :"
-read -p " " domainH2
-[[ -z ${domainH2} ]] && domainH2='Hysteria2'
-        cert_path="/etc/hysteria/cert.crt"
-        key_path="/etc/hysteria/private.key"
-        openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
-        openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=${domainH2}"
-        chmod 777 /etc/hysteria/cert.crt
-        chmod 777 /etc/hysteria/private.key
-        hy_domain=$domainH2
-        domain=$domainH2
-}
-
-_hysteria2(){
-[[ -d /etc/hysteria ]] || mkdir /etc/hysteria
-[[ -d /etc/VPS-MX/HYSTERIA ]] || mkdir /etc/VPS-MX/HYSTERIA/
-    install_bin
-	clear&&clear
-    # Ask user for Hysteria configuration
-    inst_cert
-	clear&&clear
-    inst_port
-	clear&&clear
-    inst_pwd
-	clear&&clear
-    inst_site
-	clear&&clear
-    # Set up the Hysteria configuration file
-#cat << EOF > /etc/hysteria/config.yaml
-cat << EOF > /etc/VPS-MX/HYSTERIA/config.yaml
-listen: :$port
-
-tls:
-  cert: $cert_path
-  key: $key_path
-
-obfs:
-  type: salamander
-  salamander:
-    password: $auth_pwd
-
-quic:
-  initStreamReceiveWindow: 16777216
-  maxStreamReceiveWindow: 16777216
-  initConnReceiveWindow: 33554432
-  maxConnReceiveWindow: 33554432
-
-auth:
-  type: password
-  password: $auth_pwd
-
-masquerade:
-  type: proxy
-  proxy:
-    url: https://$proxysite
-    rewriteHost: true
-EOF
-
-    # Determine the final inbound port range
-    if [[ -n $firstport ]]; then
-        last_port="$port,$firstport-$endport"
-    else
-        last_port=$port
-    fi
-
-    # Add brackets to the IPv6 address
-    if [[ -n $(echo $ip | grep ":") ]]; then
-        last_ip="[$ip]"
-    else
-        last_ip=$ip
-    fi
-
-    mkdir /root/hy
-    cat << EOF > /root/hy/hy-client.yaml
-server: $ip:$last_port
-
-auth: $auth_pwd
-
-tls:
-  sni: $hy_domain
-  insecure: true
-
-obfs: $auth_pwd
-
-quic:
-  initStreamReceiveWindow: 16777216
-  maxStreamReceiveWindow: 16777216
-  initConnReceiveWindow: 33554432
-  maxConnReceiveWindow: 33554432
-
-fastOpen: true
-
-socks5:
-  listen: 127.0.0.1:5080
-
-transport:
-  udp:
-    hopInterval: 30s 
-EOF
-    cat << EOF > /root/hy/hy-client.json
-{
-  "server": "$ip:$last_port",
-  "auth": "$auth_pwd",
-  "tls": {
-    "sni": "$hy_domain",
-    "insecure": true
-  },
-  "obfs": "$auth_pwd",
-  "quic": {
-    "initStreamReceiveWindow": 16777216,
-    "maxStreamReceiveWindow": 16777216,
-    "initConnReceiveWindow": 33554432,
-    "maxConnReceiveWindow": 33554432
-  },
-  "fastOpen": true,
-  "socks5": {
-    "listen": "127.0.0.1:5080"
-  },
-  "transport": {
-    "udp": {
-      "hopInterval": "30s"
-    }
-  }
-}
-EOF
-echo " IP : $(cat < /bin/ejecutar/IPcgh)" > /etc/VPS-MX/HYSTERIA/data.yaml
-echo " DOMINIO : ${domainH2}" >> /etc/VPS-MX/HYSTERIA/data.yaml
-echo " Authentication : ${auth_pwd}" >> /etc/VPS-MX/HYSTERIA/data.yaml
-echo " PUERTO : ${port}" >> /etc/VPS-MX/HYSTERIA/data.yaml
-echo " SNI : ${proxysite}" >> /etc/VPS-MX/HYSTERIA/data.yaml
-echo " RANGO DE PUERTOS : 10000:65000" >> /etc/VPS-MX/HYSTERIA/data.yaml
-echo -e " \n 	Power By @drowkid01" >> /etc/VPS-MX/HYSTERIA/data.yaml
-    url="hy2://$auth_pwd@$ip:$last_port/?insecure=1&sni=$hy_domain&obfs=salamander&obfs-password=$auth_pwd#HttpInjector-hysteria2"
-    echo $url > /root/hy/url.txt
-    nohopurl="hy2://$auth_pwd@$ip:$port/?insecure=1&sni=$hy_domain&obfs=salamander&obfs-password=$auth_pwd#HttpInjector-hysteria2"
-    echo $nohopurl > /root/hy/url-nohop.txt
-    systemctl daemon-reload &>/dev/null
-    systemctl enable hysteria-server &>/dev/null
-    systemctl start hysteria-server &>/dev/null
-    if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/VPS-MX/HYSTERIA/config.yaml' ]]; then
-        green " Servicio Hysteria2 Iniciado Exitosamente"
-    else
-        red "ERROR, NO SE PUDO EJECUTAR EL SERVICIO DE HYSTERIA2 , \n\nEjecute systemctl status hysteria-server para ver el estado del servicio"
-    fi
-    #yellow "Hysteria 2 client YML configuration file hy-client.yaml is as follows and saved to /root/hy/hy-client.yaml"
-    #red "$(cat /root/hy/hy-client.yaml)"
-    #yellow "Hysteria 2 client JSON configuration file hy-client.json is as follows and saved to /root/hy/hy-client.json"
-    #red "$(cat /root/hy/hy-client.json)"
-msg -bar
-cat /etc/VPS-MX/HYSTERIA/data.yaml
-msg -bar
-    green "$APP_IMPORT_GUIDE"
-    yellow "El URI de configuraci�n de Hysteria 2 (con salto de puerto) "
-    red "$(cat /root/hy/url.txt)"
-    yellow "El URI de configuraci�n de Hysteria 2 (sin salto de puerto) "
-    red "$(cat /root/hy/url-nohop.txt)"
-read -p "$(green "Hysteria 2 Modulos UDP By @drowkid01 Finalizado ") "
-}
-
-_hysteria(){
-clear&&clear
-[[ ! -d /etc/VPS-MX/HYSTERIA ]] && mkdir /etc/VPS-MX/HYSTERIA
-NAME=hysteria
-#VERSION=$(curl -fsSL https://api.github.com/repos/HyNetwork/hysteria/releases/latest | grep tag_name | sed -E 's/.*"v(.*)".*/\1/')
-VERSION=$(curl -fsSL https://api.github.com/repos/HyNetwork/hysteria/releases/latest | grep -w tag_name |sed -e 's/[^v.0-9 -]//ig'| tr -d '[:space:]')
-[[ $(uname -m 2> /dev/null) != x86_64 ]] && TARBALL="$NAME-linux-arm64" || TARBALL="$NAME-linux-amd64"
-interfas="$(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1)"
-#https://github.com/apernet/hysteria/releases/download/app%2Fv2.0.2/hysteria-linux-amd64
-
-sys="$(which sysctl)"
-
-ip4t=$(which iptables)
-ip6t=$(which ip6tables)
-
-#OBFS=$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 10)
-OBFS='ModCHUKK'
-
-msg -nama '   INGRESA TU SUBDOMINIO/DOMINIO  \n'
-#msg -nama '              Prederteminado ( ENTER )\n'
-read -p "               DOMAIN : " domain
-sleep 4s
-del 1
-msg -nama "     COMPIANDO CERTIFICADO SSL (UDP). . . . "
-[[ -e /etc/VPS-MX/HYSTERIA/udpmod.ca.key && -e /etc/VPS-MX/HYSTERIA/udpmod.server.crt ]] && {
-msg -verd ' OK'
-} || {
-#(
-#openssl genrsa -out /etc/VPS-MX/HYSTERIA/udpmod.ca.key 2048  2048
-#openssl req -new -x509 -days 3650 -key /etc/VPS-MX/HYSTERIA/udpmod.ca.key -subj "/C=CN/ST=GD/L=SZ/O=ChumoGH, Inc./CN=ChumoGH Root CA" -out /etc/VPS-MX/HYSTERIA/udpmod.ca.crt
-#openssl req -newkey rsa:2048 -nodes -keyout /etc/VPS-MX/HYSTERIA/udp.server.key -subj "/C=CN/ST=GD/L=SZ/O=ChumoGH, Inc./CN=${domain}" -out /etc/VPS-MX/HYSTERIA/udpmod.server.csr
-#openssl x509 -req -extfile <(printf "subjectAltName=DNS:${domain},DNS:${domain}") -days 3650 -in /etc/VPS-MX/HYSTERIA/udpmod.server.csr -CA /etc/VPS-MX/HYSTERIA/udpmod.ca.crt -CAkey /etc/VPS-MX/HYSTERIA/udpmod.ca.key -CAcreateserial -out /etc/VPS-MX/HYSTERIA/udp.server.crt
-#
-(openssl genpkey -algorithm RSA -out /etc/VPS-MX/HYSTERIA/udpmod.ca.key
-openssl req -x509 -new -nodes -key /etc/VPS-MX/HYSTERIA/udpmod.ca.key -days 3650 -out /etc/VPS-MX/HYSTERIA/udpmod.ca.crt -subj "/C=CN/ST=GD/L=SZ/O=DrowKid, Inc./CN=ChuKK-SCRIPT Root CA"
-openssl req -newkey rsa:2048 -nodes -keyout /etc/VPS-MX/HYSTERIA/udp.server.key -subj "/C=CN/ST=GD/L=SZ/O=DrowKid, Inc./CN=${domain}" -out /etc/VPS-MX/HYSTERIA/udpmod.server.csr
-openssl x509 -req -extfile <(printf "subjectAltName=DNS:${domain}") -days 3650 -in /etc/VPS-MX/HYSTERIA/udpmod.server.csr -CA /etc/VPS-MX/HYSTERIA/udpmod.ca.crt -CAkey /etc/VPS-MX/HYSTERIA/udpmod.ca.key -CAcreateserial -out /etc/VPS-MX/HYSTERIA/udp.server.crt
-) &>/dev/null && msg -verd ' OK'
-
-}
-del 1
-[[ -e /etc/VPS-MX/HYSTERIA/udp.server.crt ]] && chmod +x /etc/VPS-MX/HYSTERIA/udp.server.crt
-[[ -e /etc/VPS-MX/HYSTERIA/udp.server.key ]] && chmod +x /etc/VPS-MX/HYSTERIA/udp.server.key
-msg -nama "     Descargando BINARIO  v${VERSION}.(FAKE). "
-#if wget -O /bin/hysteria https://github.com/apernet/hysteria/releases/download/app%2F${VERSION}/${TARBALL} &>/dev/null ; then
-if wget -O /bin/hysteria https://github.com/apernet/hysteria/releases/download/v1.3.5/${TARBALL} &>/dev/null ; then
-		chmod +x /bin/hysteria
-		msg -verd ' OK'
-	else
-		msg -verm2 ' FAIL '
-		rm -f /bin/hysteria
-fi
-sleep 4s && del 1
-msg -nama '     Descargando Motor JSON . . . . '
-if wget -O /etc/VPS-MX/HYSTERIA/config.json https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver-sh/config.json &>/dev/null ; then
-		chmod +x /etc/VPS-MX/HYSTERIA/config.json
-		sed -i "s/setobfs/${OBFS}/" /etc/VPS-MX/HYSTERIA/config.json
-		msg -verd ' OK'
-	else
-		msg -verm2 ' FAIL '
-		rm -rf /etc/VPS-MX/HYSTERIA/config.json
-fi
-sleep 4s && del 1
-msg -nama '     COMPILANDO GoLang AUTHSSH '
-#if wget -O /bin/authSSH https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/authSSH &>/dev/null ; then
-if wget -O /bin/authSSH https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver-sh/authSSH &>/dev/null ; then
-		chmod +x /bin/authSSH
-		msg -verd ' OK'
-	else
-		msg -verm2 ' FAIL '
-		rm -rf /bin/authSSH
-fi
-sleep 4s && del 1
-msg -nama '     COMPILANDO BINARIO DE SYSTEMA . . . . '
-if wget -O /etc/VPS-MX/HYSTERIA/hysteria.service https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver-sh/hysteria.service &>/dev/null ; then
-		chmod +x /etc/VPS-MX/HYSTERIA/hysteria.service
-		systemctl disable hysteria.service &>/dev/null
-		#rm -f /etc/systemd/system/hysteria.service
-		
-		msg -verd ' OK'
-	else
-		msg -verm2 ' FAIL '
-		rm -f /etc/VPS-MX/HYSTERIA/hysteria.service
-fi
-sleep 4s && del 1
-		sed -i "s%sysb%${sys}%g" /etc/VPS-MX/HYSTERIA/hysteria.service
-		sed -i "s%ip4tbin%${ip4t}%g" /etc/VPS-MX/HYSTERIA/hysteria.service
-		sed -i "s%ip6tbin%${ip6t}%g" /etc/VPS-MX/HYSTERIA/hysteria.service
-		sed -i "s%iptb%${interfas}%g" /etc/VPS-MX/HYSTERIA/hysteria.service
-		
-install -Dm644 /etc/VPS-MX/HYSTERIA/hysteria.service /etc/systemd/system
-
-systemctl start hysteria &>/dev/null
-systemctl enable hysteria &>/dev/null
-rm -f /etc/VPS-MX/HYSTERIA/hysteria.service /etc/VPS-MX/HYSTERIA/udpmod*
-echo " IP : $(cat < /bin/ejecutar/IPcgh)" > /etc/VPS-MX/HYSTERIA/data
-echo " DOMINIO : ${domain}" >> /etc/VPS-MX/HYSTERIA/data
-echo " OBFS : ${OBFS}" >> /etc/VPS-MX/HYSTERIA/data
-echo " PUERTO : 36712" >> /etc/VPS-MX/HYSTERIA/data
-echo " ALPN : h3" >> /etc/VPS-MX/HYSTERIA/data
-echo " RANGO DE PUERTOS : 10000:65000" >> /etc/VPS-MX/HYSTERIA/data
-echo -e " \n 	Power By @drowkid01" >> /etc/VPS-MX/HYSTERIA/data
-msg -bar
+dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
+###########- COLOR CODE -##############
+colornow=$(cat /etc/yudhynetwork/theme/color.conf)
+NC="\e[0m"
+RED="\033[0;31m" 
+COLOR1="$(cat /etc/yudhynetwork/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
+COLBG1="$(cat /etc/yudhynetwork/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')" 
+WH='\033[1;37m'                   
+###########- LawNET -##########
+function delvmess(){
+    clear
+NUMBER_OF_CLIENTS=$(grep -c -E "^### " "/etc/xray/config.json")
+if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• DELETE XRAY USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}  • You Dont have any existing clients!"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
 echo ""
-echo " --- TUS DATOS DE SERVICIO SON ---"
-msg -bar
-figlet -p -f smslant Hysteria | lolcat
-msg -bar
-cat /etc/VPS-MX/HYSTERIA/data
-msg -bar
-enter
-[[ $(ps x | grep hysteria| grep -v grep) ]] && echo -e "$(msg -verd 'SERVICIO HYSTERIA INICIADO EXITOSAMENTE')" || echo -e "$(msg -verm2 'SERVICIO HYSTERIA NO INICIADO')"
-_menuH
-}
-
-_menuH(){
-clear&&clear
-msg -bar
-cat /etc/VPS-MX/HYSTERIA/data
-msg -bar
-unset op
-[[ $(cat /etc/VPS-MX/HYSTERIA/config.json | grep -w '//"alpn"') ]] && _ap='\033[0;31mOFF' || _ap='\033[0;32mON'
-menu_func "CAMBIAR PUERTO" "CAMBIAR OBFS" "ALPN (http injector)  \033[0;32m[ ${_ap}\033[0;32m ]" "REINICIAR SERVICIO" "\033[0;31mREMOVER SERVICIO"
-msg -bar
-  selecy=$(selection_fun 5)  
-case $selecy in
-1)
-clear&&clear
-unset _col
-msg -bar
-echo  -e "INGRESE EL NUEVO PUERTO DE SERVICIO "
-read -p " PUERTO : " _col
-#_PA=$(cat /etc/VPS-MX/HYSTERIA/config.json | grep -i listen |cut -d '"' -f4 |sed -e 's/[^0-9]//ig')
-_PA=$(cat /etc/VPS-MX/HYSTERIA/config.json |jq -r .listen |sed -e 's/[^0-9]//ig')
-  #sed -i "s%/bin/false%filemancgh%g" /etc/VPS-MX/HYSTERIA/config.json
-[[ ${_col} ]] && { 
-sed -i "s/${_PA}/${_col}/" /etc/VPS-MX/HYSTERIA/config.json 
-sed -i "s/${_PA}/${_col}/" /etc/VPS-MX/HYSTERIA/data
-systemctl restart hysteria &>/dev/null
-}
-  ;;
-  2)
-clear&&clear
-unset _col
-msg -bar
-echo  -e "INGRESE SU NUEVO OBFS "
-read -p " OBFS : " _col
-_obfs=$(cat /etc/VPS-MX/HYSTERIA/config.json |jq -r .obfs)
-  #sed -i "s%/bin/false%filemancgh%g" /etc/VPS-MX/HYSTERIA/config.json
-[[ ${_col} ]] && { 
-sed -i "s/${_obfs}/${_col}/" /etc/VPS-MX/HYSTERIA/config.json 
-sed -i "s/${_obfs}/${_col}/" /etc/VPS-MX/HYSTERIA/data
-systemctl restart hysteria &>/dev/null
-}
-;;
-3)
-clear&&clear
-[[ $(cat /etc/VPS-MX/HYSTERIA/config.json | grep -w '//"alpn"') ]] && { 
-sed -i '12d' /etc/VPS-MX/HYSTERIA/config.json 
-sed -i '12i\        "alpn": "h3",' /etc/VPS-MX/HYSTERIA/config.json 
-} || {
-sed -i '12d' /etc/VPS-MX/HYSTERIA/config.json 
-sed -i '12i\        //"alpn": "h3",' /etc/VPS-MX/HYSTERIA/config.json 
-}
-systemctl restart hysteria &>/dev/null
-;;
-4)
-clear&&clear
-unset _col
-msg -bar
-systemctl restart hysteria &>/dev/null
-;;
-5)
-clear&&clear
-rm -f /etc/VPS-MX/HYSTERIA/*
-systemctl disable hysteria &>/dev/null
-systemctl remove hysteria &>/dev/null
-rm -f /etc/systemd/system/hysteria.service
-systemctl stop hysteria &>/dev/null
-exit
-;;
-  esac  
-}
-
-_menuH2(){
-clear&&clear
-msg -bar
-cat /etc/VPS-MX/HYSTERIA/data.yaml
-msg -bar
-green "$APP_IMPORT_GUIDE"
-yellow "El URI de configuraci�n de Hysteria 2 (con salto de puerto) "
-red "$(cat /root/hy/url.txt)"
-yellow "El URI de configuraci�n de Hysteria 2 (sin salto de puerto) "
-red "$(cat /root/hy/url-nohop.txt)"
-msg -bar
-unset op
-[[ $(cat /etc/VPS-MX/HYSTERIA/config.yaml | grep -w '//"alpn"') ]] && _ap='\033[0;31mOFF' || _ap='\033[0;32mON'
-menu_func "CAMBIAR PUERTO" "CAMBIAR CONTRASE�A" "REINICIAR SERVICIO" "\033[0;31mREMOVER SERVICIO"
-msg -bar
-  selecy=$(selection_fun 5)  
-case $selecy in
-1)
-clear&&clear
-unset _col
-msg -bar
-    oldport=$(cat /etc/VPS-MX/HYSTERIA/config.yaml 2>/dev/null | sed -n 1p | awk '{print $2}' | awk -F ":" '{print $2}')    
-	echo  -e "INGRESE EL NUEVO PUERTO DE SERVICIO "
-	read -p "Puerto [1-65535] (Puerto Ramdom Enter): " port
-    [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
-    until [[ -z $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; do
-        if [[ -n $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; then
-            echo -e "${RED} $port ${PLAIN} Puerto Ocupado , Reintente Nuevamente!  "
-            read -p "Puerto [1-65535] (Puerto Ramdom Enter): " port
-            [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
-        fi
-    done
-    sed -i "1s#$oldport#$port#g" /etc/VPS-MX/HYSTERIA/config.yaml
-    sed -i "1s#$oldport#$port#g" /root/hy/hy-client.yaml
-    sed -i "2s#$oldport#$port#g" /root/hy/hy-client.json
-    sed -i "s#$oldport#$port#g" /root/hy/url.txt
-    stophysteria && starthysteria
-    green "Su puerto fue modificado Exitosamente : $port"
-    cat /root/hy/url.txt
-  ;;
-  2)
-clear&&clear
-unset _col
-msg -bar
-    oldpasswd=$(cat /etc/VPS-MX/HYSTERIA/config.yaml 2>/dev/null | sed -n 20p | awk '{print $2}')
-    oldobfs=$(cat /etc/VPS-MX/HYSTERIA/config.yaml 2>/dev/null | sed -n 10p | awk '{print $2}')
-	echo  -e "INGRESE SU NUEVA CLAVE/CONTRASE�A "
-    read -p " (Enter Clave RAMDON): " passwd
-    [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
-
-    sed -i "20s#$oldpasswd#$passwd#g" /etc/VPS-MX/HYSTERIA/config.yaml
-    sed -i "10s#$oldobfs#$passwd#g" /etc/VPS-MX/HYSTERIA/config.yaml
-    sed -i "3s#$oldpasswd#$passwd#g" /root/hy/hy-client.yaml
-    sed -i "9s#$oldobfs#$passwd#g" /root/hy/hy-client.yaml
-    sed -i "3s#$oldpasswd#$passwd#g" /root/hy/hy-client.json
-    sed -i "8s#$oldobfs#$passwd#g" /root/hy/hy-client.json
-    sed -i "s#$oldpasswd#$passwd#g" /root/hy/url.txt
-    sed -i "s#$oldobfs#$passwd#g" /root/hy/url.txt
-    stophysteria && starthysteria
-    green "Su nueva contrase�a $passwd se aplico Exitosamente"
-    cat /root/hy/url.txt
-;;
-3)
-stophysteria && starthysteria
-;;
-4)
-clear&&clear
-rm -f /etc/VPS-MX/HYSTERIA/*
-    systemctl stop hysteria-server.service >/dev/null 2>&1
-    systemctl disable hysteria-server.service >/dev/null 2>&1
-    rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-server@.service
-    rm -rf /bin/Hysteria2 /etc/hysteria /root/hy /root/hysteria.sh
-    rm -f /bin/Hysteria2
-    iptables -t nat -F PREROUTING >/dev/null 2>&1
-    netfilter-persistent save >/dev/null 2>&1
-exit
-;;
-  esac  
-}
-
-unset _So _Cu _HIS _HIS2
-while : 
-[[ $(ps x | grep -w 'udpServer'| grep -v grep) ]] && _So="$(msg -verd 'ON')" || _So="$(msg -verm2 'OFF')"
-[[ $(ps x | grep -w 'UDP-Custom'| grep -v grep) ]] && _Cu="$(msg -verd 'ON')" || _Cu="$(msg -verm2 'OFF')"
-[[ $(ps x | grep -w '/bin/hysteria' | grep -v grep) ]] && _HIS="$(msg -verd 'ON')" || _HIS="$(msg -verm2 'OFF')"
-[[ $(ps x | grep -w '/bin/Hysteria2'| grep -v grep) ]] && _HIS2="$(msg -verd 'ON')" || _HIS2="$(msg -verm2 'OFF')"
-_MSYS=" \n$(print_center "\033[0;35mUsuarios SSH del Sistema")"
-_MSYS2="\n$(print_center "\033[0;35mNO SOPORTA USERS DE SISTEMA")"
-
-do
-unset port
-clear
-msg -bar
-msg -tit
-msg -bar
-  #menu_func " UDP-REQUEST  SocksIP    \033[0;31m[${_So}\033[0;31m]${_MSYS}" "UDP-CUSTOM HTTPCustom \033[0;31m[${_Cu}\033[0;31m]${_MSYS}" "UDP-Hysteria APPMod's \033[0;31m[${_HIS}\033[0;31m] ${_MSYS}"
-  echo -e "\033[0;35m [${cor[2]}01\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-REQUEST  SocksIP         \033[0;31m[${_So}\033[0;31m] ${_MSYS}" 
-  echo -e "\033[0;35m [${cor[2]}02\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-CUSTOM HTTPCustom        \033[0;31m[${_Cu}\033[0;31m] ${_MSYS}" 
-  echo -e "\033[0;35m [${cor[2]}03\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-Hysteria APPMod's        \033[0;31m[${_HIS}\033[0;31m] ${_MSYS}"
-  echo -e "\033[0;35m [${cor[2]}04\033[0;35m]\033[0;33m ${flech}${cor[3]}UDP-Hysteria2 HTTP-Injector  \033[0;31m[${_HIS2}\033[0;31m] ${_MSYS2}"
-  msg -bar
-  echo -ne "$(msg -verd "  [0]") $(msg -verm2 "=>>") " && msg -bra "\033[1;41m Volver "
-  msg -bar
-  opcion=$(selection_fun 4)
-  case $opcion in
-  1) #source <(curl -sSL https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver.org.sh) && exit;;
-		clear
-		download_udpServer(){
-			msg -nama '        Descargando binario UDPserver ----'
-				if wget -O /usr/bin/udpServer 'https://bitbucket.org/iopmx/udprequestserver/downloads/udpServer' &>/dev/null ; then
-					chmod +x /usr/bin/udpServer
-					msg -verd 'OK'
-				else
-					msg -verm2 'fail'
-					rm -rf /usr/bin/udpServer*
-				fi
-		make_service
-		}
-		make_service(){
-				ip_nat=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}' | sed -n 1p)
-				interfas=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}'|grep "$ip_nat"|awk {'print $NF'})
-				ip_publica=$(grep -m 1 -oE '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' <<< "$(wget -T 10 -t 1 -4qO- "http://ip1.dynupdate.no-ip.com/" || curl -m 10 -4Ls "http://ip1.dynupdate.no-ip.com/")")
-				#ip_nat=$(fun_ip nat)
-				#interfas=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}'|grep "$ip_nat"|awk {'print $NF'})
-				#ip_publica=$(fun_ip)
-				msg -nama '        Ejecutando servicio UDPserver .....'
-				if screen -dmS UDPserver /usr/bin/udpServer -ip=$ip_publica -net=$interfas -mode=system &>/dev/null ; then
-					msg -verd 'OK'
-				else
-					msg -verm2 'fail'
-				fi
-		}
-		  reset_slow(){
-				  clear
-				  msg -bar
-				  msg -ama "        Reiniciando UDPserver...."
-					  screen -ls | grep UDPserver | cut -d. -f1 | awk '{print $1}' | xargs kill
-				  if screen -dmS UDPserver /usr/bin/udpServer -ip=$ip_publica -net=$interfas -mode=system ;then
-				  msg -verd "        Con exito!!!"    
-				  msg -bar
-				  else    
-				  msg -verm "        Con fallo!!!"    
-				  msg -bar
-				  fi
-				  read -p "ENTER PARA CONTINUAR"
-		  }
-		  stop_slow(){
-			  clear
-			  msg -bar
-			  msg -ama "        Deteniendo UDPserver...."
-				  if screen -ls | grep UDPserver | cut -d. -f1 | awk '{print $1}' | xargs kill ; then
-					  msg -verd "         Con exito!!!"   msg -bar
-				  else
-					  msg -verm "        Con fallo!!!"    msg -bar
-				  fi
-				  read -p "ENTER PARA CONTINUAR"
-		  }
-		  remove() {
-			  stop_slow
-			  rm -f /usr/bin/udpServer*
-		  }
-		  info() {
-			  msg -bar
-			  echo
-			  msg -ama "         INSTALADOR UDPserver | @drowkid01"
-			  echo
-			  msg -bar
-			  msg -ama "         SOURCE OFICIAL DE NewToolWorks"
-			  echo -e "      https://bitbucket.org/iopmx/udprequestserver/src/master/"
-			  msg -bar
-			  msg -ama "         URL DE APP OFICIAL "
-			  echo -e "https://play.google.com/store/apps/details?id=com.newtoolsworks.sockstunnel"
-			  msg -bar
-			  msg -ama "         CODIGO REFACTORIZADO POR @drowkid01"
-			  msg -bar
-				  read -p " PRESIONA ENTER PARA CONTINUAR"
-			  clear
-		  }
-		os_system
-  
-			while :
-			do
-		  [[ $(ps x | grep udpServer| grep -v grep) ]] && _pid="\033[1;32m[ON]" || _pid="\033[1;31m[OFF]"
-			msg -bar;msg -tit;msg -bar
-				  msg -ama "         BINARIO OFICIAL DE NewToolWorks"
-
-			[[ $(echo -e "${vercion}") < 20  ]] && {
-			msg -bar
-			echo -e "\e[1;31m  SISTEMA:  \e[33m$distro $vercion \e[17;31m	CPU:  \e[33m$(lscpu | grep "Vendor ID" | awk '{print $3}')" 
-			echo -e " "
-			echo -e "  UTILIZA LAS VARIANTES MENCIONADAS DENTRO DEL MENU "
-			echo ""
-			msg -ama "        SE RECOMIENDA USAR UBUNTU 20.04 "
-			echo ""
-			msg -ama "                  O SUPERIOR"
-			echo ""
-			echo -e "         [ ! ]  Power by @drowkid01  [ ! ]"
-			echo ""
-			msg -bar
-			read -p " PRESIONA ENTER PARA CONTINUAR"
-			return
-			}
-			  msg -bar
-			  msg -ama "         INSTALADOR UDPserver | @drowkid01"
-			  msg -bar
-			[[ $(uname -m 2> /dev/null) != x86_64 ]] && {
-				msg -ama "    BINARIO NO COMPATIBLE CON PLATAFORMAS ARM "
-				echo ""
-				echo -e "		[ ! ]  Power by @drowkid01  [ ! ]"
-				echo ""
-				msg -bar
-				read -p " PRESIONA ENTER PARA CONTINUAR"
-				return
-			}
-			
-			  menu_func "Instalar UDPserver $_pid" "$(msg -ama "Reiniciar UDPserver")" "$(msg -verm2 "Detener UDPserver")" "$(msg -verm2 "Remover UDPserver")" "$(msg -ama "Info de Proyecto")"
-			  msg -bar
-			  echo -ne "$(msg -verd "  [0]") $(msg -verm2 "=>>") " && msg -bra "\033[1;41m Volver "
-			  msg -bar
-			  opcion=$(selection_fun 6)  
-			  case $opcion in
-			  1)download_udpServer;;
-			  2)reset_slow;;
-			  3)stop_slow;;
-			  4)remove;;
-			  5)info;;
-			  0)exit;;
-			  esac  
-			done
-
-  ;;
-  2) #source <(curl -sSL https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/udp-custom.sh) && exit;;
-
-	clear
-	dir_user="/etc/adm-lite/userDIR"
-		pausa(){
-			echo -ne "\033[1;37m"
-			read -p " Presiona Enter para Continuar "
-		}
-		  info() {
-		  puerto=$1  
-		  msg -bar
-		  echo
-		  msg -ama "         INSTALADOR UDPserver | @drowkid01"
-		  echo 
-		  msg -bar
-		  msg -ama "         SOURCE OFICIAL DE Epro Dev Team"
-		  echo -e "             https://t.me/ePro_Dev_Team"
-		  msg -bar
-		  msg -ama "         CODIGO REFACTORIZADO POR @drowkid01"
-		  [[ -z ${puerto} ]] || add.user ${puerto}
-		  pausa
-		  clear
-		  }
-		cd
-
-echo -e " BY ";echo -e " Power by @drowkid01"
-	make_service(){
-		if [ -z "$1" ]; then
-cat <<EOF > /etc/systemd/system/udp-custom.service
-[Unit]
-Description=udp-custom by ePro Dev. Team
-
-[Service]
-User=root
-Type=simple
-ExecStart=/bin/UDP-Custom server --config /etc/adm-lite/config.json
-WorkingDirectory=/etc/adm-lite/
-Restart=always
-RestartSec=2s
-
-[Install]
-WantedBy=default.target
-EOF
-		else
-cat <<EOF > /etc/systemd/system/udp-custom.service
-[Unit]
-Description=udp-custom by ePro Dev. Team
-
-[Service]
-User=root
-Type=simple
-ExecStart=/bin/UDP-Custom server -exclude $1 --config /etc/adm-lite/config.json
-WorkingDirectory=/etc/adm-lite/
-Restart=always
-RestartSec=2s
-
-[Install]
-WantedBy=default.target
-EOF
-		fi
-		systemctl start udp-custom &>/dev/null
-			msg -nama '        Habilitando servicio UDPserver ------'
-			if systemctl enable udp-custom &>/dev/null &>/dev/null ; then
-				msg -verd 'OK'
-				#_mssBOT "ACTIVADO!!"
-			else
-				msg -verm2 'fail'
-				#_mssBOT " FALLIDO!!"
-			fi
-			msg -nama '         Iniciando servicio UDPserver -------'
-			if systemctl start udp-custom &>/dev/null &>/dev/null &>/dev/null ; then
-				msg -verd 'OK'
-				#_mssBOT "ACTIVADO!!"
-			else
-				msg -verm2 'fail'
-				#_mssBOT " FALLIDO!!"
-			fi
-		msg -bar
-			while true; do
-				msg -nama '         Digita un Puerto para el Servicio de\n'
-				msg -nama '              Prederteminado ( ENTER )\n'
-				    read -p "                   UDP-Custom: " udpPORT
-			tput cuu1 >&2 && tput dl1 >&2
-				checkPORT=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w $udpPORT`
-			[[ -n "$checkPORT" ]] || break
-			    prococup=`netstat -tlpn | awk -F '[: ]+' '$5=="$udpPORT"{print $9}'`
-			    echo -e "\033[1;33m  EL PUERTO SE ENCUENTRA OCUPADO POR $prococup"
-				msg -bar
-				return
-			    done
-				tput cuu1 >&2 && tput dl1 >&2
-				tput cuu1 >&2 && tput dl1 >&2
-				tput cuu1 >&2 && tput dl1 >&2
-			[[ -z ${udpPORT} ]] && udpPORT='36712'
-			msg -nama '         Iniciando servicio UDPserver -------'
-			if  sed -i "s/36712/${udpPORT}/" /etc/adm-lite/config.json ; then
-					msg -verd 'OK'
-			else
-					msg -verm2 'fail'
-			fi
-			reset_slow
-		port=$(lsof -V -i UDP -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND"|grep -E 'UDP-Custom'| cut -d ":" -f2)	
-				tput cuu1 >&2 && tput dl1 >&2;tput cuu1 >&2 && tput dl1 >&2;tput cuu1 >&2 && tput dl1 >&2;tput cuu1 >&2 && tput dl1 >&2;tput cuu1 >&2 && tput dl1 >&2
-		add.user ${port}
-			#iptables -t nat -F &>/dev/null
-			#iptables -t mangle -F &>/dev/null
-				#iptables -X &>/dev/null
-			#iptables -P INPUT ACCEPT &>/dev/null
-				#iptables -P FORWARD ACCEPT &>/dev/null
-			#iptables -P OUTPUT ACCEPT &>/dev/null
-		pausa	
-	}
-
-download_udpServer(){
-	msg -nama '     Descargando binario UDPserver V 1.2 ----'
-[[ $(uname -m 2> /dev/null) != x86_64 ]] && {
-	if wget -O /bin/UDP-Custom 'https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/binarios/UDP/udp-arm64.bin' &>/dev/null ; then
-		chmod +x /bin/UDP-Custom
-		msg -verd ' ARM64 - OK'
-	else
-		msg -verm2 'fail'
-		rm -rf /bin/UDP-Custom*
-	fi
-} || {
-	if wget -O /bin/UDP-Custom 'https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/binarios/UDP/udp-amd64.bin' &>/dev/null ; then
-		chmod +x /bin/UDP-Custom
-		msg -verd ' X64 OK'
-	else
-		msg -verm2 'fail'
-		rm -rf /bin/UDP-Custom*
-fi	
-}
-	msg -nama '         Descargando Config UDPserver -------'
-	if wget -O /etc/adm-lite/config.json 'https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/binarios/UDP/config.json' &>/dev/null ; then
-		chmod 644 /etc/adm-lite/config.json
-		msg -verd 'OK'
-	else
-		msg -verm2 'fail'
-		rm -f /etc/adm-lite/config.json*
-	fi
-#chekKEY &> /dev/null 2>&1	
-make_service
-}
-
-
-  reset_slow(){
-  msg -bar
-  msg -ama "        Reiniciando UDPserver...."
-  #screen -ls | grep udp-custom | cut -d. -f1 | awk '{print $1}' | xargs kill
-  if systemctl restart udp-custom &>/dev/null ;then
-  msg -verd "        Con exito!!!"    
-  msg -bar
-  else    
-  msg -verm "        Con fallo!!!"    
-  msg -bar
-  fi
-  pausa
-  }  
-  
-  stop_slow(){
-  clear
-  msg -bar
-  msg -ama "        Deteniendo UDPserver...."
-  if systemctl stop udp-custom ; then
-  msg -verd "         Con exito!!!"   msg -bar
-  else
-  msg -verm "        Con fallo!!!"    msg -bar
-  fi
-  pausa
-  }    
-  
-  remove() {
-  stop_slow
-  systemctl disable udp-custom
-  rm -f /etc/systemd/system/udp-custom.service
-  rm -f /bin/UDP-Custom*
-  rm -f /etc/ADMcgh/config*
-  rm -rf /root/udp
-	iptables -t nat -F &>/dev/null
-	iptables -t mangle -F &>/dev/null
-	iptables -X &>/dev/null
-	iptables -P INPUT ACCEPT &>/dev/null
-	iptables -P FORWARD ACCEPT &>/dev/null
-	iptables -P OUTPUT ACCEPT &>/dev/null
-  #_mssBOT "REMOVIDO!!"
-  }
-
- add.user () {
- port=$1
- user='ChuKK'
- clave='adm'
- #$(cat /etc/ADMcgh/config.json | grep user | cut -d '"' -f4)
- #user=$(cat /etc/ADMcgh/config.json | jq .user)
- #clave=$(cat /etc/ADMcgh/config.json | jq .auth.pass[])
-valid=$(date '+%C%y-%m-%d' -d " +2 days") 
-if useradd -M -s /bin/false $user -e $valid ; then
-(echo $clave; echo $clave)|passwd $user >/dev/null 2>&1 &
-echo "senha: $clave" > $dir_user/$user
-echo "limite: 2" >> $dir_user/$user
-echo "data: $valid" >> $dir_user/$user
-msg -verd " USER : ChuKK  | DEMOSTRACION AGREGADO!!!"    
-else 
-echo -e "${cor[5]} ⚠️ Usuario DEMO ya Existe ⚠️"
-msg -verm " USER : ChuKK | No Agregado!!!"    
+read -n 1 -s -r -p "   Press any key to back on menu"
+menu-vmess
 fi
- msg -bar
- echo
- msg -bar
- echo -e "      ESTO ES UNA GUIA DEL FORMATO DEL USUARIO"
- echo -e "         VE AL MENU DE USUARIOS Y CREA UNO"
- msg -bar
- echo
- echo -e "【 CONFIG >${cor[4]} $(wget -qO- ifconfig.me)${cor[2]}:${cor[5]}1-65535${cor[2]}@${cor[4]}$user${cor[2]}:${cor[4]}${clave}   】" | pv -qL 80
- echo 
- msg -bar
- msg -ama "        RECUERDA CREAR TUS USUARIOS SSH NORMAL"
- msg -bar
- }
- 
- edit_json() {
- msg -bar
- msg -ama "        PARA EDITAR EL USUARIO EDITA"
- msg -ama "            /etc/adm-lite/config.json"
- msg -bar
-echo -e "\033[1;37m Para Salir Ctrl + C o 0 Para Regresar\033[1;33m"
-echo -e " \033[1;31m[ !!! ]\033[1;33m EDITA LAS CREDENCIALES   \033[1;31m\033[1;33m"
-msg -bar
-echo -e " \033[1;31mLuego de Editar..  Presiona Ctrl + O y Enter \033[1;33m \033[1;31m\033[1;33m"
-echo -e " \033[1;31m          Por Ultimo Ctrl + X  \033[1;33m \033[1;31m\033[1;33m"
-pausa
-nano /etc/adm-lite/config.json
-reset_slow
- }
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• DELETE XRAY USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+grep -E "^### " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | column -t | sort | uniq | nl
+echo -e "$COLOR1 ${NC}"
+echo -e "$COLOR1 ${NC}  • ${WH}[${COLOR1}NOTE${WH}] ${WH}Press any key to back on menu${NC}"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1───────────────────────────────────────────────────${NC}"
+read -rp "   Input Username : " user
+if [ -z $user ]; then
+menu-vmess
+else
+exp=$(grep -wE "^### $user" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
+sed -i "/^### $user $exp/,/^},{/d" /etc/xray/config.json
+systemctl restart xray > /dev/null 2>&1
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• DELETE XRAY USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}   • Accound Delete Successfully"
+echo -e "$COLOR1 ${NC}"
+echo -e "$COLOR1 ${NC}   • Client Name : $user"
+echo -e "$COLOR1 ${NC}   • Expired On  : $exp"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo ""
+read -n 1 -s -r -p "   Press any key to back on menu"
+menu-vmess
+fi
+}
+function renewvmess(){
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• RENEW VMESS USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+NUMBER_OF_CLIENTS=$(grep -c -E "^### " "/etc/xray/config.json")
+if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
+echo -e "$COLOR1 ${NC}  • You have no existing clients!"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo ""
+read -n 1 -s -r -p "   Press any key to back on menu"
+menu-vmess
+fi
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• RENEW VMESS USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+grep -E "^### " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | column -t | sort | uniq | nl
+echo -e "$COLOR1 ${NC}"
+echo -e "$COLOR1 ${NC}  ${COLOR1}• ${WH}[${COLOR1}NOTE${WH}] Press any key to back on menu"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1───────────────────────────────────────────────────${NC}"
+read -rp "   Input Username : " user
+if [ -z $user ]; then
+menu-vmess
+else
+read -p "   Expired (days): " masaaktif
+if [ -z $masaaktif ]; then
+masaaktif="1"
+fi
+exp=$(grep -E "^### $user" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
+now=$(date +%Y-%m-%d)
+d1=$(date -d "$exp" +%s)
+d2=$(date -d "$now" +%s)
+exp2=$(( (d1 - d2) / 86400 ))
+exp3=$(($exp2 + $masaaktif))
+exp4=`date -d "$exp3 days" +"%Y-%m-%d"`
+sed -i "/### $user/c\### $user $exp4" /etc/xray/config.json
+systemctl restart xray > /dev/null 2>&1
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• RENEW VMESS USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}   [INFO]  $user Account Renewed Successfully"
+echo -e "$COLOR1 ${NC}   "
+echo -e "$COLOR1 ${NC}   Client Name : $user"
+echo -e "$COLOR1 ${NC}   Days Added  : $masaaktif Days"
+echo -e "$COLOR1 ${NC}   Expired On  : $exp4"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo ""
+read -n 1 -s -r -p "   Press any key to back on menu"
+menu-vmess
+fi
+}
 
-		while : 
-		do
-unset port
-  tittle
-  msg -ama "      BINARIO OFICIAL DE Epro Dev Team 1.2"
-  msg -bar
-  [[ $(ps x | grep UDP-Custom| grep -v grep) ]] && {
-    _pid="\033[1;32m[ ON ]" 
-  port=$(lsof -V -i UDP -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND"|grep -E 'UDP-Custo'| cut -d ":" -f2)
-  msg -ama "      PUERTO EN EJECUCION DE UDPserver : ${port}"
-  msg -bar
-  } || _pid="\033[1;31m[ OFF ]"
-  msg -ama "         INSTALADOR UDPserver | @drowkid01"
-  msg -bar
-  menu_func "Instalar UDPserver $_pid" "$(msg -ama "Reiniciar UDPserver")" "$(msg -verm2 "Detener UDPserver")" "$(msg -verm2 "Remover UDPserver")" "$(msg -ama "Info de Proyecto")"
-  msg -bar
-  echo -ne "$(msg -verd "  [0]") $(msg -verm2 "=>>") " && msg -bra "\033[1;41m Volver "
-  msg -bar
-  opcion=$(selection_fun 5)  
-		  case $opcion in
-			  1)download_udpServer;;
-			  #2)edit_json;;
-			  2)reset_slow;;
-			  3)stop_slow;;
-			  4)remove;;
-			  5)info ${port};;
-			  0)exit;;
-		  esac  
-		done
+function cekvmess(){
+clear
+echo -n > /tmp/other.txt
+data=( `cat /etc/xray/config.json | grep '^###' | cut -d ' ' -f 2 | sort | uniq`);
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}            ${WH}• VMESS USER ONLINE •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
 
-  ;;
- 3) [[ $(ps x | grep -w "/bin/hysteria"| grep -v grep) ]] && _menuH || _hysteria ;;
- 4) [[ $(ps x | grep -w "/bin/Hysteria2"| grep -v grep) ]] && _menuH2 || _hysteria2 ;;
- 0) exit;;
- esac  
+for akun in "${data[@]}"
+do
+if [[ -z "$akun" ]]; then
+akun="tidakada"
+fi
+
+echo -n > /tmp/ipvmess.txt
+data2=( `cat /var/log/xray/access.log | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq`);
+for ip in "${data2[@]}"
+do
+
+jum=$(cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | grep -w "$ip" | sort | uniq)
+if [[ "$jum" = "$ip" ]]; then
+echo "$jum" >> /tmp/ipvmess.txt
+else
+echo "$ip" >> /tmp/other.txt
+fi
+jum2=$(cat /tmp/ipvmess.txt)
+sed -i "/$jum2/d" /tmp/other.txt > /dev/null 2>&1
 done
 
-pruebas(){
+jum=$(cat /tmp/ipvmess.txt)
+if [[ -z "$jum" ]]; then
+echo > /dev/null
+else
+jum2=$(cat /tmp/ipvmess.txt | nl)
+echo -e "  ${COLOR1}${NC}user: $akun";
+echo -e "$COLOR1${NC}$jum2";
+fi
+rm -rf /tmp/ipvmess.txt
+done
 
-echo '[Unit]
-Description=HysteriaUDP MOD Service BY @drowkid01
-After=network.target
-
-[Service]
-User=root
-Group=root'	> /etc/VPS-MX/HYSTERIA/hysteria.service
-echo "ExecStartPost=${sys} net.ipv4.ip_forward=1
-ExecStartPost=${sys} net.ipv4.conf.all.rp_filter=0
-ExecStartPost=${sys} net.ipv4.conf.${interfas}.rp_filter=0
-ExecStartPost=${ip4t} -t nat -A PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712
-ExecStartPost=${ip6t} -t nat -A PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712
-ExecStopPost=${ip4t} -t nat -D PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712
-ExecStopPost=${ip6t} -t nat -D PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712" >> /etc/VPS-MX/HYSTERIA/hysteria.service
-
-echo 'WorkingDirectory=/etc/VPS-MX/HYSTERIA
-Environment="PATH=/etc/VPS-MX/HYSTERIA"
-ExecStart=/bin/hysteria -config /etc/VPS-MX/HYSTERIA/config.json server
-
-[Install]
-WantedBy=multi-user.target
-' >> /etc/VPS-MX/HYSTERIA/hysteria.service
-		
+rm -rf /tmp/other.txt
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo ""
+read -n 1 -s -r -p "   Press any key to back on menu"
+menu-vmess
 }
+
+function addvmess(){
+clear
+source /var/lib/yudhynetwork-pro/ipvps.conf
+domain=$(cat /etc/xray/domain)
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}            ${WH}• CREATE VMESS USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+tls="$(cat ~/log-install.txt | grep -w "Xray Vmess Ws Tls" | cut -d: -f2|sed 's/ //g')"
+none="$(cat ~/log-install.txt | grep -w "Xray Vmess Ws None Tls" | cut -d: -f2|sed 's/ //g')"
+until [[ $user =~ ^[a-zA-Z0-9_]+$ && ${CLIENT_EXISTS} == '0' ]]; do
+
+read -rp "   Input Username : " -e user
+      
+if [ -z $user ]; then
+echo -e "$COLOR1 ${NC} [Error] Username cannot be empty "
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo ""
+read -n 1 -s -r -p "   Press any key to back on menu"
+menu
+fi
+		CLIENT_EXISTS=$(grep -w $user /etc/xray/config.json | wc -l)
+
+		if [[ ${CLIENT_EXISTS} == '1' ]]; then
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}            ${WH}• CREATE VMESS USER •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${WH}Please choose another name.${NC}"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" 
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+			read -n 1 -s -r -p "   Press any key to back on menu"
+menu
+		fi
+	done
+
+#uuid=$(cat /proc/sys/kernel/random/uuid)
+read -p " Silakan atur kata sandi (dibuat secara acak jika Anda tidak Mengisi Pasword) :" uuid
+    [[ -z "$uuid" ]] && uuid=`cat /proc/sys/kernel/random/uuid`
+    
+read -p "   Expired (days): " masaaktif
+exp=`date -d "$masaaktif days" +"%Y-%m-%d"`
+sed -i '/#vmess$/a\### '"$user $exp"'\
+},{"id": "'""$uuid""'","alterId": '"0"',"email": "'""$user""'"' /etc/xray/config.json
+exp=`date -d "$masaaktif days" +"%Y-%m-%d"`
+sed -i '/#vmessgrpc$/a\### '"$user $exp"'\
+},{"id": "'""$uuid""'","alterId": '"0"',"email": "'""$user""'"' /etc/xray/config.json
+asu=`cat<<EOF
+      {
+      "v": "2",
+      "ps": "${user}",
+      "add": "${domain}",
+      "port": "443",
+      "id": "${uuid}",
+      "aid": "0",
+      "net": "ws",
+      "path": "/vmess",
+      "type": "none",
+      "host": "",
+      "tls": "tls"
+}
+EOF`
+ask=`cat<<EOF
+      {
+      "v": "2",
+      "ps": "${user}",
+      "add": "${domain}",
+      "port": "80",
+      "id": "${uuid}",
+      "aid": "0",
+      "net": "ws",
+      "path": "/vmess",
+      "type": "none",
+      "host": "",
+      "tls": "none"
+}
+EOF`
+grpc=`cat<<EOF
+      {
+      "v": "2",
+      "ps": "${user}",
+      "add": "${domain}",
+      "port": "443",
+      "id": "${uuid}",
+      "aid": "0",
+      "net": "grpc",
+      "path": "vmess-grpc",
+      "type": "none",
+      "host": "",
+      "tls": "tls"
+}
+EOF`
+vmess_base641=$( base64 -w 0 <<< $vmess_json1)
+vmess_base642=$( base64 -w 0 <<< $vmess_json2)
+vmess_base643=$( base64 -w 0 <<< $vmess_json3)
+vmess_base644=$( base64 -w 0 <<< $vmess_json4)
+vmess_base645=$( base64 -w 0 <<< $vmess_json5)
+vmess_base646=$( base64 -w 0 <<< $vmess_json6)
+vmess_base647=$( base64 -w 0 <<< $vmess_json7)
+vmess_base648=$( base64 -w 0 <<< $vmess_json8)
+vmess_base649=$( base64 -w 0 <<< $vmess_json9)
+vmess_base650=$( base64 -w 0 <<< $vmess_json10)
+vmesslink1="vmess://$(echo $asu | base64 -w 0)"
+vmesslink2="vmess://$(echo $ask | base64 -w 0)"
+vmesslink3="vmess://$(echo $grpc | base64 -w 0)"
+
+systemctl restart xray > /dev/null 2>&1
+service cron restart > /dev/null 2>&1
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${COLBG1}            ${WH}• CREATE VMESS USER •              ${NC} $COLOR1 $NC" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Remarks       ${COLOR1}: ${WH}${user}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Expired On    ${COLOR1}: ${WH}$exp"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Domain        ${COLOR1}: ${WH}${domain}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Port TLS      ${COLOR1}: ${WH}${tls}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Port none TLS ${COLOR1}: ${WH}${none}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Port  GRPC    ${COLOR1}: ${WH}${tls}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}id            ${COLOR1}: ${WH}${uuid}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}alterId       ${COLOR1}: ${WH}0"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Security      ${COLOR1}: ${WH}auto"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Network       ${COLOR1}: ${WH}ws"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}Path          ${COLOR1}: ${WH}/vmess-(custom path) " | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}ServiceName   ${COLOR1}: ${WH}vmess-grpc"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${COLOR1}Link Websocket TLS      ${WH}:${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}${vmesslink1}${NC}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1──────────────────────────────────────────────────${NC}" | tee -a /etc/log-create-user.log 
+echo -e "$COLOR1 ${NC} ${COLOR1}Link Websocket None TLS ${WH}: ${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}${vmesslink2}${NC}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1──────────────────────────────────────────────────${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${COLOR1}Link Websocket GRPC     ${WH}: ${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC} ${WH}${vmesslink3}${NC}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1──────────────────────────────────────────────────${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"  | tee -a /etc/log-create-user.log
+echo -e "$COLOR1┌────────────────────── BY ───────────────────────┐${NC}" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC" | tee -a /etc/log-create-user.log
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}" | tee -a /etc/log-create-user.log
+echo "" | tee -a /etc/log-create-user.log
+
+read -n 1 -s -r -p "   Press any key to back on menu" | tee -a /etc/log-create-user.log
+menu-vmess
+}
+
+
+clear
+echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC} ${COLBG1}             ${WH}• VMESS PANEL MENU •              ${NC} $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e " $COLOR1┌───────────────────────────────────────────────┐${NC}"
+echo -e " $COLOR1 $NC   ${WH}[${COLOR1}01${WH}]${NC} ${COLOR1}• ${WH}ADD VMESS${NC}      ${WH}[${COLOR1}03${WH}]${NC} ${COLOR1}• ${WH}DELETE VMESS${NC}   $COLOR1 $NC"
+echo -e " $COLOR1 $NC   ${WH}[${COLOR1}02${WH}]${NC} ${COLOR1}• ${WH}RENEW VMESS${NC}    ${WH}[${COLOR1}04${WH}]${NC} ${COLOR1}• ${WH}USER ONLINE${NC}    $COLOR1 $NC"
+echo -e " $COLOR1 $NC                                              ${NC} $COLOR1 $NC"
+echo -e " $COLOR1 $NC   ${WH}[${COLOR1}00${WH}]${NC} ${COLOR1}• ${WH}GO BACK${NC}                              $COLOR1 $NC"
+echo -e " $COLOR1└───────────────────────────────────────────────┘${NC}"
+echo -e "$COLOR1┌────────────────────── ${WH}BY${NC} ${COLOR1}───────────────────────┐${NC}"
+echo -e "$COLOR1 ${NC}                 ${WH}• LawNetwork •${NC}                 $COLOR1 $NC"
+echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -ne " ${WH}Select menu ${COLOR1}: ${WH}"; read opt
+case $opt in
+01 | 1) clear ; addvmess ;;
+02 | 2) clear ; renewvmess ;;
+03 | 3) clear ; delvmess ;;
+04 | 4) clear ; cekvmess ;;
+00 | 0) clear ; menu ;;
+*) clear ; menu-vmess ;;
+esac
+
+
+       
