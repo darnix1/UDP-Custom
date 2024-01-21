@@ -131,7 +131,7 @@ done
 echo -e " $full_in $full_en"
 sleep 0.1s
 }
-fun_barin () {
+fun_bar () {
     # Comando a ejecutar
     comando="$1"
 
@@ -140,16 +140,16 @@ fun_barin () {
     en=' ] '
     full_in="➛"
     full_en='100%'
-    circle_colors=("🔴" "🟠" "🟡" "🟢" "🔵" "🟣")
+    colors=("31" "33" "32" "34" "36" "35")  # Códigos de colores ANSI
     
     _=$($comando > /dev/null 2>&1) & > /dev/null
     pid=$!
     
     while [[ -d /proc/$pid ]]; do
-        for color in "${circle_colors[@]}"; do
+        for color_code in "${colors[@]}"; do
             echo -ne "\r $in"
             echo -ne "ESPERE $en $full_in $full_en"
-            echo -ne " $color"
+            echo -ne " \033[1;${color_code}m⬤\033[0m"
             echo -ne " $en"
             sleep 0.1
         done
