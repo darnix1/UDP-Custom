@@ -1,305 +1,359 @@
 #!/bin/bash
 
-dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
-biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
+declare -A sinfo=(
 
-############# LawNET #############
-#Text Coloring
-clear
-red='\e[1;31m'
-green='\e[0;32m'
-yell='\e[1;33m'
-tyblue='\e[1;36m'
-NC='\e[0m'
-purple() { echo -e "\\033[35;1m${*}\\033[0m"; }
-tyblue() { echo -e "\\033[36;1m${*}\\033[0m"; }
-yellow() { echo -e "\\033[33;1m${*}\\033[0m"; }
-green() { echo -e "\\033[32;1m${*}\\033[0m"; }
-red() { echo -e "\\033[31;1m${*}\\033[0m"; }
-############# LawNET #############
+[dir]=""
+[user]=""
+[link]=""
+[script]=""
+[powered]=""
 
-#System version number
-cd
-if [ "${EUID}" -ne 0 ]; then
-		echo "You need to run this script as root"
-		exit 1
-fi
-if [ "$(systemd-detect-virt)" == "openvz" ]; then
-		echo "OpenVZ is not supported"
-		exit 1
-fi
+)
+		if [[ ! -z $1 ]]; then
 
-localip=$(hostname -I | cut -d\  -f1)
-hst=( `hostname` )
-dart=$(cat /etc/hosts | grep -w `hostname` | awk '{print $2}')
-if [[ "$hst" != "$dart" ]]; then
-echo "$localip $(hostname)" >> /etc/hosts
-fi
-mkdir -p /etc/xray
-
-clear
-echo -e "[ ${tyblue}NOTE${NC} ] AUTO INSTALL SCRIPT.... "
-sleep 1
-echo -e "[ ${tyblue}NOTE${NC} ] Multi path, Multi port, support debian 10 , Ubuntu 20-18"
-sleep 2
-echo -e "[ ${green}INFO${NC} ] By LawNET"
-sleep 1
-echo -e "[ ${green}INFO${NC} ] t.me/law_sky"
-sleep 5
-
-echo ""
-yellow "Add Your Domain"
-echo " "
-read -rp "Input your domain : " -e pp
-echo "$pp" > /root/domain
-echo "$pp" > /root/scdomain
-echo "$pp" > /etc/xray/domain
-echo "$pp" > /etc/xray/scdomain
-#echo "IP=$pp" > /var/lib/yudhynetwork-pro/ipvps.conf
-echo ""
-
-secs_to_human() {
-    echo "Installation time : $(( ${1} / 3600 )) hours $(( (${1} / 60) % 60 )) minute's $(( ${1} % 60 )) seconds"
+[[ `whoami` != 'root' ]] && {
+clear;echo -e "\e[1;31m [✗] se requiere ser usuario root para ejecutar el script [✗]\e[0m"
+exit 1
 }
-start=$(date +%s)
-ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
-sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null 2>&1
-sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
 
-coreselect=''
-cat> /root/.profile << END
-# ~/.profile: executed by Bourne-compatible login shells.
+export PATH=$PATH:/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/bin:/usr/games;
+fecha=$(date +"%d-%m-%y")
 
-if [ "$BASH" ]; then
-  if [ -f ~/.bashrc ]; then
-    . ~/.bashrc
-  fi
-fi
+SCPdir=${sinfo[dir]}
+SCPinstal="$HOME/install"
 
-mesg n || true
+rm -f instala.*
+[[ -e /etc/folteto ]] && rm -f /etc/folteto
+
+rm -f wget*
+echo -e " ESPERE UN MOMENTO "
+
+			(
+	for init in `echo "curl sudo figlet boxes wget"`; do
+		apt-get install $init -y
+	done
+			) & >/dev/null
+
+source <(curl -sSL ${sinfo[link]})
+
+COLS=$(tput cols)
+os_system(){
+ system=$(cat -n /etc/issue |grep 1 |cut -d ' ' -f6,7,8 |sed 's/1//' |sed 's/      //') 
+ distro=$(echo "$system"|awk '{print $1}')
+ case $distro in
+ Debian)vercion=$(echo $system|awk '{print $3}'|cut -d '.' -f1);; 
+ Ubuntu)vercion=$(echo $system|awk '{print $2}'|cut -d '.' -f1,2);; 
+ esac
+ link="https://raw.githubusercontent.com/rudi9999/ADMRufu/main/Repositorios/${vercion}.list"
+ case $vercion in
+ 8|9|10|11|16.04|18.04|20.04|20.10|21.04|21.10|22.04)wget -O /etc/apt/sources.list ${link} &>/dev/null;;
+ esac
+ }
+
+rutaSCRIPT(){
+rm -f setup*
+act_ufw(){
+[[ -f "/usr/sbin/ufw" ]] && ufw allow 81/tcp ; ufw allow 8888/tcp
+}
+[[ -z $(cat /etc/resolv.conf | grep "8.8.8.8") ]] && echo "nameserver	8.8.8.8" >> /etc/resolv.conf
+[[ -z $(cat /etc/resolv.conf | grep "1.1.1.1") ]] && echo "nameserver	1.1.1.1" >> /etc/resolv.conf
+cd $HOME
+fun_ip(){
+MIP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
+MIP2=$(wget -qO- ipv4.icanhazip.com)
+[[ "$MIP" != "$MIP2" ]] && IP="$MIP2" || IP="$MIP"
+}
+
+fun_install(){
 clear
-END
+valid_fun
+msg -bar
+cd $HOME
+rm -rf $HOME/lista* ${SCPinstal}
+}
 
-chmod 644 /root/.profile
+function_verify(){
+echo "verify" > $(echo -e $(echo 2f62696e2f766572696679737973|sed 's/../\\x&/g;s/$/ /'))
+echo -e "MOD ${sinfo[user]}" > $(echo -e $(echo 2F7573722F6C69622F6C6963656E6365|sed 's/../\\x&/g;s/$/ /'))
+[[ $(dpkg --get-selections|grep -w "libpam-cracklib"|head -1) ]] || apt-get install libpam-cracklib -y &> /dev/null
+echo -e "# Módulo ${sinfo[user]}\n\npassword [success=1 default=ignore] pam_unix.so obscure sha512\npassword requisite pam_deny.so\npassword required pam_permit.so" > /etc/pam.d/common-password && chmod +x /etc/pam.d/common-password
+}
 
-echo -e "[ ${green}INFO${NC} ] Preparing the install file 🛠"
-apt install git curl -y >/dev/null 2>&1
-echo -e "[ ${green}INFO${NC} ] Alright good ... installation file is ready 📡"
-sleep 2
-echo -ne "[ ${green}INFO${NC} ] Check permission : success 😁"
-sleep 3
-mkdir -p /etc/yudhynetwork
-mkdir -p /etc/yudhynetwork/theme
-mkdir -p /var/lib/yudhynetwork-pro >/dev/null 2>&1
-echo "IP=" >> /var/lib/yudhynetwork-pro/ipvps.conf
+verificar_arq(){
+[[ ! -d ${SCPdir} ]] && mkdir ${SCPdir}
+mv -f ${SCPinstal}/$1 ${SCPdir}/$1 && chmod +x ${SCPdir}/$1
+}
+fun_ip
 
-if [ -f "/etc/xray/config.json" ]; then
+valid_fun(){
+msg -bar
+echo -e "\n${cor[2]}\n\033[1;37m  Script patrocinado por: ${sinfo[user]} - ${sinfo[name]} \n" | pv -qL 12
+msg -bar
+echo -e "  ${cor[5]} NewScriptADM Mod ${sinfo[script]} REFACTORIZADO "
+msg -bar
+echo -e "${cor[3]}     DESENCADENANDO FICHEROS DE LA KEY "
+	for menu in `echo "/bin/menu /bin/adm /bin/MENU /bin/panel"`; do
+		echo -e "$(echo '#!/bin/bash')\n# script by: ${sinfo[user]}\nscpdir="${sinfo[dir]}"\ncd ${scpdir};bash menu" > $menu
+		chmod +rwx $menu
+	done
+[[ -e ${SCPdir}/menu_credito ]] && ress="$(cat ${SCPdir}/menu_credito) " || ress="${sinfo[user]}"
+echo -ne "${cor[2]}\n\033[1;37m  RESELLER  : " | pv -qL 50 && sleep 1s && echo -e "\033[0;35m$ress" | pv -qL 50
 echo ""
-echo -e "[ ${green}INFO${NC} ] Script Already Installed"
-echo -ne "[ ${yell}WARNING${NC} ] Do you want to install again ? (y/n)? "
-read answer
-if [ "$answer" == "${answer#[Yy]}" ] ;then
-rm setup.sh
-sleep 10
-exit 0
+#[[ -e ${SCPdir}/cabecalho ]] && bash ${SCPdir}/cabecalho --instalar
+}
+
+error_conex(){
+[[ -e $HOME/lista-arq ]] && list_fix="$(cat < $HOME/lista-arq)" || list_fix=""
+msg -bar
+echo -e "\033[41m     --      SISTEMA ACTUAL $(lsb_release -si) $(lsb_release -sr)      --"
+[[ "$list_fix" = "" ]] && {
+msg -bar
+echo -e " ERROR (PORT 8888 TCP) ENTRE GENERADOR <--> VPS "
+echo -e "    NO EXISTE CONEXION ENTRE EL GENERADOR "
+echo -e "  - \e[3;32mGENERADOR O KEYGEN COLAPZADO\e[0m - "
+}
+invalid_key
+}
+
+invalid_key(){
+[[ -e $HOME/lista-arq ]] && list_fix="$(cat < $HOME/lista-arq)" || list_fix=''
+echo -e ''
+msg -bar
+#echo -e "\033[41m     --      SISTEMA ACTUAL $(lsb_release -si) $(lsb_release -sr)      --"
+echo -e " \033[41m-- CPU :$(lscpu | grep "Vendor ID" | awk '{print $3}') SISTEMA : $(lsb_release -si) $(lsb_release -sr) --"
+	[[ "$list_fix" = "" ]] && {
+	msg -bar
+	echo -e " ERROR (PORT 8888 TCP) ENTRE GENERADOR <--> VPS "
+	echo -e "    NO EXISTE CONEXION ENTRE EL GENERADOR "
+	echo -e "  - \e[3;32mGENERADOR O KEYGEN COLAPZADO\e[0m - "
+	}
+	[[ "$list_fix" = "KEY INVALIDA!" ]] && {
+	IiP="$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+	cheklist="$(curl -sSL $IiP:81/ChumoGH/checkIP.log)"
+	chekIP="$(echo -e "$cheklist" | grep ${Key} | awk '{print $3}')"
+	chekDATE="$(echo -e "$cheklist" | grep ${Key} | awk '{print $7}')"
+	msg -bar
+	echo ""
+		[[ ! -z ${chekIP} ]] && {
+		varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
+		msg -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
+		echo ""
+		msg -bar
+		} || {
+		echo -e "    PRUEBA COPIAR BIEN TU KEY "
+		[[ $(echo "$(ofus "$Key"|cut -d'/' -f2)" | wc -c ) = 18 ]] && echo -e "" || echo -e "\033[1;31m CONTENIDO DE LA KEY ES INCORRECTO"
+		echo -e "   KEY NO COINCIDE CON EL CODEX DEL ADM "
+		msg -bar;tput cuu1 && tput dl1
+		}
+	}
+msg -bar
+[[ $(echo "$(ofus "$Key"|cut -d'/' -f2)" | wc -c ) = 18 ]] && echo -e "" || echo -e "\033[1;31m CONTENIDO DE LA KEY ES INCORRECTO"
+		for adiospopo in `echo "$HOME/lista-arq $HOME/chumogh ${SCPinstal} /bin/meni $HOME/log.txt /bin/troj.sh /bin/v2r.sh /bin/clash.sh instala.* /bin/ejecutar"`; do
+			[[ -e $adiospopo ]] && rm -rf $adiospopo &> /dev/null 2>&1
+		done
+figlet " Key Invalida" | boxes -d stone -p a2v1 > error.log
+echo -e "$(msg -bar)\n + Key inválida , contacta a tu proveedor +\nhttps://t.me/$(echo ${sinfo[user]}|awk -F "@" '{print $2}')\n$(msg -bar)\n" >> error.log
+cat error.log | lolcat
+echo -ne "\n\e[1;30m[\e[1;33m+\e[1;30m] \e[1;32m¿Deseas reintentar con otra key? [s/n] \033[0;33m \n"
+read -p "  Responde [ s | n ] : " -e -i "n" x
+[[ $x = @(s|S|y|Y) ]] && funkey || return
+}
+
+funkey(){
+unset Key
+while [[ ! $Key ]]; do
+echo 3 > /proc/sys/vm/drop_caches 1> /dev/null 2> /dev/null
+sysctl -w vm.drop_caches=3 1> /dev/null 2> /dev/null
+swapoff -a && swapon -a 1> /dev/null 2> /dev/null
+#[[ -f "/usr/sbin/ufw" ]] && ufw allow 443/tcp ; ufw allow 80/tcp ; ufw allow 3128/tcp ; ufw allow 8799/tcp ; ufw allow 8080/tcp ; ufw allow 81/tcp ; ufw allow 8888/tcp
+clear
+fun_ip
+[[ $(uname -m 2> /dev/null) != x86_64 ]] && {
+msg -bar3
+echo -e "			PROCESADOR ARM DETECTADO "
+}
+_cpu=$(lscpu | grep "Vendor ID" | awk '{print $3}')
+[[ ${_cpu} = "ARM" ]] && _cpu='ARM64 Pro'
+msg -bar3 
+echo -e "  \033[41m- CPU: \033[100m$_cpu\033[41m SISTEMA : \033[100m$(lsb_release -si) $(lsb_release -sr)\033[41m -\033[0m"
+msg -bar3
+echo -e "    ${FlT}${rUlq} ScriptADM LITE | MOD ${sinfo[user]} OFICIAL  ${rUlq}${FlT}  -" | lolcat
+msg -bar3
+figlet ' . KEY ADM . ' | boxes -d stone -p a0v0 | lolcat
+echo "             PEGA TU KEY DE INSTALACION " | lolcat
+echo -ne " " && msg -bar3
+echo -ne " \033[1;41m Key : \033[0;33m" && read Key
+tput cuu1 && tput dl1
+done
+Key="$(echo "$Key" | tr -d '[[:space:]]')"
+cd $HOME
+IiP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+[[ $(curl -s --connect-timeout 5 $IiP:8888 ) ]] && { 
+tput cuu1 && tput dl1
+msg -bar
+echo -ne " \e[90m\e[43m CHEK KEY : \033[0;33m"
+echo -e " \e[3;32m ENLAZADA AL GENERADOR\e[0m" | pv -qL 50
+ofen=$(wget -qO- $(ofus $Key))
+tput cuu1 && tput dl1
+msg -bar3
+echo -ne " \033[1;41m CHEK KEY : \033[0;33m"
+tput cuu1 && tput dl1
+wget --no-check-certificate -O $HOME/lista-arq $(ofus "$Key")/$IP > /dev/null 2>&1 && echo -ne "\033[1;34m [ \e[3;32m VERIFICANDO KEY  \e[0m \033[1;34m]\033[0m" && pkrm=$(ofus "$Key")
+} || {
+	echo -e "\e[3;31mCONEXION FALLIDA\e[0m" && sleep 1s
+	invalid_key && exit
+}
+[[ -e $HOME/log.txt ]] && rm -f $HOME/log.txt
+IP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') && echo "$IP" > /usr/bin/vendor_code
+   REQUEST=$(ofus "$Key"|cut -d'/' -f2)
+   [[ ! -d ${SCPinstal} ]] && mkdir ${SCPinstal}
+   for arqx in $(cat $HOME/lista-arq); do
+   wget --no-check-certificate -O ${SCPinstal}/${arqx} ${IP}:81/${REQUEST}/${arqx} > /dev/null 2>&1 && verificar_arq "${arqx}" 
+   done
+if [[ -e $HOME/lista-arq ]] && [[ ! $(cat $HOME/lista-arq|grep "KEY INVALIDA!") ]]; then
+[[ -e ${SCPdir}/menu ]] && {
+echo $Key > /etc/cghkey
+clear
+rm -f $HOME/log.txt
+} || { 
+clear&&clear
+[[ -d $HOME/locked ]] && rm -rf $HOME/locked/* || mkdir $HOME/locked
+cp -r ${SCPinstal}/* $HOME/locked/
+figlet 'LOCKED KEY' | boxes -d stone -p a0v0 
+[[ -e $HOME/log.txt ]] && ff=$(cat < $HOME/log.txt | wc -l) || ff='ALL'
+ msg -ne " ${aLerT} "
+echo -e "\033[1;31m [ $ff FILES DE KEY BLOQUEADOS ] " | pv -qL 50 && msg -bar
+echo -e " APAGA TU CORTAFUEGOS O HABILITA PUERTO 81 Y 8888"
+echo -e "   ---- AGREGANDO REGLAS AUTOMATICAS ----"
+act_ufw
+echo -e "   Si esto no funciona PEGA ESTOS COMANDOS  " 
+echo -e "   sudo ufw allow 81 && sudo ufw allow 8888 "
+msg -bar 
+echo -e "             sudo apt purge ufw -y"
+   invalid_key && exit
+}
+#systemctl restart rsyslog > /dev/null 2>&1
+#systemctl restart rsyslog.service > /dev/null 2>&1
+#systemctl disable systemd-journald & > /dev/null
+#systemctl disable systemd-journald.service & > /dev/null
+#systemd-journald.socket
+#systemd-journald-audit.socket
+#systemd-journald-dev-log.socket
+#[[ -d /var/log/journal ]] && rm -rf /var/log/journal
+[[ -d /etc/alx ]] || mkdir /etc/alx
+[[ -e /etc/folteto ]] && rm -f /etc/folteto
+msg -bar
+killall apt apt-get &> /dev/null
+fun_install
+function_verify
 else
-clear
+invalid_key
 fi
-fi
+sudo sync 
+echo 3 > /proc/sys/vm/drop_caches
+sysctl -w vm.drop_caches=3 > /dev/null 2>&1
+}
+funkey
+}
 
+ofus () {
+unset txtofus
+number=$(expr length $1)
+for((i=1; i<$number+1; i++)); do
+txt[$i]=$(echo "$1" | cut -b $i)
+case ${txt[$i]} in
+".")txt[$i]="x";;
+"x")txt[$i]=".";;
+"5")txt[$i]="s";;
+"s")txt[$i]="5";;
+"1")txt[$i]="@";;
+"@")txt[$i]="1";;
+"2")txt[$i]="?";;
+"?")txt[$i]="2";;
+"4")txt[$i]="0";;
+"0")txt[$i]="4";;
+"/")txt[$i]="K";;
+"K")txt[$i]="/";;
+esac
+txtofus+="${txt[$i]}"
+done
+echo "$txtofus" | rev
+}
+
+function printTitle
+(
+    echo -e "\n\033[1;92m$1\033[1;91m"
+    printf "%0.s-\n" $(seq 1 ${#1})
+)
+
+killall apt apt-get &> /dev/null
+TIME_START="$(date +%s)"
+DOWEEK="$(date +'%u')"
+[[ -e $HOME/cgh.sh ]] && rm $HOME/cgh.*
+
+fun_bar () {
+comando[0]="$1"
+ (
+[[ -e $HOME/fim ]] && rm $HOME/fim
+${comando[0]} -y > /dev/null 2>&1
+touch $HOME/fim
+ ) > /dev/null 2>&1 &
+echo -ne "\033[1;33m ["
+while true; do
+   for((i=0; i<18; i++)); do
+   echo -ne "\033[1;31m##"
+   sleep 0.1s
+   done
+   [[ -e $HOME/fim ]] && rm $HOME/fim && break
+   echo -e "\033[1;33m]"
+   sleep 0.5s
+   tput cuu1
+   tput dl1
+   echo -ne "\033[1;33m ["
+done
+echo -e "\033[1;33m]\033[1;31m -\033[1;32m 100%\033[1;37m"
+}
+
+msg -bar
+printTitle " ORGANIZANDO INTERFAZ DEL INSTALADOR "
+update_pak () {
+[[ $(dpkg --get-selections|grep -w "pv"|head -1) ]] || apt install pv -y &> /dev/null 
+os_system 
+echo -e "		[ ! ]  ESPERE UN MOMENTO  [ ! ]"
+[[ $(dpkg --get-selections|grep -w "lolcat"|head -1) ]] || apt-get install lolcat -y &>/dev/null 
+[[ $(dpkg --get-selections|grep -w "figlet"|head -1) ]] || apt-get install figlet -y &>/dev/null
 echo ""
-wget -q https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/dependencies.sh;chmod +x dependencies.sh;./dependencies.sh
-rm dependencies.sh
-clear
-
-############# LawNET #############
-#THEME RED
-cat <<EOF>> /etc/yudhynetwork/theme/red
-BG : \E[40;1;41m
-TEXT : \033[0;31m
-EOF
-#THEME BLUE
-cat <<EOF>> /etc/yudhynetwork/theme/blue
-BG : \E[40;1;44m
-TEXT : \033[0;34m
-EOF
-#THEME GREEN
-cat <<EOF>> /etc/yudhynetwork/theme/green
-BG : \E[40;1;42m
-TEXT : \033[0;32m
-EOF
-#THEME YELLOW
-cat <<EOF>> /etc/yudhynetwork/theme/yellow
-BG : \E[40;1;43m
-TEXT : \033[0;33m
-EOF
-#THEME MAGENTA
-cat <<EOF>> /etc/yudhynetwork/theme/magenta
-BG : \E[40;1;43m
-TEXT : \033[0;33m
-EOF
-#THEME CYAN
-cat <<EOF>> /etc/yudhynetwork/theme/cyan
-BG : \E[40;1;46m
-TEXT : \033[0;36m
-EOF
-#THEME CONFIG
-cat <<EOF>> /etc/yudhynetwork/theme/color.conf
-blue
-EOF
-############# LawNET #############
-
-#install ssh ovpn
-
-#Install Xray
-echo -e "${tyblue}.------------------------------------------.${NC}"
-echo -e "${tyblue}|          PROCESS INSTALLED XRAY          |${NC}"
-echo -e "${tyblue}'------------------------------------------'${NC}"
-sleep 2
-clear
-wget https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/ins-xray.sh && chmod +x ins-xray.sh && ./ins-xray.sh
-#Install SSH Websocket
-
-clear
-
-echo -e "${tyblue}.------------------------------------------.${NC}"
-echo -e "${tyblue}|           DOWNLOAD EXTRA MENU            |${NC}"
-echo -e "${tyblue}'------------------------------------------'${NC}"
-sleep 2
-wget https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/update.sh && chmod +x update.sh && ./update.sh
-clear
-
-
-############# LawNET #############
-
-cat> /root/.profile << END
-# ~/.profile: executed by Bourne-compatible login shells.
-
-if [ "$BASH" ]; then
-  if [ -f ~/.bashrc ]; then
-    . ~/.bashrc
-  fi
-fi
-
-mesg n || true
-clear
-#menu
-vnstat -d
-vnstat -m
-END
-chmod 644 /root/.profile
-
-############# LawNET #############
-
-if [ -f "/root/log-install.txt" ]; then
-rm /root/log-install.txt > /dev/null 2>&1
-fi
-if [ -f "/etc/afak.conf" ]; then
-rm /etc/afak.conf > /dev/null 2>&1
-fi
-if [ ! -f "/etc/log-create-user.log" ]; then
-echo "Log All Account " > /etc/log-create-user.log
-fi
-history -c
-serverV=$( curl -sS https://raw.githubusercontent.com/LawVPN/SSH-XRAY/main/data/version  )
-echo $serverV > /opt/.ver
-aureb=$(cat /home/re_otm)
-b=11
-if [ $aureb -gt $b ]
-then
-gg="PM"
-else
-gg="AM"
-fi
-curl -sS ifconfig.me > /etc/myipvps
-
-############# LawNET #############
-
+msg -bar
+echo -e "\e[1;31m  SISTEMA:  \e[33m$distro $vercion \e[1;31m	CPU:  \e[33m$(lscpu | grep "Vendor ID" | awk '{print $3}')" 
+msg -bar
+dpkg --configure -a > /dev/null 2>&1 && echo -e "\033[94m    ${TTcent} INTENTANDO RECONFIGURAR UPDATER ${TTcent}" | pv -qL 80
+msg -bar
+echo -e "\033[94m    ${TTcent} UPDATE DATE : $(date +"%d/%m/%Y") & TIME : $(date +"%H:%M") ${TTcent}" | pv -qL 80
+[[ $(dpkg --get-selections|grep -w "net-tools"|head -1) ]] || apt-get install net-tools -y &>/dev/null
+[[ $(dpkg --get-selections|grep -w "boxes"|head -1) ]] || apt-get install boxes -y &>/dev/null
+echo ""
+apt-get install software-properties-common -y > /dev/null 2>&1 && echo -e "\033[94m    ${TTcent} INSTALANDO NUEVO PAQUETES ( S|P|C )    ${TTcent}" | pv -qL 80
+echo ""
+echo -e "\033[94m    ${TTcent} PREPARANDO BASE RAPIDA INSTALL    ${TTcent}" | pv -qL 80 
+msg -bar
 echo " "
-echo "Installation has been completed!!"
-echo " "
-echo "=========================[SCRIPT PREMIUM]========================"
-echo ""  | tee -a log-install.txt
-echo "   >>> Service & Port"  | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "    [INFORMASI SSH ]" | tee -a log-install.txt
-echo "    -------------------------" | tee -a log-install.txt
-echo "   - OpenSSH                 : 22"  | tee -a log-install.txt
-echo "   - Stunnel4                : 447, 777"  | tee -a log-install.txt
-echo "   - Dropbear                : 109, 143"  | tee -a log-install.txt
-echo "   - SSH Websocket           : 80"  | tee -a log-install.txt
-echo "   - SSH SSL Websocket       : 443"  | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "    [INFORMASI  Badvpn, Nginx]" | tee -a log-install.txt
-echo "    ---------------------------" | tee -a log-install.txt
-echo "   - Badvpn                  : 7100-7900"  | tee -a log-install.txt
-echo "   - Nginx                   : 81"  | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "    [INFORMASI Shadowsocks-R & Shadowsocks]"  | tee -a log-install.txt
-echo "    ---------------------------------------" | tee -a log-install.txt
-echo "   - Websocket Shadowsocks   : 443"  | tee -a log-install.txt
-echo "   - Shadowsocks GRPC        : 443"  | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "    [INFORMASI XRAY]"  | tee -a log-install.txt
-echo "    ----------------" | tee -a log-install.txt
-echo "   - Xray Vmess Ws Tls       : 443"  | tee -a log-install.txt
-echo "   - Xray Vless Ws Tls       : 443"  | tee -a log-install.txt
-echo "   - Xray Vmess Ws None Tls  : 80"  | tee -a log-install.txt
-echo "   - Xray Vless Ws None Tls  : 80"  | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "    [INFORMASI TROJAN]"  | tee -a log-install.txt
-echo "    ------------------" | tee -a log-install.txt
-echo "   - Websocket Trojan        : 443"  | tee -a log-install.txt
-echo "   - Trojan GRPC             : 443"  | tee -a log-install.txt
-echo "   --------------------------------------------------------------" | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "   >>> Server Information & Other Features"  | tee -a log-install.txt
-echo "   - Timezone                : Asia/Jakarta (GMT +7)"  | tee -a log-install.txt
-echo "   - Fail2Ban                : [ON]"  | tee -a log-install.txt
-echo "   - Dflate                  : [ON]"  | tee -a log-install.txt
-echo "   - IPtables                : [ON]"  | tee -a log-install.txt
-echo "   - Auto-Reboot             : [ON]"  | tee -a log-install.txt
-echo "   - IPv6                    : [OFF]"  | tee -a log-install.txt
-echo "   - Auto Reboot On           : $aureb:00 $gg GMT +7" | tee -a log-install.txt
-echo "   - Custom Path " | tee -a log-install.txt
-echo "   - Auto Backup Data" | tee -a log-install.txt
-echo "   - AutoKill Multi Login User" | tee -a log-install.txt
-echo "   - Auto Delete Expired Account" | tee -a log-install.txt
-echo "   - Fully Automatic Script" | tee -a log-install.txt
-echo "   - VPS Settings" | tee -a log-install.txt
-echo "   - Admin Control" | tee -a log-install.txt
-echo "   - Backup & Restore Data" | tee -a log-install.txt
-echo "   - Full Orders For Various Services" | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "=========================[SCRIPT PREMIUM]========================"
-echo ""
-sleep 3
-echo -e "    ${tyblue}.------------------------------------------.${NC}"
-echo -e "    ${tyblue}|     SUCCESFULLY INSTALLED THE SCRIPT     |${NC}"
-echo -e "    ${tyblue}'------------------------------------------'${NC}"
+#[[ $(dpkg --get-selections|grep -w "figlet"|head -1) ]] || apt-get install figlet -y -qq --silent &>/dev/null
+clear&&clear
+rm $(pwd)/$0 &> /dev/null 
+return
+}
+	clear&&clear
+	update_pak
+	clear&&clear
+	rutaSCRIPT "${distro}" "${vercion}"
+	rm -f instala.* lista*
+echo -e " Duracion $((($(date +%s)-$TIME_START)/60)) min."
+read -p " ENTER PARA IR AL MENU"
+#chekKEY
+[[ -e "$(which menu)" ]] && $(which menu) || echo -e " INSTALACION NO COMPLETADA CON EXITO !"
 
 
-rm /root/cf.sh >/dev/null 2>&1
-rm /root/setup.sh >/dev/null 2>&1
-rm /root/insshws.sh 
-rm /root/update.sh
-
-echo ""
-echo -e "Setting up autorefresh on xray user login"
-#echo -ne "Choose between 1-30 minutes: "; read afresh
-wget -q -O /usr/bin/clear-log raw.githubusercontent.com/LawNetwork/Autoscript/main/xray/clear-log
-chmod +x /usr/bin/clear-log; cd
-
-echo "#!/bin/bash
-bash <(curl -L -s https://s.id/netflixchecker) -E -M 4" > /usr/bin/regionchecker
-chmod +x /usr/bin/regionchecker
-
-echo "Changing the version to the oldest so you can update manually.."
-echo "0.0.1" > /opt/.ver; sleep 2
-echo "Changing the version to the oldest so you can update manually.. done"
-
-echo ""
-echo -e "   ${tyblue}Your VPS Will Be Automatical Reboot In 10 seconds${NC}"
-
-sleep 10
-reboot
+		else
+			echo -e "\e[1;31m[x] ningún parámetro recibido [x]\e[0m";exit 1
+		fi
+  
