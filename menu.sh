@@ -907,7 +907,7 @@ if [ "$BASH" ]; then
     fi
 fi
 mesg n || true
-menu
+
 EOF
 
 cat >/etc/cron.d/xp_all <<-END
@@ -999,7 +999,7 @@ clear
     #password_default
     pasang_ssl
     install_xray
-    ssh
+    #ssh
     udp_mini
     #ssh_slow
     #dan_udp
@@ -1038,43 +1038,6 @@ echo ""
 echo " "
 echo "=====================-[ DARNIX ]-===================="
 echo ""
-echo "------------------------------------------------------------"
-echo ""
-echo ""
-echo "   >>> Service & Port"  | tee -a log-install.txt
-echo "   - SlowDNS SSH              : ALL Port SSH"  | tee -a log-install.txt
-echo "   - OpenSSH                  : 22"  | tee -a log-install.txt
-echo "   - SSH Websocket            : 80 [ON]" | tee -a log-install.txt
-echo "   - SSH SSL Websocket        : 443" | tee -a log-install.txt
-echo "   - OpenVPN Websocket SSL    : 1194" | tee -a log-install.txt
-echo "   - OpenVPN SSL              : 1194" | tee -a log-install.txt
-echo "   - OpenVPN TCP              : 1194" | tee -a log-install.txt
-echo "   - OpenVPN UDP              : 2200" | tee -a log-install.txt
-echo "   - Stunnel4                 : 222, 777" | tee -a log-install.txt
-echo "   - Dropbear                 : 109, 143" | tee -a log-install.txt
-echo "   - Badvpn                   : 7100-7900" | tee -a log-install.txt
-echo "   - Nginx                    : 81" | tee -a log-install.txt
-echo "   - Vmess WS TLS             : 443" | tee -a log-install.txt
-echo "   - Vless WS TLS             : 443" | tee -a log-install.txt
-echo "   - Trojan WS TLS            : 443" | tee -a log-install.txt
-echo "   - Shadowsocks WS TLS       : 443" | tee -a log-install.txt
-echo "   - Vmess WS none TLS        : 80" | tee -a log-install.txt
-echo "   - Vless WS none TLS        : 80" | tee -a log-install.txt
-echo "   - Trojan WS none TLS       : 80" | tee -a log-install.txt
-echo "   - Shadowsocks WS none TLS  : 80" | tee -a log-install.txt
-echo "   - Vmess gRPC               : 443" | tee -a log-install.txt
-echo "   - Vless gRPC               : 443" | tee -a log-install.txt
-echo "   - Trojan gRPC              : 443" | tee -a log-install.txt
-echo "   - Shadowsocks gRPC         : 443" | tee -a log-install.txt
-echo ""
-echo ""
-echo "------------------------------------------------------------"
-echo ""
-echo "=====================-[ DARNIX ]-===================="
-echo -e ""
-echo ""
-echo "" | tee -a log-install.txt
-echo -e ""
 sudo hostnamectl set-hostname $username
 echo -e "${green} Script instalado correctamente"
 sudo vnstat --reset
