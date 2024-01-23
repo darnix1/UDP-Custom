@@ -12,7 +12,7 @@ declare -A sinfo=(
 )
 
 # Resto del código...
-		if [[ ! -z $1 ]]; then
+		
 
 [[ `whoami` != 'root' ]] && {
 clear;echo -e "\e[1;31m [✗] se requiere ser usuario root para ejecutar el script [✗]\e[0m"
@@ -356,7 +356,4 @@ read -p " ENTER PARA IR AL MENU"
 [[ -e "$(which menu)" ]] && $(which menu) || echo -e " INSTALACION NO COMPLETADA CON EXITO !"
 
 
-		else
-			echo -e "\e[1;31m[x] ningún parámetro recibido [x]\e[0m";exit 1
-		fi
-  
+		
