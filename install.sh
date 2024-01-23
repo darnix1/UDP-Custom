@@ -1,14 +1,17 @@
 #!/bin/bash
 
+# Establecer un valor predeterminado si no se proporciona ningún parámetro
+PARAMETRO=${1:-valor_predeterminado}
+
 declare -A sinfo=(
-
-[dir]=""
-[user]=""
-[link]=""
-[script]=""
-[powered]=""
-
+    [dir]=""
+    [user]=""
+    [link]=""
+    [script]=""
+    [powered]=""
 )
+
+# Resto del código...
 		if [[ ! -z $1 ]]; then
 
 [[ `whoami` != 'root' ]] && {
