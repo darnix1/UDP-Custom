@@ -67,23 +67,15 @@ barra_intall() {
     " \e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•\e[1;34m•"
   );
 
-  position=0
-
-  while [[ -d /proc/$pid ]]; do
-    tput civis
-    for i in "${bar[@]}"; do
-      # Obtener una porción de la barra que se desplaza
-      moving_part="${i:position} ${i:0:position}"
-      echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 60
-      
-      sleep 0.2
+while [[ -d /proc/$pid ]]; do
+        tput civis
+        for ((i=0; i<${#bar[@]}; i++)); do
+            # Desplazar la barra hacia la derecha
+            echo -ne "\r\033[1;32m                ${bar[$i]}" | pv -qL 60
+            sleep 0.08
+        done
+        tput cnorm
     done
-    tput cnorm
-
-    # Incrementar la posición para el próximo desplazamiento
-    ((position++))
-    position=$((position % 6))  # Ajustar para el tamaño de la barra (6)
-  done
 
 
     # Resto del código permanece sin cambios
