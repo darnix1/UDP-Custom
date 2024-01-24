@@ -33,8 +33,7 @@ while [[ -d /proc/$pid ]]; do
   tput civis
   for i in "${bar[@]}"; do
     moving_part="${i:position} ${i:0:position}"
-    echo -ne "\r\e[1;32m${moving_part}\e[0m"
-
+    echo -ne "\r${moving_part}"
 sleep 0.1  # Ajusta el tiempo de espera según tu preferencia
   done
   ((position++))
