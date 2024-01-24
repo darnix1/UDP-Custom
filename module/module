@@ -21,24 +21,25 @@ barra_intallb() {
   pid=$!
 
   bar=(
-    "\e[1;32m ●\e[1;33m●\e[1;36m●\e[1;32m● "
-    "\e[1;34m ●\e[1;35m●\e[1;31m●\e[1;32m● "
-    "\e[1;32m●\e[1;31m●\e[1;30m●\e[1;34m● "
-    "\e[1;35m●\e[1;31m●\e[1;36m●\e[1;32m●\e[1;34m●"
-  );
+  "\e[1;32m •\e[1;33m•\e[1;36m•\e[1;32m• "
+  "\e[1;34m •\e[1;35m•\e[1;31m•\e[1;32m• "
+  "\e[1;32m•\e[1;31m•\e[1;30m•\e[1;34m• "
+  "\e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•\e[1;34m•"
+);
 
   position=0
-  while [[ -d /proc/$pid ]]; do
-    tput civis
-    for i in "${bar[@]}"; do
-      moving_part="${i:${position}}${i:0:${#i}-position}"
-      echo -ne "\r\033[1;32m                      ${moving_part:0:18}" | pv -qL 10  # Ajusta la velocidad aquí
-      sleep 0.2  # Ajusta la duración del sueño aquí para una animación más suave
-    done
-    tput cnorm
-    ((position += 2))
-    position=$((position % 6))
+while [[ -d /proc/$pid ]]; do
+  tput civis
+  for i in "${bar[@]}"; do
+    moving_part="${i:position} ${i:0:position}"
+    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 30  # Ajusta la velocidad aquí
+    sleep 0.2  # Ajusta la duración del sueño aquí para una animación más suave
   done
+  tput cnorm
+  ((position++))
+  position=$((position % 6))
+done
+
 
 
   echo -ne "\n  \033[1;33m                  [\033[1;31mESTADO\033[1;33m] - \033[1;32mOK \033[0m\n"
@@ -58,21 +59,22 @@ bar=(
   "\e[1;32m •\e[1;33m•\e[1;36m•\e[1;32m• "
   "\e[1;34m •\e[1;35m•\e[1;31m•\e[1;32m• "
   "\e[1;32m•\e[1;31m•\e[1;30m•\e[1;34m• "
-  " \e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•\e[1;34m•"
-)
+  "\e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•\e[1;34m•"
+);
 
 position=0
 while [[ -d /proc/$pid ]]; do
   tput civis
   for i in "${bar[@]}"; do
     moving_part="${i:position} ${i:0:position}"
-    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 20
-    sleep 0.1  # Ajusta el tiempo de espera según tu preferencia
+    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 30  # Ajusta la velocidad aquí
+    sleep 0.2  # Ajusta la duración del sueño aquí para una animación más suave
   done
   tput cnorm
   ((position++))
   position=$((position % 6))
 done
+
 
     # Resto del código permanece sin cambios
     [[ $(dpkg --get-selections | grep -w "$paquete" | head -1) ]] || ESTATUS=$(echo -e "\033[91m  FALLO DE INSTALACION") &>/dev/null
