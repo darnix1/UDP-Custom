@@ -298,4 +298,4 @@ instalador_final() {
   meu_ip &>/dev/null
   exit
 }
-instalador_final
+
