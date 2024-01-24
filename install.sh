@@ -25,26 +25,22 @@ msg() {
   esac
 }
 fun_bar() {
-  comando="$1"
-  _=$(
-    $comando >/dev/null 2>&1
-  ) &
-  >/dev/null
-  pid=$!
-  while [[ -d /proc/$pid ]]; do
-    echo -ne " \033[1;33m["
-    for ((i = 0; i < 20; i++)); do
-      echo -ne "\033[1;31m##"
-      sleep 0.5
-    done
-    echo -ne "\033[1;33m]"
-    sleep 1s
-    echo
-    tput cuu1
-    tput dl1
-  done
-  echo -e " \033[1;33m[\033[1;31m########################################\033[1;33m] - \033[1;32m100%\033[0m"
-  sleep 1s
+  comando=( "$1" "$2" "$3" "$4" )
+bar=(  "\e[1;32m•\e[1;33m•\e[1;36m•\e[1;32m•"
+ "\e[1;34m    •\e[1;35m•\e[1;31m•\e[1;32m•"
+ "\e[1;32m•\e[1;31m•\e[1;30m•\e[1;34m•"
+  "      \e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•"
+);
+ _=$( ${comando[@]} ) & > /dev/null
+while [[ -d /proc/$pid ]]; do
+        tput civis
+        for i in "${bar[@]}"; do
+                echo -ne "\r$i"|pv -qL 60
+        done
+        tput cnorm
+done
+echo -e "$*"
+sleep 0.1s
 }
 install_paketes() {
   ### PAQUETES PRINCIPALES
