@@ -49,6 +49,7 @@ repo() {
 }
 ##-->> PREPARAR PAQUETERIAS Y DIRECTORIOS
 install_inicial() {
+sudo yum install -y pv > /dev/null 2>&1
   clear && clear
   #CARPETAS PRINCIPALES
   mkdir -p /etc/SCRIPT-LATAM >/dev/null 2>&1
