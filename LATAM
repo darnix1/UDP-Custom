@@ -85,10 +85,47 @@ install_inicial() {
     fi
   }
   #CONFIGURAR SSH-ROOT PRINCIPAL AMAZON, GOOGLE
+  pass_root() {
+    wget -O /etc/ssh/sshd_config https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/sshd_config >/dev/null 2>&1
+    chmod +rwx /etc/ssh/sshd_config
+    service ssh restart
+    msgi -bar
+    echo -ne "\033[1;97m DIGITE NUEVA CONTRASEÑA:  \033[1;31m" && read pass
+    (
+      echo $pass
+      echo $pass
+    ) | passwd root 2>/dev/null
+    sleep 1s
+    msgi -bar
+    echo -e "\033[1;94m     CONTRASEÑA AGREGADA O EDITADA CORECTAMENTE"
+    echo -e "\033[1;97m TU CONTRASEÑA ROOT AHORA ES: \e[41m $pass \033[0;37m"
 
-  
+  }
   ##-->>AGREGAR NOTIFICADOR ROOT
-  
+  avi_login() {
+    for i in {1..4}; do tput cuu 1 && tput el; done
+    wget -O /etc/profile.d/notify-lroot.sh https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/notify-lroot.sh >/dev/null 2>&1
+    chmod +x /etc/profile.d/notify-lroot.sh
+    msgi -bar
+    echo -e "\033[1;97m         NOTIFICADOR VIA PUSH DE LOGINS ROOT"
+    msgi -bar
+    echo -e "\033[1;97mEsta es una herramianta que te Notificara mediante\nuna apk cuando alguien ingrese ssh root en la VPS"
+    echo -e "\033[1;97m   Descarge la Aplicasion directo de Play Store"
+    echo -e "\033[1;96m https://play.google.com/store/apps/details?id=net.xdroid.pn"
+    msgi -bar
+    echo -ne "\033[1;97m DIGITE SU KEY: \033[1;32m" && read keyapk
+    echo "$keyapk" >/etc/SCRIPT-LATAM/temp/keyapk
+    echo -ne "\033[1;97m INGRESE ALGUN NOMBRE PARA SU VPS: \033[1;32m" && read nomvpsapk
+    echo "$nomvpsapk" >/etc/SCRIPT-LATAM/temp/nomvpsapk
+    KEY=$(cat /etc/SCRIPT-LATAM/temp/keyapk)
+    IP=$(cat /root/.ssh/authrized_key.reg)
+    NOMBREVPS=$(cat /etc/SCRIPT-LATAM/temp/nomvpsapk | tr '[:space:]' '+' | tr -d 'ñ' | sed '/^$/d')
+    curl -s "http://xdroid.net/api/message?k=$KEY&t=%F0%9F%98%8E+Mensaje+de+Prueba%E2%9C%8C%EF%B8%8F&c=%F0%9F%96%A5%EF%B8%8F+VPS%3A+$NOMBREVPS%0A%F0%9F%8C%90+IP%3A+$IP&u=" >/dev/null 2>&1
+    msgi -bar
+    echo -e "\033[1;97mSe envio un mensaje de prueba si no le llevo contacte @Kalix1"
+    sleep 10s
+    for i in {1..8}; do tput cuu 1 && tput el; done
+  }
   #-- VERIFICAR VERSION
   v1=$(curl -sSL "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Version")
   echo "$v1" >/etc/SCRIPT-LATAM/temp/version_instalacion
@@ -157,6 +194,25 @@ password required pam_permit.so' >/etc/pam.d/common-password && chmod +x /etc/pa
   chmod +x /usr/bin/LATAM
 }
 
+post_reboot() {
+  /bin/cp /etc/skel/.bashrc ~/
+  echo 'LATAM -c' >>.bashrc
+}
+
+time_reboot() {
+  clear && clear
+  msgi -bar
+  echo -e "\e[1;93m     CONTINUARA INSTALACION DESPUES DEL REBOOT"
+  echo -e "\e[1;93m         O EJECUTE EL COMANDO: \e[1;92mLATAM -c "
+  msgi -bar
+  REBOOT_TIMEOUT="$1"
+  while [ $REBOOT_TIMEOUT -gt 0 ]; do
+    print_center -ne "-$REBOOT_TIMEOUT-\r"
+    sleep 1
+    : $((REBOOT_TIMEOUT--))
+  done
+  reboot
+}
 
 dependencias() {
   dpkg --configure -a >/dev/null 2>&1
@@ -187,13 +243,13 @@ install_paquetes() {
 #SELECTOR DE INSTALACION
 while :; do
   case $1 in
-  -s | --start) install_inicial  "15" ;;
-  
+  -s | --start) install_inicial ;;
+  -c | --continue)
     install_paquetes
     rm -rf /root/LATAM &>/dev/null
     break
     ;;
-  -k | --instalador_final)
+  -k | --key)
     clear && clear
     break
     ;;
@@ -299,3 +355,37 @@ instalador_final() {
   exit
 }
 
+error_fun() {
+  tput cuu 2
+  tput el
+  tput el
+  echo -e "\033[1;31m               ¡# ERROR INESPERADO #¡"
+  echo -e "\033[1;31m          ESTA KEY YA FUE USADA O EXPIRO "
+  msgi -bar2
+  echo -ne "\033[1;97m  DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;97m: \033[1;93m" && read incertar_key
+  [[ "$incertar_key" = "s" || "$incertar_key" = "S" ]] && check_key
+  clear && clear
+  msgi -bar2
+  echo -e "\033[1;97m          ---- INSTALACION CANCELADA  -----"
+  msgi -bar2
+  exit
+}
+
+check_key() {
+  clear && clear
+  msgi -bar2
+  echo -e "\033[1;32m————————————————————————————————————————————————————"
+  figlet -w 85 -f smslant "         SCRIPT
+         LATAM  " | lolcat
+  msgi -ama "          [ ----- \033[1;97m 🐲 By @Kalix1 🐲\033[1;33m ----- ]"
+  echo -e "\033[1;32m————————————————————————————————————————————————————"
+  msgi -bar2
+  # Elimina las líneas siguientes que piden la clave
+  # echo -ne "\033[1;96m          >>> INTRODUZCA LA KEY ABAJO <<<\n\033[1;31m        " && read Key
+  # respuesta=$(curl -s --data "clave=$Key" http://155.138.245.13:81/CheckPHP/CheckKey.php)
+  # Verificar la respuesta del servidor Apache
+  # Cambia la condición para siempre pasar a instalador_final
+  instalador_final
+}
+
+check_key
