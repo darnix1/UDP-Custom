@@ -20,11 +20,17 @@ barra_intallb() {
   _=$( $comando >/dev/null 2>&1 ) &
   pid=$!
 
+  colors=("1;32m" "1;37m" "1;31m" "1;34m")
+
   while [[ -d /proc/$pid ]]; do
     tput civis
-    for i in {1..4}; do
+    for color in "${colors[@]}"; do
       for ((j=1; j<=5; j++)); do
-        echo -ne "\r\033[1;32m $(printf ' •%.0s' $(seq 1 $j))$(printf ' \e[1;33m•%.0s' $(seq 1 $((5-j)))) " 
+        echo -ne "\r\033[${color} $(printf ' •%.0s' $(seq 1 $j))$(printf ' %.0s' $(seq 1 $((5-j)))) " 
+        sleep 0.2  # Ajusta el tiempo de espera según tu preferencia
+      done
+      for ((j=5; j>=1; j--)); do
+        echo -ne "\r\033[${color} $(printf ' •%.0s' $(seq 1 $j))$(printf ' %.0s' $(seq 1 $((5-j)))) " 
         sleep 0.2  # Ajusta el tiempo de espera según tu preferencia
       done
     done
