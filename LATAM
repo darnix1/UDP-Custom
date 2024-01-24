@@ -247,6 +247,7 @@ while :; do
   
     install_paquetes
     
+    instalador_final
     rm -rf /root/LATAM &>/dev/null
     break
     ;;
