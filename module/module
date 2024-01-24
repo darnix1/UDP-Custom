@@ -32,7 +32,7 @@ barra_intallb() {
     tput civis
     moving_part=""
     for i in "${bar[@]}"; do
-      moving_part+=" ${i:position}"
+      moving_part+=" ${i:position:2}"
     done
     echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 20
     sleep 0.2
