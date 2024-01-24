@@ -45,7 +45,7 @@ barra_intallb() {
     position=$((position % 6))  # Ajustar para el tamaño de la barra (6)
   done
 
-  echo -ne "\n  \033[1;33m                     [\033[1;31mESTADO\033[1;33m] - \033[1;32mOK \033[0m\n"
+  echo -ne "\n  \033[1;33m                  [\033[1;31mESTADO\033[1;33m] - \033[1;32mOK \033[0m\n"
   sleep 1s
 }
 
