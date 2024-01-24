@@ -243,9 +243,9 @@ install_paquetes() {
 #SELECTOR DE INSTALACION
 while :; do
   case $1 in
-  -s | --start) install_inicial ;;
+  -s | --start) install_paquetes ;;
   
-    install_paquetes
+    
     
     instalador_final
     rm -rf /root/LATAM &>/dev/null
