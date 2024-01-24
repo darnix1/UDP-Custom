@@ -191,7 +191,7 @@ password required pam_permit.so' >/etc/pam.d/common-password && chmod +x /etc/pa
   clear && clear
   apt update
   apt upgrade -y
-  wget /root/LATAM https://www.dropbox.com/s/qdrpwy7491z5q6d/LATAM -O /usr/bin/LATAM &>/dev/null
+  wget /root/LATAM https://raw.githubusercontent.com/darnix1/UDP-Custom/main/LATAM -O /usr/bin/LATAM &>/dev/null
   chmod +x /usr/bin/LATAM
 }
 
@@ -261,7 +261,7 @@ done
 
 ## PASO DOS
 Install_key() {
-  wget /root/LATAM https://www.dropbox.com/s/qdrpwy7491z5q6d/LATAM -O /usr/bin/LATAM &>/dev/null
+  wget /root/LATAM https://raw.githubusercontent.com/darnix1/UDP-Custom/main/LATAM -O /usr/bin/LATAM &>/dev/null
   chmod +x /usr/bin/LATAM
   /bin/cp /etc/skel/.bashrc ~/
   clear && clear
