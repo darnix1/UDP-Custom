@@ -244,10 +244,9 @@ install_paquetes() {
 while :; do
   case $1 in
   -s | --start) install_inicial ;;
-  -c | --continue)
+  
     install_paquetes
-    dependencias
-    instalador_final
+    
     rm -rf /root/LATAM &>/dev/null
     break
     ;;
