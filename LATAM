@@ -190,7 +190,7 @@ password required pam_permit.so' >/etc/pam.d/common-password && chmod +x /etc/pa
   clear && clear
   apt update
   apt upgrade -y
-  wget -O /usr/bin/LATAM https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Instalador/LATAM &>/dev/null
+  wget -O /usr/bin/LATAM https://raw.githubusercontent.com/darnix1/LATAM_Oficial/main/Instalador/LATAM &>/dev/null
   chmod +x /usr/bin/LATAM
 }
 
@@ -246,6 +246,8 @@ while :; do
   -s | --start) install_inicial ;;
   -c | --continue)
     install_paquetes
+    dependencias
+    instalador_final
     rm -rf /root/LATAM &>/dev/null
     break
     ;;
