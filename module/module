@@ -21,29 +21,25 @@ barra_intallb() {
   pid=$!
 
   bar=(
-    "\e[1;32m •\e[1;33m•\e[1;36m•\e[1;32m• "
-    "\e[1;34m •\e[1;35m•\e[1;31m•\e[1;32m• "
-    "\e[1;32m•\e[1;31m•\e[1;30m•\e[1;34m• "
-    " \e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•\e[1;34m•"
-  );
+  "\e[1;32m ●\e[1;33m●\e[1;36m●\e[1;32m● "
+  "\e[1;34m ●\e[1;35m●\e[1;31m●\e[1;32m● "
+  "\e[1;32m●\e[1;31m●\e[1;30m●\e[1;34m● "
+  " \e[1;35m●\e[1;31m●\e[1;36m●\e[1;32m●\e[1;34m●"
+);
 
-  position=0
 
-  while [[ -d /proc/$pid ]]; do
-    tput civis
-    for i in "${bar[@]}"; do
-      # Obtener una porción de la barra que se desplaza
-      moving_part="${i:position} ${i:0:position}"
-      echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 60
-      
-      sleep 0.2
-    done
-    tput cnorm
-
-    # Incrementar la posición para el próximo desplazamiento
-    ((position++))
-    position=$((position % 6))  # Ajustar para el tamaño de la barra (6)
+    position=0
+while [[ -d /proc/$pid ]]; do
+  tput civis
+  for i in "${bar[@]}"; do
+    moving_part="${i:position} ${i:0:position}"
+    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 30  # Ajusta la velocidad aquí
+    sleep 0.1  # Ajusta la duración del sueño aquí para una animación más suave
   done
+  tput cnorm
+  ((position++))
+  position=$((position % 6))
+done
 
   echo -ne "\n  \033[1;33m                  [\033[1;31mESTADO\033[1;33m] - \033[1;32mOK \033[0m\n"
   sleep 1s
