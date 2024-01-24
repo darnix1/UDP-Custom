@@ -17,28 +17,30 @@ msgi() {
 # ------- BARRA DE INTALL BASICO
 barra_intallb() {
   comando="$1"
-  _=$( $comando >/dev/null 2>&1 ) &
-  pid=$!
+_=$( $comando >/dev/null 2>&1 ) &
+pid=$!
 
-  bar=(
-    "\e[1;32m •\e[1;33m•\e[1;36m•\e[1;32m• "
-    "\e[1;34m •\e[1;35m•\e[1;31m•\e[1;32m• "
-    "\e[1;32m•\e[1;31m•\e[1;30m•\e[1;34m• "
-    " \e[1;35m•\e[1;31m•\e[1;36m•\e[1;32m•\e[1;34m•"
-  );
+bar=(
+  "\e[32m •••• "
+  "\e[34m •••• "
+  "\e[32m••••• "
+  "\e[34m ••••"
+)
 
-
-      position=0
+position=0
 while [[ -d /proc/$pid ]]; do
   tput civis
   for i in "${bar[@]}"; do
     moving_part="${i:position} ${i:0:position}"
     echo -ne "\r${moving_part}"
-sleep 0.1  # Ajusta el tiempo de espera según tu preferencia
+    sleep 0.1
   done
   ((position++))
   position=$((position % 6))
 done
+
+tput cnorm
+
 
 
 
