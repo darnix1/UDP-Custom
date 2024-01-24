@@ -34,7 +34,8 @@ barra_intallb() {
     for i in "${bar[@]}"; do
       # Obtener una porción de la barra que se desplaza
       moving_part="${i:position} ${i:0:position}"
-      echo -ne "\r\033[1;32m${moving_part}" | pv -qL 60
+      echo -ne "\r\033[1;32m               ${moving_part}" | pv -qL 60
+      
       sleep 0.2
     done
     tput cnorm
@@ -66,7 +67,8 @@ barra_intall() {
         tput civis
         for ((i=0; i<${#bar[@]}; i++)); do
             # Desplazar la barra hacia la derecha
-            echo -ne "\r\033[1;32m${bar[$i]}" | pv -qL 60
+            echo -ne "\r\033[1;32m               ${bar[$i]}" | pv -qL 60
+            
             sleep 0.08
         done
         tput cnorm
