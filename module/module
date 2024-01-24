@@ -31,12 +31,12 @@ barra_intallb() {
     tput civis
     for i in "${bar[@]}"; do
       for ((j=0; j<${#i}; j++)); do
-        echo -ne "\r\033[1;32m                      ${i:0:j} " | pv -qL 20
+        echo -ne "\r\033[1;32m                      ${i:0:j} " 
         sleep 0.1  # Ajusta el tiempo de espera según tu preferencia
       done
       sleep 0.2  # Tiempo adicional entre cada iteración
       for ((j=${#i}-2; j>0; j--)); do
-        echo -ne "\r\033[1;32m                      ${i:0:j} " | pv -qL 20
+        echo -ne "\r\033[1;32m                      ${i:0:j} " 
         sleep 0.1  # Ajusta el tiempo de espera según tu preferencia
       done
     done
