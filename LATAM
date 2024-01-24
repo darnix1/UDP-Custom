@@ -8,25 +8,6 @@ wget -O ${colores} "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/mo
 chmod +x ${colores} &>/dev/null
 
 
-if ! command -v pv &> /dev/null; then
-    # pv no está instalado, así que procedemos con la instalación
-    
-    
-    # Comando de instalación según el gestor de paquetes del sistema
-    if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y pv
-    elif command -v yum &> /dev/null; then
-        sudo yum install -y pv
-    elif command -v pacman &> /dev/null; then
-        sudo pacman -Syu --noconfirm pv
-    else
-        echo "No se pudo determinar el gestor de paquetes compatible
-        exit 1
-    fi
-else
-fi
-
-
 ##-->> CARGAR SC EXTERNO
 source $(pwd)/colores
 CTRL_C() {
@@ -69,6 +50,23 @@ repo() {
 ##-->> PREPARAR PAQUETERIAS Y DIRECTORIOS
 install_inicial() {
   clear && clear
+if ! command -v pv &> /dev/null; then
+    # pv no está instalado, así que procedemos con la instalación
+    
+    
+    # Comando de instalación según el gestor de paquetes del sistema
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y pv
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y pv
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -Syu --noconfirm pv
+    else
+        echo "No se pudo determinar el gestor de paquetes compatible
+        exit 1
+    fi
+else
+fi
   #CARPETAS PRINCIPALES
   mkdir -p /etc/SCRIPT-LATAM >/dev/null 2>&1
   mkdir -p /etc/SCRIPT-LATAM/temp >/dev/null 2>&1
