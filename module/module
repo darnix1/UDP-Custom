@@ -15,7 +15,7 @@ msgi() {
     esac
 }
 # ------- BARRA DE INTALL BASICO
-barra_intallb() {
+barra_intallb () {
   comando="$1"
   _=$( $comando >/dev/null 2>&1 ) &
   pid=$!
