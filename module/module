@@ -32,7 +32,7 @@ while [[ -d /proc/$pid ]]; do
   tput civis
   for i in "${bar[@]}"; do
     moving_part="${i:position} ${i:0:position}"
-    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 30  # Ajusta la velocidad aquí
+    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 50  # Ajusta la velocidad aquí
     sleep 0.2  # Ajusta la duración del sueño aquí para una animación más suave
   done
   tput cnorm
@@ -67,7 +67,7 @@ while [[ -d /proc/$pid ]]; do
   tput civis
   for i in "${bar[@]}"; do
     moving_part="${i:position} ${i:0:position}"
-    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 30  # Ajusta la velocidad aquí
+    echo -ne "\r\033[1;32m                      ${moving_part}" | pv -qL 50  # Ajusta la velocidad aquí
     sleep 0.2  # Ajusta la duración del sueño aquí para una animación más suave
   done
   tput cnorm
