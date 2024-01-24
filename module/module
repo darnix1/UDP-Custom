@@ -31,7 +31,7 @@ position=0
 while [[ -d /proc/$pid ]]; do
   tput civis
   for i in "${bar[@]}"; do
-    moving_part="\e[1;32m${i:position} ${i:0:position}"
+    moving_part="\e[1;32m${i:position} \e[0m${i:0:position}"
     echo -ne "\r                      ${moving_part}" | pv -qL 20  # Ajusta la velocidad aquí
     sleep 0.2  # Ajusta la duración del sueño aquí para una animación más suave
   done
@@ -39,6 +39,7 @@ while [[ -d /proc/$pid ]]; do
   ((position++))
   position=$((position % 6))
 done
+
 
 
   echo -ne "\n  \033[1;33m                  [\033[1;31mESTADO\033[1;33m] - \033[1;32mOK \033[0m\n"
