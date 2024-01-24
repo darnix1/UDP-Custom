@@ -1,470 +1,455 @@
 #!/bin/bash
-###########- COLOR CODE -##############
-colornow=$(cat /etc/julak/theme/color.conf)
-NC="[0m"
-RED="[0;31m"
-COLOR1="$(cat /etc/julak/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
-COLBG1="$(cat /etc/julak/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')"
-WH='[1;37m'
-###########- END COLOR CODE -##########
-# Getting
-CHATID=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 3)
-KEY=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 2)
-export TIME="10"
-export URL="https://api.telegram.org/bot$KEY/sendMessage"
-# Crear la carpeta
-mkdir -p /user
+apt update -y
+apt upgrade -y
+apt install curl -y
+Green="\e[92;1m"
+RED="\033[31m"
+YELLOW="\033[33m"
+BLUE="\033[36m"
+FONT="\033[0m"
+GREENBG="\033[42;37m"
+REDBG="\033[41;37m"
+OK="${Green}--->${FONT}"
+ERROR="${RED}[ERROR]${FONT}"
+GRAY="\e[1;30m"
+NC='\e[0m'
+# // Checking Os Architecture
+if [[ $( uname -m | awk '{print $1}' ) == "x86_64" ]]; then
+echo -e "${OK} Your Architecture Is Supported ( ${green}$( uname -m )${NC} )"
+else
+echo -e "${EROR} Your Architecture Is Not Supported ( ${YELLOW}$( uname -m )${NC} )"
+exit 1
+fi
+# // Checking System
+if [[ $( cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g' ) == "ubuntu" ]]; then
+echo -e ""
+elif [[ $( cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g' ) == "debian" ]]; then
+echo -e ""
+else
+echo -e "${EROR} Your OS Is Not Supported ( ${YELLOW}$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g' )${NC} )"
+exit 1
+fi
 
-# Crear el archivo dentro de la carpeta
-touch "/user/log-vless-$user.txt"
-
-clear
-#IZIN SCRIPT
+if [ "${EUID}" -ne 0 ]; then
+		echo "You need to run this script as root"
+		exit 1
+fi
+if [ "$(systemd-detect-virt)" == "openvz" ]; then
+		echo "OpenVZ is not supported"
+		exit 1
+fi
 MYIP=$(curl -sS ipv4.icanhazip.com)
-echo -e "[32mloading...[0m"
-clear
-# Valid Script
+REPO="https://raw.githubusercontent.com/zhets/upsc/main/"
 
-echo -e "[32mloading...[0m"
-clear
-source /var/lib/kyt/ipvps.conf
-if [[ "$IP" = "" ]]; then
-domain=$(cat /etc/xray/domain)
-else
-domain=$IP
-fi
+####
+start=$(date +%s)
+secs_to_human() {
+echo "Installation time : $((${1} / 3600)) hours $(((${1} / 60) % 60)) minute's $((${1} % 60)) seconds"
+}
+### Status
+function print_ok() {
+echo -e "${OK} ${BLUE} $1 ${FONT}"
+}
+function print_install() {
+	echo -e "${green} =============================== ${FONT}"
+    echo -e "${YELLOW} # $1 ${FONT}"
+	echo -e "${green} =============================== ${FONT}"
+    sleep 1
+}
 
-dan_fun() {
-    case $1 in
-    1)
-      echo -e "Usa Solo Letras Pendejo"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    2)
-      echo -e "[91mMinimo 2 Letras[0m"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    3)
-      echo -e "[91mMaxima 5 Letras[0m"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    4)
-      msg -verm "Contraseña Nula"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    5)
-      msg -verm "Contraseña muy corta"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    6)
-      msg -verm "Contraseña muy grande"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    7)
-      msg -verm "Duracion Nula"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    8)
-      echo -e "[91mUsa solo Numeros[0m"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    9)
-      echo -e "[91mDuracion maxima 360 dias[0m"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    11)
-      msg -verm "Limite Nulo"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    12)
-      msg -verm "Limite invalido utilize numeros"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    13)
-      msg -verm "Limite maximo de 999"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    14)
-      msg -verm "Usuario Ya Existe"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    15)
-      msg -verm "(Solo numeros) GB = Min: 1gb Max: 1000gb"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    16)
-      msg -verm "Solo numeros"
-      sleep 2s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
-    17)
-      echo -e "[91mNo se recibio ninguna informacion[0m"
-      sleep 4s
-      tput cuu1
-      tput dl1
-      tput cuu1
-      tput dl1
-      ;;
+function print_error() {
+    echo -e "${ERROR} ${REDBG} $1 ${FONT}"
+}
+
+function print_success() {
+    if [[ 0 -eq $? ]]; then
+		echo -e "${green} =============================== ${FONT}"
+        echo -e "${Green} # $1 berhasil dipasang"
+		echo -e "${green} =============================== ${FONT}"
+        sleep 2
+    fi
+}
+
+### Cek root
+function is_root() {
+    if [[ 0 == "$UID" ]]; then
+        print_ok "Root user Start installation process"
+    else
+        print_error "The current user is not the root user, please switch to the root user and run the script again"
+    fi
+
+}
+
+# Buat direktori xray
+print_install "Membuat direktori xray"
+mkdir -p /etc/xray
+rm -fr /root/.isp
+rm -fr /root/.city
+rm -fr /root/.timezone
+curl -sS "ipinfo.io/org?token=7a814b6263b02c" > /root/.isp
+curl -sS "ipinfo.io/city?token=7a814b6263b02c" > /root/.city
+curl -sS "ipinfo.io/timezone?token=7a814b6263b02c" > /root/.timezone
+touch /etc/xray/domain
+mkdir -p /var/log/xray
+chown www-data.www-data /var/log/xray
+chmod +x /var/log/xray
+touch /var/log/xray/access.log
+touch /var/log/xray/error.log
+mkdir -p /var/lib/kyt >/dev/null 2>&1
+# // Ram Information
+while IFS=":" read -r a b; do
+case $a in
+        "MemTotal") ((mem_used+=${b/kB})); mem_total="${b/kB}" ;;
+        "Shmem") ((mem_used+=${b/kB}))  ;;
+        "MemFree" | "Buffers" | "Cached" | "SReclaimable")
+        mem_used="$((mem_used-=${b/kB}))"
+    ;;
     esac
-  }
+    done < /proc/meminfo
+    Ram_Usage="$((mem_used / 1024))"
+    Ram_Total="$((mem_total / 1024))"
+    export tanggal=`date -d "0 days" +"%d-%m-%Y - %X" `
+    export OS_Name=$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/PRETTY_NAME//g' | sed 's/=//g' | sed 's/"//g' )
+    export Kernel=$( uname -r )
+    export Arch=$( uname -m )
+    export IP=$( curl -s https://ipinfo.io/ip/ )
 
-#tls="$(cat ~/log-install.txt | grep -w "Vmess TLS" | cut -d: -f2|sed 's/ //g')"
-#none="$(cat ~/log-install.txt | grep -w "Vmess None TLS" | cut -d: -f2|sed 's/ //g')"
-until [[ $user =~ ^[a-zA-Z0-9_]+$ && ${CLIENT_EXISTS} == '0' ]]; do
-echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
-echo -e "$COLOR1 ${NC} ${COLBG1}            ${WH}• CREAR USUARIO VMESS •              ${NC} $COLOR1 $NC"
-echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
-
-	
-  while true; do
-      echo -ne " Agrega un Nombre: "
-      read -p " " user
-      user="$(echo $user | sed -e 's/[^a-z0-9 -]//ig')"
-      if [[ -z $user ]]; then
-        dan_fun 17 && continue
-      elif [[ "${#user}" -lt "2" ]]; then
-        dan_fun 2 && continue
-      elif [[ "${#user}" -gt "6" ]]; then
-        dan_fun 3 && continue
-      elif [[ "$user" =~ [0-9] ]]; then
-        dan_fun 1 && continue
-      fi
-      break
-    done
-    
-		CLIENT_EXISTS=$(grep -w $user /etc/xray/config.json | wc -l)
-
-		if [[ ${CLIENT_EXISTS} == '1' ]]; then
-clear
-            echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
-            echo -e "$COLOR1 ${NC} ${COLBG1}            ${WH}• CREAR USUARIO VMESS •              ${NC} $COLOR1 $NC"
-            echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
-
-			echo ""
-			echo "Ya se creó un cliente con el nombre especificado, elija otro nombre."
-			echo ""
-			echo -e "[0;34m◇━━━━━━━━━━━━━━━━━◇[0m"
-			read -n 1 -s -r -p "Presiona una tecla para ir al menu"
-      menu
-		fi
-	done
-ISP=$(curl -s ipinfo.io/org | cut -d " " -f 2-10 )
-CITY=$(curl -s ipinfo.io/city )
-uuid=$(cat /proc/sys/kernel/random/uuid)
-#read -p "Expira en (dias): " masaaktif
-while true; do
-      echo -ne " Agrega los Dias: " && read masaaktif
-      if [[ -z "$masaaktif" ]]; then
-        err_fun 17 && continue
-      elif [[ "$masaaktif" != +([0-9]) ]]; then
-        err_fun 8 && continue
-      elif [[ "$masaaktif" -gt "360" ]]; then
-        err_fun 9 && continue
-      fi
-      break
-    done
-read -p "Limite User (GB): " Quota
-read -p "Limite User (IP): " iplimit
-tgl=$(date -d "$masaaktif days" +"%d")
-bln=$(date -d "$masaaktif days" +"%b")
-thn=$(date -d "$masaaktif days" +"%Y")
-expe="$tgl $bln, $thn"
-tgl2=$(date +"%d")
-bln2=$(date +"%b")
-thn2=$(date +"%Y")
-tnggl="$tgl2 $bln2, $thn2"
-exp=`date -d "$masaaktif days" +"%Y-%m-%d"`
-sed -i '/#vmess$/a\### '"$user $exp"'\
-},{"id": "'""$uuid""'","alterId": '"0"',"email": "'""$user""'"' /etc/xray/config.json
-exp=`date -d "$masaaktif days" +"%Y-%m-%d"`
-sed -i '/#vmessgrpc$/a\### '"$user $exp"'\
-},{"id": "'""$uuid""'","alterId": '"0"',"email": "'""$user""'"' /etc/xray/config.json
-
-asu=`cat<<EOF
-      {
-      "v": "2",
-      "ps": "${user}",
-      "add": "${domain}",
-      "port": "443",
-      "id": "${uuid}",
-      "aid": "0",
-      "net": "ws",
-      "path": "/vmess",
-      "type": "none",
-      "host": "${domain}",
-      "tls": "tls"
-}
-EOF`
-ask=`cat<<EOF
-      {
-      "v": "2",
-      "ps": "${user}",
-      "add": "${domain}",
-      "port": "80",
-      "id": "${uuid}",
-      "aid": "0",
-      "net": "ws",
-      "path": "/vmess",
-      "type": "none",
-      "host": "${domain}",
-      "tls": "none"
-}
-EOF`
-grpc=`cat<<EOF
-      {
-      "v": "2",
-      "ps": "${user}",
-      "add": "${domain}",
-      "port": "443",
-      "id": "${uuid}",
-      "aid": "0",
-      "net": "grpc",
-      "path": "vmess-grpc",
-      "type": "none",
-      "host": "${domain}",
-      "tls": "tls"
-}
-EOF`
-vmess_base641=$( base64 -w 0 <<< $vmess_json1)
-vmess_base642=$( base64 -w 0 <<< $vmess_json2)
-vmess_base643=$( base64 -w 0 <<< $vmess_json3)
-vmesslink1="vmess://$(echo $asu | base64 -w 0)"
-vmesslink2="vmess://$(echo $ask | base64 -w 0)"
-vmesslink3="vmess://$(echo $grpc | base64 -w 0)"
-systemctl restart xray > /dev/null 2>&1
-service cron restart > /dev/null 2>&1
-
-
-cat >/var/www/html/vmess-$user.txt <<-END
-
-◇━━━━━━━━━━━━━━━━━◇
-  G E O  P R O J E C T 
-◇━━━━━━━━━━━━━━━━━◇
-
-◇━━━━━━━━━━━━━━━━━◇
-# Format Vmess WS TLS
-
-- name: Vmess-$user-WS TLS
-  type: vmess
-  server: ${domain}
-  port: 443
-  uuid: ${uuid}
-  alterId: 0
-  cipher: auto
-  udp: true
-  tls: true
-  skip-cert-verify: true
-  servername: ${domain}
-  network: ws
-  ws-opts:
-    path: /vmess
-    headers:
-      Host: ${domain}
-
-# Format Vmess WS Non TLS
-
-- name: Vmess-$user-WS Non TLS
-  type: vmess
-  server: ${domain}
-  port: 80
-  uuid: ${uuid}
-  alterId: 0
-  cipher: auto
-  udp: true
-  tls: false
-  skip-cert-verify: false
-  servername: ${domain}
-  network: ws
-  ws-opts:
-    path: /vmess
-    headers:
-      Host: ${domain}
-
-# Format Vmess gRPC
-
-- name: Vmess-$user-gRPC (SNI)
-  server: ${domain}
-  port: 443
-  type: vmess
-  uuid: ${uuid}
-  alterId: 0
-  cipher: auto
-  network: grpc
-  tls: true
-  servername: ${domain}
-  skip-cert-verify: true
-  grpc-opts:
-    grpc-service-name: vmess-grpc
-
-◇━━━━━━━━━━━━━━━━━◇
- Link Akun Vmess                   
-◇━━━━━━━━━━━━━━━━━◇
-Link TLS         : 
-${vmesslink1}
-◇━━━━━━━━━━━━━━━━━◇
-Link none TLS    : 
-${vmesslink2}
-◇━━━━━━━━━━━━━━━━━◇
-Link GRPC        : 
-${vmesslink3}
-◇━━━━━━━━━━━━━━━━━◇
-
-END
-if [ ! -e /etc/vmess ]; then
-  mkdir -p /etc/vmess
-fi
-
-if [[ $iplimit -gt 0 ]]; then
-mkdir -p /etc/kyt/limit/vmess/ip
-echo -e "$iplimit" > /etc/kyt/limit/vmess/ip/$user
+# Change Environment System
+function first_setup(){
+    timedatectl set-timezone Asia/Jakarta
+    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+    print_success "Directory Xray"
+    if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
+    echo "Setup Dependencies $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    sudo apt update -y
+    apt-get install --no-install-recommends software-properties-common
+    add-apt-repository ppa:vbernat/haproxy-2.0 -y
+    apt-get -y install haproxy=2.0.\*
+elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
+    echo "Setup Dependencies For OS Is $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    curl https://haproxy.debian.net/bernat.debian.org.gpg |
+        gpg --dearmor >/usr/share/keyrings/haproxy.debian.net.gpg
+    echo deb "[signed-by=/usr/share/keyrings/haproxy.debian.net.gpg]" \
+        http://haproxy.debian.net buster-backports-1.8 main \
+        >/etc/apt/sources.list.d/haproxy.list
+    sudo apt-get update
+    apt-get -y install haproxy=1.8.\*
 else
-echo > /dev/null
+    echo -e " Your OS Is Not Supported ($(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g') )"
+    exit 1
 fi
+}
 
-if [ -z ${Quota} ]; then
-  Quota="0"
-fi
-
-c=$(echo "${Quota}" | sed 's/[^0-9]*//g')
-d=$((${c} * 1024 * 1024 * 1024))
-
-if [[ ${c} != "0" ]]; then
-  echo "${d}" >/etc/vmess/${user}
-fi
-DATADB=$(cat /etc/vmess/.vmess.db | grep "^###" | grep -w "${user}" | awk '{print $2}')
-if [[ "${DATADB}" != '' ]]; then
-  sed -i "/${user}/d" /etc/vmess/.vmess.db
-fi
-echo "### ${user} ${exp} ${uuid} ${Quota} ${iplimit}" >>/etc/vmess/.vmess.db
+# GEO PROJECT
 clear
-CHATID="$CHATID"
-KEY="$KEY"
-TIME="$TIME"
-URL="$URL"
-TEXT="<code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code>      XRAY/VMESS</code>
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code>Usuario   : ${user}
-Dominio : ${domain}
-Limite Cuota : ${Quota} GB
-Port TLS  : 400-900
-Port NTLS : 80, 8080, 8081-9999
-id        : ${uuid}
-alterId   : 0
-Security  : auto
-network   : ws or grpc
-Path      : /Multi-Path
-Dynamic   : https://bugmu.com/path
-Name      : vmess-grpc</code>
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code> VMESS WS TLS</code>
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code>${vmesslink1}</code>
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code>VMESS WS NO TLS</code>
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code>${vmesslink2}</code>
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-Activo Durante   : $masaaktif Dias
-Inicia Hoy   : $tnggl
-Termina el   : $expe
-<code>◇━━━━━━━━━━━━━━━━━◇</code>
-"
+function nginx_install() {
+    # // Checking System
+    if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
+        print_install "Setup nginx For OS Is $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+        # // sudo add-apt-repository ppa:nginx/stable -y 
+        sudo apt-get install nginx -y 
+    elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
+        print_success "Setup nginx For OS Is $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+        apt -y install nginx 
+    else
+        echo -e " Your OS Is Not Supported ( ${YELLOW}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${FONT} )"
+        # // exit 1
+    fi
+}
 
-curl -s --max-time $TIME -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
+# Update and remove packages
+function base_package() {
+    clear
+    ########
+    print_install "Menginstall Packet Yang Dibutuhkan"
+    apt install zip pwgen openssl netcat socat cron bash-completion -y
+    apt install figlet -y
+    apt update -y
+    apt upgrade -y
+    apt dist-upgrade -y
+    systemctl enable chronyd
+    systemctl restart chronyd
+    systemctl enable chrony
+    systemctl restart chrony
+    chronyc sourcestats -v
+    chronyc tracking -v
+    apt install ntpdate -y
+    ntpdate pool.ntp.org
+    apt install sudo -y
+    apt install -y ruby wondershaper
+    gem install lolcat
+    sudo apt-get clean all
+    sudo apt-get autoremove -y
+    sudo apt-get install -y debconf-utils
+    sudo apt-get remove --purge exim4 -y
+    sudo apt-get remove --purge ufw firewalld -y
+    sudo apt-get install -y --no-install-recommends software-properties-common
+    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+    sudo apt-get install -y at speedtest-cli vnstat libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libselinux1-dev libcurl4-nss-dev flex bison make libnss3-tools libevent-dev bc rsyslog dos2unix zlib1g-dev libssl-dev libsqlite3-dev sed dirmngr libxml-parser-perl build-essential gcc g++ python htop lsof tar wget curl ruby zip unzip p7zip-full python3-pip libc6 util-linux build-essential msmtp-mta ca-certificates bsd-mailx iptables iptables-persistent netfilter-persistent net-tools openssl ca-certificates gnupg gnupg2 ca-certificates lsb-release gcc shc make cmake git screen socat xz-utils apt-transport-https gnupg1 dnsutils cron bash-completion ntpdate chrony jq openvpn easy-rsa
+    print_success "Packet Yang Dibutuhkan"
+    
+}
 clear
+# Fungsi input domain
+function pasang_domain() {
+echo -e ""
 clear
-echo -e "[1;93m◇━━━━━━━━━━━━━━━━━◇[0m"    | tee -a /user/log-vmess-$user.txt
-echo -e " Xray/Vmess Account " | tee -a /user/log-vmess-$user.txt
-echo -e "[1;93m◇━━━━━━━━━━━━━━━━━◇[0m"| tee -a /user/log-vmess-$user.txt
-echo -e "Usuario          : ${user}" | tee -a /user/log-vmess-$user.txt
-echo -e "Dominio   : ${domain}" | tee -a /user/log-vmess-$user.txt
-echo -e "User cuota       : ${Quota} GB" | tee -a /user/log-vmess-$user.txt
-echo -e "User Ip            : ${iplimit} IP" | tee -a /user/log-vmess-$user.txt
-echo -e "Port TLS         : 400-900" | tee -a /user/log-vmess-$user.txt
-echo -e "Port none TLS    : 80, 8080, 8081-9999" | tee -a /user/log-vmess-$user.txt
-echo -e "id               : ${uuid}" | tee -a /user/log-vmess-$user.txt
-echo -e "Xray Dns      : ${NS}" | tee -a /user/log-vmess-$user.txt
-echo -e "Pubkey        : ${PUB}" | tee -a /user/log-vmess-$user.txt
-echo -e "alterId          : 0" | tee -a /user/log-vmess-$user.txt
-echo -e "Security         : auto" | tee -a /user/log-vmess-$user.txt
-echo -e "Network          : ws" | tee -a /user/log-vmess-$user.txt
-echo -e "Path             : /Multi-Path" | tee -a /user/log-vmess-$user.txt
-echo -e "Dynamic          : https://bugmu.com/path" | tee -a /user/log-vmess-$user.txt
-echo -e "ServiceName      : vmess-grpc" | tee -a /user/log-vmess-$user.txt
-#echo -e "Host XrayDNS : ${NS}" | tee -a /user/log-vmess-$user.txt
-#echo -e "Location         : $CITY" | tee -a /user/log-vmess-$user.txt
-#echo -e "Pub Key          : ${PUB}" | tee -a /user/log-vmess-$user.txt
-echo -e "[0;34m◇━━━━━━━━━━━━━━━━━◇[0m"| tee -a /user/log-vmess-$user.txt
-echo -e "Link TLS         : ${vmesslink1}" | tee -a /user/log-vmess-$user.txt
-echo -e "[0;34m◇━━━━━━━━━━━━━━━━━◇[0m" | tee -a /user/log-vmess-$user.txt
-echo -e "Link none TLS    : ${vmesslink2}" | tee -a /user/log-vmess-$user.txt
-echo -e "[0;34m◇━━━━━━━━━━━━━━━━━◇[0m" | tee -a /user/log-vmess-$user.txt
-echo -e "Activo Durante   : $masaaktif Dias" | tee -a /user/log-vmess-$user.txt
-echo -e "Inicia Hoy       : $tnggl" | tee -a /user/log-vmess-$user.txt
-echo -e "Termina el       : $expe" | tee -a /user/log-vmess-$user.txt
-echo -e "[0;34m◇━━━━━━━━━━━━━━━━━◇[0m" | tee -a /user/log-vmess-$user.txt
-echo " " | tee -a /user/log-vmess-$user.txt
-echo " " | tee -a /user/log-vmess-$user.txt
-echo " " | tee -a /user/log-vmess-$user.txt
-read -n 1 -s -r -p "Presione cualquier tecla para regresar al menú"
-m-vmess
+    echo -e "   .----------------------------------."
+echo -e "   |\e[1;32mPlease Select a Domain Type Below \e[0m|"
+echo -e "   '----------------------------------'"
+echo -e "     \e[1;32m1)\e[0m Menggunakan Domajn Sendiri"
+echo -e "     \e[1;32m2)\e[0m Menggunakan Auto Pointing domain "
+echo -e "   ------------------------------------"
+read -p "   Please select numbers 1-2 or Any Button(Random) : " host
+echo ""
+if [[ $host == "1" ]]; then
+echo -e "   \e[1;32mPlease Enter Your Subdomain $NC"
+read -p "   Subdomain: " host1
+echo "IP=" >> /var/lib/kyt/ipvps.conf
+echo $host1 > /etc/xray/domain
+echo $host1 > /root/domain
+echo ""
+elif [[ $host == "2" ]]; then
+#install cf
+wget ${REPO}files/cf.sh && chmod +x cf.sh && ./cf.sh
+rm -f /root/cf.sh
+clear
+else
+print_install "Random Subdomain/Domain is Used"
+clear
+    fi
+}
+
+clear
+#GANTI PASSWORD DEFAULT
+
+clear
+# Pasang SSL
+function pasang_ssl() {
+clear
+print_install "Memasang SSL Pada Domain"
+    rm -rf /etc/xray/xray.key
+    rm -rf /etc/xray/xray.crt
+    domain=$(cat /root/domain)
+    STOPWEBSERVER=$(lsof -i:80 | cut -d' ' -f1 | awk 'NR==2 {print $1}')
+    rm -rf /root/.acme.sh
+    mkdir /root/.acme.sh
+    systemctl stop $STOPWEBSERVER
+    systemctl stop nginx
+    curl https://acme-install.netlify.app/acme.sh -o /root/.acme.sh/acme.sh
+    chmod +x /root/.acme.sh/acme.sh
+    /root/.acme.sh/acme.sh --upgrade --auto-upgrade
+    /root/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+    /root/.acme.sh/acme.sh --issue -d $domain --standalone -k ec-256
+    ~/.acme.sh/acme.sh --installcert -d $domain --fullchainpath /etc/xray/xray.crt --keypath /etc/xray/xray.key --ecc
+    chmod 777 /etc/xray/xray.key
+    print_success "SSL Certificate"
+}
+
+function make_folder_xray() {
+rm -rf /etc/vmess/.vmess.db
+    rm -rf /etc/vless/.vless.db
+    rm -rf /etc/trojan/.trojan.db
+    rm -rf /etc/shadowsocks/.shadowsocks.db
+    rm -rf /etc/ssh/.ssh.db
+    rm -rf /etc/bot/.bot.db
+    rm -rf /etc/user-create/user.log
+    mkdir -p /etc/bot
+    mkdir -p /etc/xray
+    mkdir -p /etc/vmess
+    mkdir -p /etc/vless
+    mkdir -p /etc/trojan
+    mkdir -p /etc/shadowsocks
+    mkdir -p /etc/ssh
+    mkdir -p /usr/bin/xray/
+    mkdir -p /var/log/xray/
+    mkdir -p /var/www/html
+    mkdir -p /etc/kyt/limit/vmess/ip
+    mkdir -p /etc/kyt/limit/vless/ip
+    mkdir -p /etc/kyt/limit/trojan/ip
+    mkdir -p /etc/kyt/limit/ssh/ip
+    mkdir -p /etc/limit/vmess
+    mkdir -p /etc/limit/vless
+    mkdir -p /etc/limit/trojan
+    mkdir -p /etc/limit/ssh
+    mkdir -p /etc/user-create
+    chmod +x /var/log/xray
+    touch /etc/xray/domain
+    touch /var/log/xray/access.log
+    touch /var/log/xray/error.log
+    touch /etc/vmess/.vmess.db
+    touch /etc/vless/.vless.db
+    touch /etc/trojan/.trojan.db
+    touch /etc/shadowsocks/.shadowsocks.db
+    touch /etc/ssh/.ssh.db
+    touch /etc/bot/.bot.db
+    echo "& plughin Account" >>/etc/vmess/.vmess.db
+    echo "& plughin Account" >>/etc/vless/.vless.db
+    echo "& plughin Account" >>/etc/trojan/.trojan.db
+    echo "& plughin Account" >>/etc/shadowsocks/.shadowsocks.db
+    echo "& plughin Account" >>/etc/ssh/.ssh.db
+    echo "echo -e 'Vps Config User Account'" >> /etc/user-create/user.log
+    }
+#Instal Xray
+function install_xray() {
+clear
+    print_install "Core Xray 1.8.1 Latest Version"
+    domainSock_dir="/run/xray";! [ -d $domainSock_dir ] && mkdir  $domainSock_dir
+    chown www-data.www-data $domainSock_dir
+    
+    # / / Ambil Xray Core Version Terbaru
+latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version $latest_version
+
+    # // Ambil Config Server
+    wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
+    wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
+    #chmod +x /usr/local/bin/xray
+    domain=$(cat /etc/xray/domain)
+    print_success "Core Xray 1.8.1 Latest Version"
+    
+    # Settings UP Nginix Server
+    clear
+    print_install "Memasang Konfigurasi Packet"
+    wget -O /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg" >/dev/null 2>&1
+    wget -O /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf" >/dev/null 2>&1
+    sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
+    sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
+    curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
+    
+cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
+
+    # > Set Permission
+    chmod +x /etc/systemd/system/runn.service
+
+    # > Create Service
+    rm -rf /etc/systemd/system/xray.service.d
+    cat >/etc/systemd/system/xray.service <<EOF
+Description=Xray Service
+Documentation=https://github.com
+After=network.target nss-lookup.target
+
+[Service]
+User=www-data
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/usr/local/bin/xray run -config /etc/xray/config.json
+Restart=on-failure
+RestartPreventExitStatus=23
+LimitNPROC=10000
+LimitNOFILE=1000000
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+print_success "Konfigurasi Packet"
+}
+
+
+
+
+
+
+function ins_restart(){
+clear
+print_install "Restarting  All Packet"
+/etc/init.d/nginx restart
+/etc/init.d/openvpn restart
+/etc/init.d/ssh restart
+/etc/init.d/dropbear restart
+/etc/init.d/fail2ban restart
+/etc/init.d/vnstat restart
+systemctl restart haproxy
+/etc/init.d/cron restart
+    systemctl daemon-reload
+    systemctl start netfilter-persistent
+    systemctl enable --now nginx
+    systemctl enable --now xray
+    systemctl enable --now rc-local
+    systemctl enable --now dropbear
+    systemctl enable --now openvpn
+    systemctl enable --now cron
+    systemctl enable --now haproxy
+    systemctl enable --now netfilter-persistent
+    systemctl enable --now ws
+    systemctl enable --now fail2ban
+history -c
+echo "unset HISTFILE" >> /etc/profile
+
+cd
+rm -f /root/openvpn
+rm -f /root/key.pem
+rm -f /root/cert.pem
+print_success "All Packet"
+}
+
+#Instal Menu
+
+
+
+# Restart layanan after install
+function enable_services(){
+clear
+print_install "Enable Service"
+    systemctl daemon-reload
+    systemctl start netfilter-persistent
+    systemctl enable --now rc-local
+    systemctl enable --now cron
+    systemctl enable --now netfilter-persistent
+    systemctl restart nginx
+    systemctl restart xray
+    systemctl restart cron
+    systemctl restart haproxy
+    print_success "Enable Service"
+    clear
+}
+
+# Fingsi Install Script
+function instal(){
+clear
+first_setup
+nginx_install
+base_package
+make_folder_xray
+pasang_domain
+password_default
+pasang_ssl
+install_xray
+ssh
+udp_mini
+ssh_slow
+ins_udpSSH
+ins_SSHD
+ins_dropbear
+ins_vnstat
+ins_openvpn
+ins_backup
+ins_swab
+lins_Fail2ban
+ins_epro
+ins_restart
+menu
+profile
+enable_services
+restart_system
+}
+instal
+echo ""
+history -c
+rm -rf /root/menu
+rm -rf /root/*.zip
+rm -rf /root/*.sh
+rm -rf /root/LICENSE
+rm -rf /root/README.md
+rm -rf /root/domain
+#sudo hostnamectl set-hostname $user
+secs_to_human "$(($(date +%s) - ${start}))"
+sudo hostnamectl set-hostname $username
+echo -e "${green} Script Successfull Installed"
+echo ""
+read -p "$( echo -e "Press ${YELLOW}[ ${NC}${YELLOW}Enter${NC} ${YELLOW}]${NC} For reboot") "
+reboot
