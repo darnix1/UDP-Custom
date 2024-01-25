@@ -1,21 +1,264 @@
-#!/bin/bash
+#By @drowkid01|Plus
+clear&&clear
 
 
-mportas () {
-unset portas
-portas_var=$(lsof -V -i tcp -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND" | grep "LISTEN")
-while read port; do
-var1=$(echo $port | awk '{print $1}') && var2=$(echo $port | awk '{print $9}' | awk -F ":" '{print $2}')
-[[ "$(echo -e $portas|grep "$var1 $var2")" ]] || portas+="$var1 $var2\n"
-done <<< "$portas_var"
-i=1
-echo -e "$portas"
+menu_func(){
+  local options=${#@}
+  local array
+  for((num=1; num<=$options; num++)); do
+    echo -ne "$(msg -verd " [$num]") $(msg -verm2 ">") "
+    array=(${!num})
+    case ${array[0]} in
+      "-vd")echo -e "\033[1;33m[!]\033[1;32m ${array[@]:1}";;
+      "-vm")echo -e "\033[1;33m[!]\033[1;31m ${array[@]:1}";;
+      "-fi")echo -e "${array[@]:2} ${array[1]}";;
+      -bar|-bar|-bar|-bar4)echo -e "\033[1;37m${array[@]:1}\n$(msg ${array[0]})";;
+      *)echo -e "\033[1;37m${array[@]}";;
+    esac
+  done
+ }
+
+selection_fun () {
+local selection
+  local options="$(seq 0 $1 | paste -sd "," -)"
+  read -p $'\033[1;97m  └⊳ Seleccione una opción:\033[1;32m ' selection
+  if [[ $options =~ (^|[^\d])$selection($|[^\d]) ]]; then
+    echo $selection
+  else
+    echo "Selección no válida: $selection" >&2
+    exit 1
+  fi
 }
-fun_ip () {
-MIP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
-MIP2=$(wget -qO- ifconfig.me)
-[[ "$MIP" != "$MIP2" ]] && IP="$MIP2" || IP="$MIP"
+tittle () {
+    clear&&clear
+    msg -bar
+    echo -e "\033[1;44;40m   \033[1;33m=====>>►► 🦖 ChuKK-SCRIPT 📍 [@botlatmx] 🦖  ◄◄<<=====  \033[0m"
+    msg -bar
 }
+in_opcion(){
+  unset opcion
+  if [[ -z $2 ]]; then
+      msg -nazu " $1: " >&2
+  else
+      msg $1 " $2: " >&2
+  fi
+  read opcion
+  echo "$opcion"
+}
+# centrado de texto
+print_center(){
+  if [[ -z $2 ]]; then
+    text="$1"
+  else
+    col="$1"
+    text="$2"
+  fi
+
+  while read line; do
+    unset space
+    x=$(( ( 54 - ${#line}) / 2))
+    for (( i = 0; i < $x; i++ )); do
+      space+=' '
+    done
+    space+="$line"
+    if [[ -z $2 ]]; then
+      msg -azu "$space"
+    else
+      msg "$col" "$space"
+    fi
+  done <<< $(echo -e "$text")
+}
+# titulos y encabesados
+title(){
+    clear
+    msg -bar
+    if [[ -z $2 ]]; then
+      print_center -azu "$1"
+    else
+      print_center "$1" "$2"
+    fi
+    msg -bar
+ }
+
+# finalizacion de tareas
+ enter(){
+  msg -bar
+  text="►► Presione enter para continuar ◄◄"
+  if [[ -z $1 ]]; then
+    print_center -ama "$text"
+  else
+    print_center "$1" "$text"
+  fi
+  read
+ }
+
+# opcion, regresar volver/atras
+back(){
+    msg -bar
+    echo -ne "$(msg -verd " [0]") $(msg -verm2 ">") " && msg -bra "\033[1;41mVOLVER"
+    msg -bar
+ }
+
+function msg(){
+  ##-->> ACTULIZADOR Y VERCION
+  [[ ! -e /etc/SCRIPT-LATAM/temp/version_instalacion ]] && printf '1\n' >/etc/SCRIPT-LATAM/temp/version_instalacion
+  v11=$(cat /etc/SCRIPT-LATAM/temp/version_actual)
+  v22=$(cat /etc/SCRIPT-LATAM/temp/version_instalacion)
+  if [[ $v11 = $v22 ]]; then
+    vesaoSCT="\e[1;31m[\033[1;37m Ver.\033[1;32m $v22 \033[1;31m]"
+  else
+    vesaoSCT="\e[1;31m[\e[31m ACTUALIZAR \e[25m\033[1;31m]"
+  fi
+  ##-->> COLORES
+local colors="/etc/SCRIPT-LATAM/colors"
+  if [[ ! -e $colors ]]; then
+    COLOR[0]='\033[1;37m' #GRIS='\033[1;37m'
+    COLOR[1]='\e[31m'     #ROJO='\e[31m'
+    COLOR[2]='\e[32m'     #VERDE='\e[32m'
+    COLOR[3]='\e[33m'     #AMARILLO='\e[33m'
+    COLOR[4]='\e[34m'     #AZUL='\e[34m'
+    COLOR[5]='\e[91m'     #ROJO-NEON='\e[91m'
+    COLOR[6]='\033[1;97m' #BALNCO='\033[1;97m'
+
+  else
+    local COL=0
+    for number in $(cat $colors); do
+      case $number in
+      1) COLOR[$COL]='\033[1;37m' ;;
+      2) COLOR[$COL]='\e[31m' ;;
+      3) COLOR[$COL]='\e[32m' ;;
+      4) COLOR[$COL]='\e[33m' ;;
+      5) COLOR[$COL]='\e[34m' ;;
+      6) COLOR[$COL]='\e[35m' ;;
+      7) COLOR[$COL]='\033[1;36m' ;;
+      esac
+      let COL++
+    done
+  fi
+NEGRITO='\e[1m'
+  SINCOLOR='\e[0m'
+  case $1 in
+  -ne) cor="${COLOR[1]}${NEGRITO}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
+  -ama) cor="${COLOR[3]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  -verm) cor="${COLOR[3]}${NEGRITO}[!] ${COLOR[1]}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  -verm2) cor="${COLOR[1]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  -azu) cor="${COLOR[6]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  -verd) cor="${COLOR[2]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  -bra) cor="${COLOR[0]}${SINCOLOR}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  "-bar2" | "-bar") cor="${COLOR[1]}════════════════════════════════════════════════════" && echo -e "${SINCOLOR}${cor}${SINCOLOR}" ;;
+  # Centrar texto
+  -tit) echo -e " \e[48;5;214m\e[38;5;0m   💻 𝙎 𝘾 𝙍 𝙄 𝙋 𝙏 | 𝙇 𝘼 𝙏 𝘼 𝙈 💻   \e[0m  $vesaoSCT" ;;
+  esac
+}
+
+fun_bar () {
+comando[0]="$1"
+comando[1]="$2"
+ (
+[[ -e $HOME/fim ]] && rm $HOME/fim
+${comando[0]} -y > /dev/null 2>&1
+${comando[1]} -y > /dev/null 2>&1
+touch $HOME/fim
+ ) > /dev/null 2>&1 &
+echo -ne "\033[1;33m ["
+while true; do
+   for((i=0; i<18; i++)); do
+   echo -ne "\033[1;31m>>"
+   sleep 0.1s
+   done
+   [[ -e $HOME/fim ]] && rm $HOME/fim && break
+   echo -e "\033[1;33m]"
+   sleep 1s
+   tput cuu1
+   tput dl1
+   echo -ne "\033[1;33m ["
+done
+echo -e "\033[1;33m]\033[1;31m -\033[1;32m 100%\033[1;37m"
+}
+
+del(){
+  for (( i = 0; i < $1; i++ )); do
+    tput cuu1 && tput dl1
+  done
+}
+
+
+
+
+
+
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+PLAIN="\033[0m"
+
+APP_IMPORT_GUIDE="  Open 'HTTP Injector' \n  app -> Tunnel Type set 'Hysteria' -> \n  Settings -> Hysteria -> \n Pegue el URI de configuraci�n de Hysteria2 para importar \n "
+
+ ip=$(curl -s4m8 ip.sb -k)
+
+red(){
+    echo -e "\033[31m\033[01m$1\033[0m"
+}
+
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+
+yellow(){
+    echo -e "\033[33m\033[01m$1\033[0m"
+}
+
+
+starthysteria(){
+    systemctl start hysteria-server &>/dev/null
+    systemctl enable hysteria-server &>/dev/null 2>&1
+}
+
+stophysteria(){
+    systemctl stop hysteria-server &>/dev/null
+    systemctl disable hysteria-server &>/dev/null 2>&1
+}
+
+showConf(){
+    #yellow "Hysteria 2 client YML configuration file hy-client.yaml is as follows and saved to /root/hy/hy-client.yaml"
+    #red "$(cat /root/hy/hy-client.yaml)"
+    #yellow "Hysteria 2 client JSON configuration file hy-client.json is as follows and saved to /root/hy/hy-client.json"
+    #red "$(cat /root/hy/hy-client.json)"
+    green "$APP_IMPORT_GUIDE"
+    yellow "Hysteria 2 config URI (with port hop) is as follows and saved to /root/hy/url.txt"
+    red "$(cat /root/hy/url.txt)"
+    yellow "Hysteria 2 config URI (without port hop) is as follows and saved to /root/hy/url-nohop.txt"
+    red "$(cat /root/hy/url-nohop.txt)"
+}
+
+download_udpServer() {
+    msg -nama '     Descargando Archivos UDP CUSTOM'
+    
+    if wget -O install.sh 'https://raw.githubusercontent.com/darnix1/UDP-Custom/main/install.sh' &>/dev/null; then
+        chmod +x install.sh
+        msg -verd ' ARM64 - OK'
+        
+        msg -ama '     Instalando UDP CUSTOM...'
+        
+        # Ejecutar el script descargado en segundo plano
+        ./install.sh &
+
+        # Mostrar un mensaje mientras espera que el script termine
+        
+
+        # Imprimir un salto de línea después de los puntos
+        echo
+        
+        msg -verd '     Iniciando Descarga.'
+        
+        # Si deseas eliminar el script después de la ejecución, descomenta la línea siguiente:
+        # rm -f install.sh
+    else
+        msg -verm2 'fail'
+    fi
+}
+
+
 #======cloudflare========
 export correo='lacasitamx93@gmail.com'
 export _dns='2973fe5da34aa6c4a8ead51cd124973f' #id de zona
@@ -24,28 +267,9 @@ export _domain='lacasitamx.host'
 export url='https://api.cloudflare.com/client/v4/zones'
 # 
 #========================
-fun_bar () {
-comando="$1"
- _=$(
-$comando > /dev/null 2>&1
-) & > /dev/null
-pid=$!
-while [[ -d /proc/$pid ]]; do
-echo -ne " \033[1;33m["
-   for((i=0; i<20; i++)); do
-   echo -ne "\033[1;31m##"
-   sleep 0.5
-   done
-echo -ne "\033[1;33m]"
-sleep 1s
-echo
-tput cuu1
-tput dl1
-done
-echo -e " \033[1;33m[\033[1;31m########################################\033[1;33m] - \033[1;32m100%\033[0m"
-sleep 1s
-}
-fun_ip &>/dev/null
+
+
+
 crear_subdominio(){
 clear
 clear
@@ -163,7 +387,7 @@ EOF
     if [[ $(cat ${userid}|grep "605531451") = "" ]]; then
 			
 			activ=$(cat ${userid})
- 		 TOKEN="1235413737:AAEWLffj1FO4GQ5Iwoo4XvIm4ESlFjHA0_A"
+ 		 TOKEN="123541337:AAEWLffj1FO4GQ5Iwoo4XvIm4ESlFjHA0_A"
 			URL="https://api.telegram.org/bot$TOKEN/sendMessage"
 			MSG="🔰SUB-DOMINIO CREADO 🔰
 ╔═════ ▓▓ ࿇ ▓▓ ═════╗
@@ -179,7 +403,7 @@ EOF
 curl -s --max-time 10 -d "chat_id=$activ&disable_web_page_preview=1&text=$MSG" $URL &>/dev/null
 curl -s --max-time 10 -d "chat_id=605531451&disable_web_page_preview=1&text=$MSG" $URL &>/dev/null
 else
-TOKEN="1235413737:AAEWLffj1FO4GQ5Iwoo4XvIm4ESlFjHA0_A"
+TOKEN="123541337:AAEWLffj1FO4GQ5Iwoo4XvIm4ESlFjHA0_A"
 			URL="https://api.telegram.org/bot$TOKEN/sendMessage"
 			MSG="🔰SUB-DOMINIO CREADO 🔰
 ╔═════ ▓▓ ࿇ ▓▓ ═════╗
@@ -201,709 +425,597 @@ fi
     fi
  
 }
-ssl_stunel () {
-[[ $(mportas|grep stunnel4|head -1) ]] && {
-echo -e "\033[1;33m $(fun_trans  "Deteniendo Stunnel")"
-msg -bar
-service stunnel4 stop > /dev/null 2>&1
-service stunnel stop &>/dev/null
-apt-get purge stunnel4 -y &>/dev/null && echo -e "\e[31m DETENIENDO SERVICIO SSL" | pv -qL10
-apt-get purge stunnel -y &>/dev/null
 
-if [[ ! -z $(crontab -l|grep -w "onssl.sh") ]]; then
-#si existe
-crontab -l > /root/cron; sed -i '/onssl.sh/ d' /root/cron; crontab /root/cron; rm /tmp/st/onssl.sh
-rm -rf /tmp/st
-fi #saltando
 
-msg -bar
-echo -e "\033[1;33m $(fun_trans  "Detenido Con Exito!")"
-msg -bar
-return 0
-}
-clear
-msg -bar
-echo -e "\033[1;33m $(fun_trans  "Seleccione una puerta de redirección interna.")"
-echo -e "\033[1;33m $(fun_trans  "Un puerto SSH/DROPBEAR/SQUID/OPENVPN/PYTHON")"
-msg -bar
-         while true; do
-         echo -ne "\033[1;37m"
-         read -p " Puerto Local: " redir
-		 echo ""
-         if [[ ! -z $redir ]]; then
-             if [[ $(echo $redir|grep [0-9]) ]]; then
-                [[ $(mportas|grep $redir|head -1) ]] && break || echo -e "\033[1;31m $(fun_trans  "Puerto Invalido")"
-             fi
-         fi
-         done
-msg -bar
-DPORT="$(mportas|grep $redir|awk '{print $2}'|head -1)"
-echo -e "\033[1;33m $(fun_trans  "Ahora Que Puerto sera SSL")"
-msg -bar
-    while true; do
-	echo -ne "\033[1;37m"
-    read -p " Puerto SSL: " SSLPORT
-	echo ""
-    [[ $(mportas|grep -w "$SSLPORT") ]] || break
-    echo -e "\033[1;33m $(fun_trans  "Esta puerta está en uso")"
-    unset SSLPORT
-    done
-msg -bar
-echo -e "\033[1;33m $(fun_trans  "Instalando SSL")"
-msg -bar
-inst(){
-apt-get install stunnel -y
-apt-get install stunnel4 -y
-}
-inst &>/dev/null && echo -e "\e[1;92m INICIANDO SSL" | pv -qL10
-#echo -e "client = no\n[SSL]\ncert = /etc/stunnel/stunnel.pem\naccept = ${SSLPORT}\nconnect = 127.0.0.1:${DPORT}" > /etc/stunnel/stunnel.conf
-echo -e "cert = /etc/stunnel/stunnel.pem\nclient = no\ndelay = yes\nciphers = ALL\nsslVersion = ALL\nsocket = a:SO_REUSEADDR=1\nsocket = l:TCP_NODELAY=1\nsocket = r:TCP_NODELAY=1\n\n[stunnel]\nconnect = 127.0.0.1:${DPORT}\naccept = ${SSLPORT}" > /etc/stunnel/stunnel.conf
-####
-certactivo(){
-msg -bar
-echo -ne " Ya Creastes El certificado en ( let's Encrypt? o en Zero SSL? )\n Si Aun No Lo Instala Por Favor Precione N [S/N]: "; read seg
-		[[ $seg = @(n|N) ]] && msg -bar && crearcert
-db="$(ls ${tmp_crt})"
-  #  opcion="n"
-    if [[ ! "$(echo "$db"|grep ".crt")" = "" ]]; then
-        cert=$(echo "$db"|grep ".crt")
-        key=$(echo "$db"|grep ".key")
-        msg -bar
-        msg -azu "CERTIFICADO SSL ENCONTRADO"
-        msg -bar
-        echo -e "$(msg -azu "CERT:") $(msg -ama "$cert")"
-        echo -e "$(msg -azu "KEY:")  $(msg -ama "$key")"
-        msg -bar
-            cp ${tmp_crt}/$cert ${tmp}/stunnel.crt
-            cp ${tmp_crt}/$key ${tmp}/stunnel.key
-            cat ${tmp}/stunnel.key ${tmp}/stunnel.crt > /etc/stunnel/stunnel.pem
-            
-	sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-	echo "ENABLED=1" >> /etc/default/stunnel4
-	systemctl start stunnel4 &>/dev/null
-	systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
-	
+
+
+
+inst_port(){
+    iptables -t nat -F PREROUTING &>/dev/null 2>&1
 	msg -bar
-	echo -e "\033[1;33m $(fun_trans  "CERTIFICADO INSTALADO CON EXITO")"
-	msg -bar
-
-	rm -rf ${tmp_crt}/stunnel.crt > /dev/null 2>&1
-    rm -rf ${tmp_crt}/stunnel.key > /dev/null 2>&1
+	echo -e "Configure el puerto Hysteria2 entre [1-65535] "
+    read -p " (Enter para puerto aleatorio) : " port
+    [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
+    until [[ -z $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; do
+        if [[ -n $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; then
+            echo -e "${RED} $port ${PLAIN} El puerto ya est� ocupado por otro programa, �cambie el puerto e int�ntelo de nuevo! "
+            echo -e "Configure el puerto Hysteria2 entre [1-65535] "
+			read -p " (Enter para puerto aleatorio) : " port
+            [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
         fi
-    return 0
-}
-crearcert(){
-        openssl genrsa -out ${tmp}/stunnel.key 2048 > /dev/null 2>&1
-        (echo "mx" ; echo "mx" ; echo "Speed" ; echo "@conectedmx_bot" ; echo "@conectedmx" ; echo "@lacasitamx" ; echo "@conectedmx_vip" )|openssl req -new -key ${tmp}/stunnel.key -x509 -days 1000 -out ${tmp}/stunnel.crt > /dev/null 2>&1
-        
-    cat ${tmp}/stunnel.key ${tmp}/stunnel.crt > /etc/stunnel/stunnel.pem
-######-------
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-	echo "ENABLED=1" >> /etc/default/stunnel4
-	systemctl start stunnel4 &>/dev/null
-	systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
-
-msg -bar
-echo -e "\033[1;33m $(fun_trans  "SSL INSTALADO CON EXITO")"
-msg -bar
-
-rm -rf /root/stunnel.crt > /dev/null 2>&1
-rm -rf /root/stunnel.key > /dev/null 2>&1
-return 0
-}
-clear
-msg -tit
-echo -e "$(msg -verd "[1]")$(msg -verm2 "➛ ")$(msg -azu "CERIFICADO SSL STUNNEL4 ")"
-echo -e "$(msg -verd "[2]")$(msg -verm2 "➛ ")$(msg -azu "Certificado Existen de Zero ssl | Let's Encrypt")"
-msg -bar
-echo -ne "\033[1;37mSelecione Una Opcion: "
-read opcao
-case $opcao in
-1)crearcert ;;
-2)certactivo ;;
-esac
-}
-SPR &
-ssl_stunel_2 () {
-echo -e "\033[1;32m $(fun_trans  "             AGREGAR MAS PUERTOS SSL")"
-msg -bar
-echo -e "\033[1;33m $(fun_trans  "Seleccione una puerta de redirección interna.")"
-echo -e "\033[1;33m $(fun_trans  "Un puerto SSH/DROPBEAR/SQUID/OPENVPN/SSL")"
-msg -bar
-         while true; do
-         echo -ne "\033[1;37m"
-         read -p " Puerto-Local: " portx
-		 echo ""
-         if [[ ! -z $portx ]]; then
-             if [[ $(echo $portx|grep [0-9]) ]]; then
-                [[ $(mportas|grep $portx|head -1) ]] && break || echo -e "\033[1;31m $(fun_trans  "Puerto Invalido")"
-             fi
-         fi
-         done
-msg -bar
-DPORT="$(mportas|grep $portx|awk '{print $2}'|head -1)"
-echo -e "\033[1;33m $(fun_trans  "Ahora Que Puerto sera SSL")"
-msg -bar
-    while true; do
-	echo -ne "\033[1;37m"
-    read -p " Listen-SSL: " SSLPORT
-	echo ""
-    [[ $(mportas|grep -w "$SSLPORT") ]] || break
-    echo -e "\033[1;33m $(fun_trans  "Esta puerta está en uso")"
-    unset SSLPORT
     done
-msg -bar
-echo -e "\033[1;33m $(fun_trans  "Instalando SSL")"
-msg -bar
-apt-get install stunnel4 -y &>/dev/null && echo -e "\e[1;92m INICIANDO SSL" | pv -qL10
-echo -e "client = no\n[stunnel+]\ncert = /etc/stunnel/stunnel.pem\naccept = ${SSLPORT}\nconnect = 127.0.0.1:${DPORT}" >> /etc/stunnel/stunnel.conf
-######
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-	echo "ENABLED=1" >> /etc/default/stunnel4
-	systemctl start stunnel4 &>/dev/null
-	systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
-msg -bar
-echo -e "${cor[4]}            INSTALADO CON EXITO"
-msg -bar
-
-rm -rf /root/stunnel.crt > /dev/null 2>&1
-rm -rf /root/stunnel.key > /dev/null 2>&1
-return 0
-}
-sslpython(){
-msg -bar
-echo -e "\033[1;37mSe Requiere tener el puerto 80 y el 443 libres"
-echo -ne " Desea Continuar? [S/N]: "; read seg
-[[ $seg = @(n|N) ]] && msg -bar && return
-clear
-install_python(){ 
- apt-get install python -y &>/dev/null && echo -e "\033[1;97m Activando Python Directo ►80\n" | pv -qL 10
- 
- sleep 2
- 	echo -e "[Unit]\nDescription=python.py Service by @lacasitamx\nAfter=network.target\nStartLimitIntervalSec=0\n\n[Service]\nType=simple\nUser=root\nWorkingDirectory=/root\nExecStart=/usr/bin/python ${SCPinst}/python.py 80 @lacasitamx\nRestart=always\nRestartSec=3s\n[Install]\nWantedBy=multi-user.target" > /etc/systemd/system/python.PD.service
-    systemctl enable python.PD &>/dev/null
-    systemctl start python.PD &>/dev/null
-    echo "80 @LACASITAMX" >/etc/VPS-MX/PortPD.log
-	echo "80 @LACASITAMX" > /etc/VPS-MX/PySSL.log
- msg -bar
- } 
- 
- install_ssl(){  
- apt-get install stunnel4 -y &>/dev/null && echo -e "\033[1;97m Activando Servicios SSL ►443\n" | pv -qL 12
- 
- apt-get install stunnel4 -y > /dev/null 2>&1 
- #echo -e "client = no\ncert = /etc/stunnel/stunnel.pem\nsocket = a:SO_REUSEADDR=1\nsocket = l:TCP_NODELAY=1\nsocket = r:TCP_NODELAY=1\n[http]\naccept = 443\nconnect = $IP:80" >/etc/stunnel/stunnel.conf
- echo -e "cert = /etc/stunnel/stunnel.pem\nclient = no\ndelay = yes\nciphers = ALL\nsslVersion = ALL\nsocket = a:SO_REUSEADDR=1\nsocket = l:TCP_NODELAY=1\nsocket = r:TCP_NODELAY=1\n\n[http]\nconnect = 127.0.0.1:80\naccept = 443" > /etc/stunnel/stunnel.conf
-openssl genrsa -out stunnel.key 2048 > /dev/null 2>&1 
- (echo mx; echo @lacasitamx; echo Full; echo speed; echo internet; echo @conectedmx; echo @conectedmx_bot)|openssl req -new -key stunnel.key -x509 -days 1095 -out stunnel.crt > /dev/null 2>&1
- cat stunnel.crt stunnel.key > stunnel.pem   
- mv stunnel.pem /etc/stunnel/ 
- ######------- 
- sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-	echo "ENABLED=1" >> /etc/default/stunnel4
-	systemctl start stunnel4 &>/dev/null
-	systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
- rm -rf /root/stunnel.crt > /dev/null 2>&1 
- rm -rf /root/stunnel.key > /dev/null 2>&1 
- } 
-install_python 
-install_ssl 
-msg -bar
-echo -e "${cor[4]}               INSTALACION COMPLETA"
-msg -bar
-}
-l="/usr/local/lib/sped" && [[ ! -d ${l} ]] && exit
-unistall(){
-clear
-msg -bar
-msg -ama "DETENIENDO SERVICIOS SSL Y PYTHON"
-msg -bar
-			service stunnel4 stop > /dev/null 2>&1
-			apt-get purge stunnel4 -y &>/dev/null
-			apt-get purge stunnel -y &>/dev/null
-			kill -9 $(ps aux |grep -v grep |grep -w "python.py"|grep dmS|awk '{print $2}') &>/dev/null
-			systemctl stop python.PD &>/dev/null
-            systemctl disable python.PD &>/dev/null
-            rm /etc/systemd/system/python.PD.service &>/dev/null
-            rm /etc/VPS-MX/PortPD.log &>/dev/null
-           
-			rm /etc/VPS-MX/PySSL.log &>/dev/null
-			#rm -rf /etc/stunnel/certificado.zip private.key certificate.crt ca_bundle.crt &>/dev/null
-clear
-msg -bar
-msg -verd "LOS SERVICIOS SE HAN DETENIDO"
-msg -bar
+    inst_jump
 }
 
-#
-certif(){
-if [ -f /etc/stunnel/stunnel.conf ]; then
-msg -bar
-msg -tit
-echo -e "\e[1;37m ACONTINUACION ES TENER LISTO EL LINK DEL CERTIFICADO.zip\n VERIFICADO EN ZEROSSL, DESCARGALO Y SUBELO\n EN TU GITHUB O DROPBOX"
-echo -ne " Desea Continuar? [S/N]: "; read seg
-[[ $seg = @(n|N) ]] && msg -bar && return
-clear
-####Cerrificado ssl/tls#####
-msg -bar
-echo -e "\e[1;33m👇 LINK DEL CERTIFICADO.zip 👇           \n     \e[0m"
-echo -ne "\e[1;36m LINK\e[37m: \e[34m"
-#extraer certificado.zip
-read linkd
-wget $linkd -O /etc/stunnel/certificado.zip
-cd /etc/stunnel/
-unzip certificado.zip 
-cat private.key certificate.crt ca_bundle.crt > stunnel.pem
-#
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-	echo "ENABLED=1" >> /etc/default/stunnel4
-	systemctl start stunnel4 &>/dev/null
-	systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
-msg -bar
-echo -e "${cor[4]} CERTIFICADO INSTALADO CON EXITO \e[0m" 
-msg -bar
-else
-msg -bar
-echo -e "${cor[3]} SERVICIO SSL NO ESTÁ INSTALADO \e[0m"
-msg -bar
-fi
-}
-
-certificadom(){
-if [ -f /etc/stunnel/stunnel.conf ]; then
-insapa2(){
-for pid in $(pgrep python);do
-kill $pid
-done
-for pid in $(pgrep apache2);do
-kill $pid
-done
-service dropbear stop
-apt install apache2 -y
-echo "Listen 80
-
-<IfModule ssl_module>
-        Listen 443
-</IfModule>
-
-<IfModule mod_gnutls.c>
-        Listen 443
-</IfModule> " > /etc/apache2/ports.conf
-service apache2 restart
-}
-clear
-msg -bar
-insapa2 &>/dev/null && echo -e " \e[1;33mAGREGANDO RECURSOS " | pv -qL 10
-msg -bar
-echo -e "\e[1;37m Verificar dominio \e[0m\n\n"
-echo -e "\e[1;37m TIENES QUE MODIFICAR EL ARCHIVO DESCARGADO\n EJEMPLO: 530DDCDC3 comodoca.com 7bac5e210\e[0m"
-msg -bar
-read -p " LLAVE > Nombre Del Archivo: " keyy
-msg -bar
-read -p " DATOS > De La LLAVE: " dat2w
-[[ ! -d /var/www/html/.well-known ]] && mkdir /var/www/html/.well-known
-[[ ! -d /var/www/html/.well-known/pki-validation ]] && mkdir /var/www/html/.well-known/pki-validation
-datfr1=$(echo "$dat2w"|awk '{print $1}')
-datfr2=$(echo "$dat2w"|awk '{print $2}')
-datfr3=$(echo "$dat2w"|awk '{print $3}')
-echo -ne "${datfr1}\n${datfr2}\n${datfr3}" >/var/www/html/.well-known/pki-validation/$keyy.txt
-msg -bar
-echo -e "\e[1;37m VERIFIQUE EN LA PÁGINA ZEROSSL \e[0m"
-msg -bar
-read -p " ENTER PARA CONTINUAR"
-clear
-msg -bar
-echo -e "\e[1;33m👇 LINK DEL CERTIFICADO 👇       \n     \e[0m"
-echo -e "\e[1;36m LINK\e[37m: \e[34m"
-read link
-incertis(){
-wget $link -O /etc/stunnel/certificado.zip
-cd /etc/stunnel/
-unzip certificado.zip 
-cat private.key certificate.crt ca_bundle.crt > stunnel.pem
-#
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-	echo "ENABLED=1" >> /etc/default/stunnel4
-	systemctl start stunnel4 &>/dev/null
-	systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
-}
-incertis &>/dev/null && echo -e " \e[1;33mEXTRAYENDO CERTIFICADO " | pv -qL 10
-msg -bar
-echo -e "${cor[4]} CERTIFICADO INSTALADO \e[0m" 
-msg -bar
-
-for pid in $(pgrep apache2);do
-kill $pid
-done
-apt install apache2 -y &>/dev/null
-echo "Listen 81
-
-<IfModule ssl_module>
-        Listen 443
-</IfModule>
-
-<IfModule mod_gnutls.c>
-        Listen 443
-</IfModule> " > /etc/apache2/ports.conf
-service apache2 restart &>/dev/null
-service dropbear start &>/dev/null
-service dropbear restart &>/dev/null
-for port in $(cat /etc/VPS-MX/PortPD.log| grep -v "nobody" |cut -d' ' -f1)
-do
-PIDVRF3="$(ps aux|grep pid-"$port" |grep -v grep|awk '{print $2}')"
-Portd="$(cat /etc/VPS-MX/PortPD.log|grep -v "nobody" |cut -d' ' -f1)"
-if [[ -z ${Portd} ]]; then
-    systemctl start python.PD &>/dev/null
-#screen -dmS pydic-"$port" python /etc/VPS-MX/protocolos/python.py "$port"
-else
-    systemctl start python.PD &>/dev/null
-fi
-done
-else
-msg -bar
-echo -e "${cor[3]} SSL/TLS NO INSTALADO \e[0m"
-msg -bar
-fi
-}
-#
-stop_port(){
-	msg -bar
-	msg -ama " Comprovando puertos..."
-	ports=('80' '443')
-
-	for i in ${ports[@]}; do
-		if [[ 0 -ne $(lsof -i:$i | grep -i -c "listen") ]]; then
-			msg -bar
-			echo -ne "$(msg -ama " Liberando puerto: $i")"
-			lsof -i:$i | awk '{print $2}' | grep -v "PID" | xargs kill -9
-			sleep 1s
-			if [[ 0 -ne $(lsof -i:$i | grep -i -c "listen") ]];then
-				tput cuu1 && tput dl1
-				msg -verm2 "ERROR AL LIBERAR PURTO $i"
-				msg -bar
-				msg -ama " Puerto $i en uso."
-				msg -ama " auto-liberacion fallida"
-				msg -ama " detenga el puerto $i manualmente"
-				msg -ama " e intentar nuevamente..."
-				msg -bar
-				
-				return 1			
-			fi
-		fi
-	done
- }
- 
-acme_install(){
-
-    if [[ ! -e $HOME/.acme.sh/acme.sh ]];then
-    	msg -bar3
-    	msg -ama " INSTALANDO SCRIPT ACME"
-    	curl -s "https://get.acme.sh" | sh &>/dev/null
-    fi
-    if [[ ! -z "${mail}" ]]; then
-    msg -bar
-    	msg -ama " LOGEANDO EN Zerossl"
-    	sleep 1
-    	$HOME/.acme.sh/acme.sh --register-account  -m ${mail} --server zerossl
-    	$HOME/.acme.sh/acme.sh --set-default-ca --server zerossl
-    	
+inst_jump(){
+    green "El modo de uso del puerto Hysteria 2 es el siguiente:"
+    echo ""
+    echo -e " ${GREEN}1.${PLAIN} Puerto Unico ${YELLOW}410default411${PLAIN}"
+    echo -e " ${GREEN}2.${PLAIN} Puerto RANGOS/RAMDOM (INICIO-FIN )"
+    echo ""
+    read -rp "Escoge [1-2]: " jumpInput
+    if [[ $jumpInput == 2 ]]; then
+        read -p "Configure el puerto de inicio del puerto de rango (recomendado entre 10000-65535):" firstport
+        read -p "Configure el puerto final de un puerto de rango (recomendado entre 10000-65535, debe ser m�s grande que el puerto de inicio anterior):" endport
+        if [[ $firstport -ge $endport ]]; then
+            until [[ $firstport -le $endport ]]; do
+                if [[ $firstport -ge $endport ]]; then
+                    red "El puerto de inicio que configur� es menor que el puerto final; vuelva a ingresar el puerto inicial y final"
+                    read -p "Configure el puerto de inicio del puerto de rango (recomendado entre 10000-65535): " firstport
+                    read -p ":" endport
+                fi
+            done
+        fi
+        iptables -t nat -A PREROUTING -p udp --dport $firstport:$endport  -j DNAT --to-destination :$port
+        ip6tables -t nat -A PREROUTING -p udp --dport $firstport:$endport  -j DNAT --to-destination :$port
+        netfilter-persistent save &>/dev/null 2>&1
     else
-    msg -bar
-    msg -ama " APLICANDO SERVIDOR letsencrypt"
-    msg -bar
-    	sleep 1
-    	$HOME/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    	
+        red " DEFAULD MODO UNICO PUERTO"
     fi
-    msg -bar
-    msg -ama " GENERANDO CERTIFICADO SSL"
-    msg -bar
-    sleep 1
-    if "$HOME"/.acme.sh/acme.sh --issue -d "${domain}" --standalone -k ec-256 --force; then
-    	"$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${tmp_crt}/${domain}.crt --keypath ${tmp_crt}/${domain}.key --ecc --force &>/dev/null
-    
-    	rm -rf $HOME/.acme.sh/${domain}_ecc
-    	msg -bar
-    	msg -verd " Certificado SSL se genero con éxito"
-    	msg -bar
-    	
-    else
-    	rm -rf "$HOME/.acme.sh/${domain}_ecc"
-    	msg -bar
-    	msg -verm2 "Error al generar el certificado SSL"
-    	msg -bar
-    	msg -ama " verifique los posibles error"
-    	msg -ama " o intente de nuevo"
-    	
-    	
-    fi
- }
- 
- gerar_cert(){
-	clear
-	case $1 in
-		1)
-	msg -bar
-	msg -ama "Generador De Certificado Let's Encrypt"
-	msg -bar;;
-		2)
-	msg -bar
-	msg -ama "Generador De Certificado Zerossl"
-	msg -bar;;
-	esac
-	msg -ama "Requiere ingresar un dominio."
-	msg -ama "el mismo solo deve resolver DNS, y apuntar"
-	msg -ama "a la direccion ip de este servidor."
-	msg -bar
-	msg -ama "Temporalmente requiere tener"
-	msg -ama "los puertos 80 y 443 libres."
-	if [[ $1 = 2 ]]; then
-		msg -bar
-		msg -ama "Requiere tener una cuenta Zerossl."
-	fi
-	msg -bar
- 	msg -ne " Continuar [S/N]: "
-	read opcion
-	[[ $opcion != @(s|S|y|Y) ]] && return 1
-
-	if [[ $1 = 2 ]]; then
-     while [[ -z $mail ]]; do
-     	clear
-		msg -bar
-		msg -ama "ingresa tu correo usado en Zerossl"
-		msg -bar3
-		msg -ne " >>> "
-		read mail
-	 done
-	fi
-
-	if [[ -e ${tmp_crt}/dominio.txt ]]; then
-		domain=$(cat ${tmp_crt}/dominio.txt)
-		[[ $domain = "multi-domain" ]] && unset domain
-		if [[ ! -z $domain ]]; then
-			clear
-			msg -bar
-			msg -azu "Dominio asociado a esta ip"
-			msg -bar
-			echo -e "$(msg -verm2 " >>> ") $(msg -ama "$domain")"
-			msg -ne "Continuar, usando este dominio? [S/N]: "
-			read opcion
-			tput cuu1 && tput dl1
-			[[ $opcion != @(S|s|Y|y) ]] && unset domain
-		fi
-	fi
-
-	while [[ -z $domain ]]; do
-		clear
-		msg -bar
-		msg -ama "ingresa tu dominio"
-		msg -bar
-		msg -ne " >>> "
-		read domain
-	done
-	msg -bar
-	msg -ama " Comprovando direccion IP ..."
-	local_ip=$(wget -qO- ipv4.icanhazip.com)
-    domain_ip=$(ping "${domain}" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
-    sleep 1
-    [[ -z "${domain_ip}" ]] && domain_ip="ip no encontrada"
-    if [[ $(echo "${local_ip}" | tr '.' '+' | bc) -ne $(echo "${domain_ip}" | tr '.' '+' | bc) ]]; then
-    	clear
-    	msg -bar
-    	msg -verm2 "ERROR DE DIRECCION IP"
-    	msg -bar
-    	msg -ama " La direccion ip de su dominio\n no coincide con la de su servidor."
-    	msg -bar
-    	echo -e " $(msg -azu "IP dominio:  ")$(msg -verm2 "${domain_ip}")"
-    	echo -e " $(msg -azu "IP servidor: ")$(msg -verm2 "${local_ip}")"
-    	msg -bar
-    	msg -ama " Verifique su dominio, e intente de nuevo."
-    	msg -bar
-    	
-    	
-    fi
-
-    
-    stop_port
-    acme_install
-    echo "$domain" > ${tmp_crt}/dominio.txt
-    
 }
-if [[ ! -z $(crontab -l|grep -w "onssl.sh") ]]; then
-ons="\e[1;92m[ON]"
-else
-ons="\e[1;91m[OFF]"
-fi
-clear
-[[ $(ps x | grep stunnel4 | grep -v grep | awk '{print $1}') ]] && stunel4="\e[1;32m[ ON ]" || stunel4="\e[1;31m[ OFF ]"
 
-#msg -bar
-msg -bar3
-msg -tit
+
+install_bin(){
+clear&&clear
 msg -bar
-echo -e "       \e[91m\e[43mINSTALADOR MULTI SSL\e[0m "
+NAME=hysteria
+VERSION=$(curl -fsSL https://api.github.com/repos/apernet/hysteria/releases/latest | grep -w tag_name |sed -e 's/[^v.0-9 -]//ig'| tr -d '[:space:]')
+[[ $(uname -m 2> /dev/null) != x86_64 ]] && TARBALL="$NAME-linux-arm64" || TARBALL="$NAME-linux-amd64"
+msg -nama "     Descargando Modulo ${VERSION}.(Evozi)."
+if wget -O /bin/Hysteria2 https://github.com/apernet/hysteria/releases/download/app/${VERSION}/${TARBALL} &>/dev/null ; then
+		chmod +x /bin/Hysteria2
+		msg -verd ' OK'
+	else
+		msg -verm2 ' FAIL '
+		rm -f /bin/Hysteria2
+fi
+echo "
+[Unit]
+Description=Hysteria2 Server Service DrowKid
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/Hysteria2 server --config /etc/adm-lite/HYSTERIA/config.yaml
+WorkingDirectory=~
+User=root
+Group=root
+Environment=HYSTERIA_LOG_LEVEL=info
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
+" > /hysteria-server.service
+chmod +x /hysteria-server.service
+install -Dm644 /hysteria-server.service /etc/systemd/system
+#systemctl disable hysteria-server.service &>/dev/null
+#systemctl start hysteria-server.service &>/dev/null
+#systemctl enable hysteria-server.service &>/dev/null
+#rm -f /hysteria-server.service 
+}
+
+inst_pwd(){
+    read -p "Establecer contrase�a de Hysteria2 (ingrese para obtener una contrase�a aleatoria): " auth_pwd
+    [[ -z $auth_pwd ]] && auth_pwd=$(date +%s%N | md5sum | cut -c 1-8)
+}
+
+inst_site(){
 msg -bar
-echo -e "$(msg -verd "[1]")$(msg -verm2 "➛ ")$(msg -azu "INICIAR |DETENER SSL") $stunel4"
-echo -e "$(msg -verd "[2]")$(msg -verm2 "➛ ")$(msg -azu "AGREGAR + PUERTOS SSL")"
+echo -e "INGRESA SU SNI ( HOST FAKE ) "
 msg -bar
-echo -e "$(msg -verd "[3]")$(msg -verm2 "➛ ")$(msg -azu "SSL+Websocket Auto-Config 80➮443    ")"
-echo -e "$(msg -verd "[4]")$(msg -verm2 "➛ ")$(msg -azu "\e[1;31mDETENER SERVICIO SSL+Websocket  ")"
+    echo -e "Ingrese su Sitio WEB Falso A Hysteria 2 (elimine https://) "
+	read -rp  " [Default : plus.admcgh.online]: " proxysite
+    [[ -z $proxysite ]] && proxysite='plus.admcgh.online'
+}
+
+inst_cert(){
 msg -bar
-echo -e "$(msg -verd "[5]")$(msg -verm2 "➛ ")$(msg -azu "CREAR SUBDOMINIO") \e[1;92m( Nuevo )"
+echo -ne " Ingresa Tu Dominio Enlazado a este IP ( Omite con Enter ) :"
+read -p " " domainH2
+[[ -z ${domainH2} ]] && domainH2='Hysteria2'
+        cert_path="/etc/hysteria/cert.crt"
+        key_path="/etc/hysteria/private.key"
+        openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
+        openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=${domainH2}"
+        chmod 777 /etc/hysteria/cert.crt
+        chmod 777 /etc/hysteria/private.key
+        hy_domain=$domainH2
+        domain=$domainH2
+}
+
+_hysteria2(){
+[[ -d /etc/hysteria ]] || mkdir /etc/hysteria
+[[ -d /etc/adm-lite/HYSTERIA ]] || mkdir /etc/adm-lite/HYSTERIA/
+    install_bin
+	clear&&clear
+    # Ask user for Hysteria configuration
+    inst_cert
+	clear&&clear
+    inst_port
+	clear&&clear
+    inst_pwd
+	clear&&clear
+    inst_site
+	clear&&clear
+    # Set up the Hysteria configuration file
+#cat << EOF > /etc/hysteria/config.yaml
+cat << EOF > /etc/adm-lite/HYSTERIA/config.yaml
+listen: :$port
+
+tls:
+  cert: $cert_path
+  key: $key_path
+
+obfs:
+  type: salamander
+  salamander:
+    password: $auth_pwd
+
+quic:
+  initStreamReceiveWindow: 16777216
+  maxStreamReceiveWindow: 16777216
+  initConnReceiveWindow: 33554432
+  maxConnReceiveWindow: 33554432
+
+auth:
+  type: password
+  password: $auth_pwd
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://$proxysite
+    rewriteHost: true
+EOF
+
+    # Determine the final inbound port range
+    if [[ -n $firstport ]]; then
+        last_port="$port,$firstport-$endport"
+    else
+        last_port=$port
+    fi
+
+    # Add brackets to the IPv6 address
+    if [[ -n $(echo $ip | grep ":") ]]; then
+        last_ip="[$ip]"
+    else
+        last_ip=$ip
+    fi
+
+    mkdir /root/hy
+    cat << EOF > /root/hy/hy-client.yaml
+server: $ip:$last_port
+
+auth: $auth_pwd
+
+tls:
+  sni: $hy_domain
+  insecure: true
+
+obfs: $auth_pwd
+
+quic:
+  initStreamReceiveWindow: 16777216
+  maxStreamReceiveWindow: 16777216
+  initConnReceiveWindow: 33554432
+  maxConnReceiveWindow: 33554432
+
+fastOpen: true
+
+socks5:
+  listen: 127.0.0.1:5080
+
+transport:
+  udp:
+    hopInterval: 30s 
+EOF
+    cat << EOF > /root/hy/hy-client.json
+{
+  "server": "$ip:$last_port",
+  "auth": "$auth_pwd",
+  "tls": {
+    "sni": "$hy_domain",
+    "insecure": true
+  },
+  "obfs": "$auth_pwd",
+  "quic": {
+    "initStreamReceiveWindow": 16777216,
+    "maxStreamReceiveWindow": 16777216,
+    "initConnReceiveWindow": 33554432,
+    "maxConnReceiveWindow": 33554432
+  },
+  "fastOpen": true,
+  "socks5": {
+    "listen": "127.0.0.1:5080"
+  },
+  "transport": {
+    "udp": {
+      "hopInterval": "30s"
+    }
+  }
+}
+EOF
+echo " IP : $(cat < /bin/ejecutar/IPcgh)" > /etc/adm-lite/HYSTERIA/data.yaml
+echo " DOMINIO : ${domainH2}" >> /etc/adm-lite/HYSTERIA/data.yaml
+echo " Authentication : ${auth_pwd}" >> /etc/adm-lite/HYSTERIA/data.yaml
+echo " PUERTO : ${port}" >> /etc/adm-lite/HYSTERIA/data.yaml
+echo " SNI : ${proxysite}" >> /etc/adm-lite/HYSTERIA/data.yaml
+echo " RANGO DE PUERTOS : 10000:65000" >> /etc/adm-lite/HYSTERIA/data.yaml
+echo -e " \n 	Power By @drowkid01" >> /etc/adm-lite/HYSTERIA/data.yaml
+    url="hy2://$auth_pwd@$ip:$last_port/?insecure=1&sni=$hy_domain&obfs=salamander&obfs-password=$auth_pwd#HttpInjector-hysteria2"
+    echo $url > /root/hy/url.txt
+    nohopurl="hy2://$auth_pwd@$ip:$port/?insecure=1&sni=$hy_domain&obfs=salamander&obfs-password=$auth_pwd#HttpInjector-hysteria2"
+    echo $nohopurl > /root/hy/url-nohop.txt
+    systemctl daemon-reload &>/dev/null
+    systemctl enable hysteria-server &>/dev/null
+    systemctl start hysteria-server &>/dev/null
+    if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/adm-lite/HYSTERIA/config.yaml' ]]; then
+        green " Servicio Hysteria2 Iniciado Exitosamente"
+    else
+        red "ERROR, NO SE PUDO EJECUTAR EL SERVICIO DE HYSTERIA2 , \n\nEjecute systemctl status hysteria-server para ver el estado del servicio"
+    fi
+    #yellow "Hysteria 2 client YML configuration file hy-client.yaml is as follows and saved to /root/hy/hy-client.yaml"
+    #red "$(cat /root/hy/hy-client.yaml)"
+    #yellow "Hysteria 2 client JSON configuration file hy-client.json is as follows and saved to /root/hy/hy-client.json"
+    #red "$(cat /root/hy/hy-client.json)"
 msg -bar
-echo -e "$(msg -verd "[6]")$(msg -verm2 "➛ ")$(msg -azu "CERTIFICADO SSL/TLS")"
-echo -e "$(msg -verd "[7]")$(msg -verm2 "➛ ")$(msg -azu "ENCENDER SSL")"
-echo -e "$(msg -verd "[8]")$(msg -verm2 "➛ ")$(msg -azu "AUTO-MANTENIMIENTO SSL") $ons"
-[[ -e /etc/stunnel/private.key ]] && echo -e "$(msg -verd "[9]")$(msg -verm2 "➛ ")$(msg -azu "Usar Certificado Zerossl")"
+cat /etc/adm-lite/HYSTERIA/data.yaml
 msg -bar
-echo -ne "\033[1;37mSelecione Una Opcion: "
-read opcao
-case $opcao in
+    green "$APP_IMPORT_GUIDE"
+    yellow "El URI de configuraci�n de Hysteria 2 (con salto de puerto) "
+    red "$(cat /root/hy/url.txt)"
+    yellow "El URI de configuraci�n de Hysteria 2 (sin salto de puerto) "
+    red "$(cat /root/hy/url-nohop.txt)"
+read -p "$(green "Hysteria 2 Modulos UDP By @drowkid01 Finalizado ") "
+}
+
+_hysteria(){
+clear&&clear
+[[ ! -d /etc/adm-lite/HYSTERIA ]] && mkdir /etc/adm-lite/HYSTERIA
+NAME=hysteria
+#VERSION=$(curl -fsSL https://api.github.com/repos/HyNetwork/hysteria/releases/latest | grep tag_name | sed -E 's/.*"v(.*)".*/\1/')
+VERSION=$(curl -fsSL https://api.github.com/repos/HyNetwork/hysteria/releases/latest | grep -w tag_name |sed -e 's/[^v.0-9 -]//ig'| tr -d '[:space:]')
+[[ $(uname -m 2> /dev/null) != x86_64 ]] && TARBALL="$NAME-linux-arm64" || TARBALL="$NAME-linux-amd64"
+interfas="$(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1)"
+#https://github.com/apernet/hysteria/releases/download/app%2Fv2.0.2/hysteria-linux-amd64
+
+sys="$(which sysctl)"
+
+ip4t=$(which iptables)
+ip6t=$(which ip6tables)
+
+#OBFS=$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 10)
+OBFS='ADMcghPLUS'
+
+msg -nama '   INGRESA TU SUBDOMINIO/DOMINIO  \n'
+#msg -nama '              Prederteminado ( ENTER )\n'
+read -p "               DOMAIN : " domain
+sleep 4s
+del 1
+msg -nama "     COMPIANDO CERTIFICADO SSL (UDP). . . . "
+[[ -e /etc/adm-lite/HYSTERIA/udpmod.ca.key && -e /etc/adm-lite/HYSTERIA/udpmod.server.crt ]] && {
+msg -verd ' OK'
+} || {
+#(
+#openssl genrsa -out /etc/adm-lite/HYSTERIA/udpmod.ca.key 2048  2048
+#openssl req -new -x509 -days 3650 -key /etc/adm-lite/HYSTERIA/udpmod.ca.key -subj "/C=CN/ST=GD/L=SZ/O=DrowKid, Inc./CN=DrowKid Root CA" -out /etc/adm-lite/HYSTERIA/udpmod.ca.crt
+#openssl req -newkey rsa:2048 -nodes -keyout /etc/adm-lite/HYSTERIA/udp.server.key -subj "/C=CN/ST=GD/L=SZ/O=DrowKid, Inc./CN=${domain}" -out /etc/adm-lite/HYSTERIA/udpmod.server.csr
+#openssl x509 -req -extfile <(printf "subjectAltName=DNS:${domain},DNS:${domain}") -days 3650 -in /etc/adm-lite/HYSTERIA/udpmod.server.csr -CA /etc/adm-lite/HYSTERIA/udpmod.ca.crt -CAkey /etc/adm-lite/HYSTERIA/udpmod.ca.key -CAcreateserial -out /etc/adm-lite/HYSTERIA/udp.server.crt
+#
+(openssl genpkey -algorithm RSA -out /etc/adm-lite/HYSTERIA/udpmod.ca.key
+openssl req -x509 -new -nodes -key /etc/adm-lite/HYSTERIA/udpmod.ca.key -days 3650 -out /etc/adm-lite/HYSTERIA/udpmod.ca.crt -subj "/C=CN/ST=GD/L=SZ/O=DrowKid, Inc./CN=DrowKid Root CA"
+openssl req -newkey rsa:2048 -nodes -keyout /etc/adm-lite/HYSTERIA/udp.server.key -subj "/C=CN/ST=GD/L=SZ/O=DrowKid, Inc./CN=${domain}" -out /etc/adm-lite/HYSTERIA/udpmod.server.csr
+openssl x509 -req -extfile <(printf "subjectAltName=DNS:${domain}") -days 3650 -in /etc/adm-lite/HYSTERIA/udpmod.server.csr -CA /etc/adm-lite/HYSTERIA/udpmod.ca.crt -CAkey /etc/adm-lite/HYSTERIA/udpmod.ca.key -CAcreateserial -out /etc/adm-lite/HYSTERIA/udp.server.crt
+) &>/dev/null && msg -verd ' OK'
+
+}
+del 1
+[[ -e /etc/adm-lite/HYSTERIA/udp.server.crt ]] && chmod +x /etc/adm-lite/HYSTERIA/udp.server.crt
+[[ -e /etc/adm-lite/HYSTERIA/udp.server.key ]] && chmod +x /etc/adm-lite/HYSTERIA/udp.server.key
+msg -nama "     Descargando BINARIO  v${VERSION}.(FAKE). "
+#if wget -O /bin/hysteria https://github.com/apernet/hysteria/releases/download/app%2F${VERSION}/${TARBALL} &>/dev/null ; then
+if wget -O /bin/hysteria https://github.com/apernet/hysteria/releases/download/v1.3.5/${TARBALL} &>/dev/null ; then
+		chmod +x /bin/hysteria
+		msg -verd ' OK'
+	else
+		msg -verm2 ' FAIL '
+		rm -f /bin/hysteria
+fi
+sleep 4s && del 1
+msg -nama '     Descargando Motor JSON . . . . '
+if wget -O /etc/adm-lite/HYSTERIA/config.json https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver-sh/config.json &>/dev/null ; then
+		chmod +x /etc/adm-lite/HYSTERIA/config.json
+		sed -i "s/setobfs/${OBFS}/" /etc/adm-lite/HYSTERIA/config.json
+		msg -verd ' OK'
+	else
+		msg -verm2 ' FAIL '
+		rm -rf /etc/adm-lite/HYSTERIA/config.json
+fi
+sleep 4s && del 1
+msg -nama '     COMPILANDO GoLang AUTHSSH '
+#if wget -O /bin/authSSH https://raw.githubusercontent.com/DrowKid/ADMcgh/main/Plugins/authSSH &>/dev/null ; then
+if wget -O /bin/authSSH https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver-sh/authSSH &>/dev/null ; then
+		chmod +x /bin/authSSH
+		msg -verd ' OK'
+	else
+		msg -verm2 ' FAIL '
+		rm -rf /bin/authSSH
+fi
+sleep 4s && del 1
+msg -nama '     COMPILANDO BINARIO DE SYSTEMA . . . . '
+if wget -O /etc/adm-lite/HYSTERIA/hysteria.service https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Recursos/menu_inst/UDPserver-sh/hysteria.service &>/dev/null ; then
+		chmod +x /etc/adm-lite/HYSTERIA/hysteria.service
+		systemctl disable hysteria.service &>/dev/null
+		#rm -f /etc/systemd/system/hysteria.service
+		
+		msg -verd ' OK'
+	else
+		msg -verm2 ' FAIL '
+		rm -f /etc/adm-lite/HYSTERIA/hysteria.service
+fi
+sleep 4s && del 1
+		sed -i "s%sysb%${sys}%g" /etc/adm-lite/HYSTERIA/hysteria.service
+		sed -i "s%ip4tbin%${ip4t}%g" /etc/adm-lite/HYSTERIA/hysteria.service
+		sed -i "s%ip6tbin%${ip6t}%g" /etc/adm-lite/HYSTERIA/hysteria.service
+		sed -i "s%iptb%${interfas}%g" /etc/adm-lite/HYSTERIA/hysteria.service
+		
+install -Dm644 /etc/adm-lite/HYSTERIA/hysteria.service /etc/systemd/system
+
+systemctl start hysteria &>/dev/null
+systemctl enable hysteria &>/dev/null
+rm -f /etc/adm-lite/HYSTERIA/hysteria.service /etc/adm-lite/HYSTERIA/udpmod*
+echo " IP : $(cat < /bin/ejecutar/IPcgh)" > /etc/adm-lite/HYSTERIA/data
+echo " DOMINIO : ${domain}" >> /etc/adm-lite/HYSTERIA/data
+echo " OBFS : ${OBFS}" >> /etc/adm-lite/HYSTERIA/data
+echo " PUERTO : 36712" >> /etc/adm-lite/HYSTERIA/data
+echo " ALPN : h3" >> /etc/adm-lite/HYSTERIA/data
+echo " RANGO DE PUERTOS : 10000:65000" >> /etc/adm-lite/HYSTERIA/data
+echo -e " \n 	Power By @drowkid01" >> /etc/adm-lite/HYSTERIA/data
+msg -bar
+echo ""
+echo " --- TUS DATOS DE SERVICIO SON ---"
+msg -bar
+figlet -p -f smslant Hysteria | lolcat
+msg -bar
+cat /etc/adm-lite/HYSTERIA/data
+msg -bar
+enter
+[[ $(ps x | grep hysteria| grep -v grep) ]] && echo -e "$(msg -verd 'SERVICIO HYSTERIA INICIADO EXITOSAMENTE')" || echo -e "$(msg -verm2 'SERVICIO HYSTERIA NO INICIADO')"
+_menuH
+}
+
+_menuH(){
+clear&&clear
+msg -bar
+cat /etc/adm-lite/HYSTERIA/data
+msg -bar
+unset op
+[[ $(cat /etc/adm-lite/HYSTERIA/config.json | grep -w '//"alpn"') ]] && _ap='\033[0;31mOFF' || _ap='\033[0;32mON'
+menu_func "CAMBIAR PUERTO" "CAMBIAR OBFS" "ALPN (http injector)  \033[0;32m[ ${_ap}\033[0;32m ]" "REINICIAR SERVICIO" "\033[0;31mREMOVER SERVICIO"
+msg -bar
+  selecy=$(selection_fun 5)  
+case $selecy in
 1)
+clear&&clear
+unset _col
 msg -bar
-ssl_stunel
-
-;;
-2)
+echo  -e "INGRESE EL NUEVO PUERTO DE SERVICIO "
+read -p " PUERTO : " _col
+#_PA=$(cat /etc/adm-lite/HYSTERIA/config.json | grep -i listen |cut -d '"' -f4 |sed -e 's/[^0-9]//ig')
+_PA=$(cat /etc/adm-lite/HYSTERIA/config.json |jq -r .listen |sed -e 's/[^0-9]//ig')
+  #sed -i "s%/bin/false%filemancgh%g" /etc/adm-lite/HYSTERIA/config.json
+[[ ${_col} ]] && { 
+sed -i "s/${_PA}/${_col}/" /etc/adm-lite/HYSTERIA/config.json 
+sed -i "s/${_PA}/${_col}/" /etc/adm-lite/HYSTERIA/data
+systemctl restart hysteria &>/dev/null
+}
+  ;;
+  2)
+clear&&clear
+unset _col
 msg -bar
-ssl_stunel_2
-sleep 3
-exit
+echo  -e "INGRESE SU NUEVO OBFS "
+read -p " OBFS : " _col
+_obfs=$(cat /etc/adm-lite/HYSTERIA/config.json |jq -r .obfs)
+  #sed -i "s%/bin/false%filemancgh%g" /etc/adm-lite/HYSTERIA/config.json
+[[ ${_col} ]] && { 
+sed -i "s/${_obfs}/${_col}/" /etc/adm-lite/HYSTERIA/config.json 
+sed -i "s/${_obfs}/${_col}/" /etc/adm-lite/HYSTERIA/data
+systemctl restart hysteria &>/dev/null
+}
 ;;
 3)
-sslpython
-exit
-;;
-4) unistall ;;
-5)
-crear_subdominio
-exit
-;;
-6)
-clear
-msg -bar
-echo -e "	\e[91m\e[43mCERTIFICADO SSL/TLS\e[0m"
-msg -bar
-echo -e "$(msg -verd "[1]")$(msg -verm2 "➛ ")$(msg -azu "CERTIFICADO ZIP DIRECTO")"
-echo -e "$(msg -verd "[2]")$(msg -verm2 "➛ ")$(msg -azu "CERTIFICADO MANUAL ZEROSSL")"
-echo -e "$(msg -verd "[3]")$(msg -verm2 "➛ ")$(msg -azu "GENERAR CERTIFICADO SSL (Let's Encrypt)")"
-echo -e "$(msg -verd "[4]")$(msg -verm2 "➛ ")$(msg -azu "GENERAR CERTIFICADO SSL (Zerossl Directo)")"
-msg -bar
-echo -ne "\033[1;37mSelecione Una Opcion : "
-read opc
-case $opc in
-1)
-certif
-exit
-;;
-2)
-certificadom
-exit
-;;
-3)
-gerar_cert 1
-exit 
+clear&&clear
+[[ $(cat /etc/adm-lite/HYSTERIA/config.json | grep -w '//"alpn"') ]] && { 
+sed -i '12d' /etc/adm-lite/HYSTERIA/config.json 
+sed -i '12i\        "alpn": "h3",' /etc/adm-lite/HYSTERIA/config.json 
+} || {
+sed -i '12d' /etc/adm-lite/HYSTERIA/config.json 
+sed -i '12i\        //"alpn": "h3",' /etc/adm-lite/HYSTERIA/config.json 
+}
+systemctl restart hysteria &>/dev/null
 ;;
 4)
-gerar_cert 2
+clear&&clear
+unset _col
+msg -bar
+systemctl restart hysteria &>/dev/null
+;;
+5)
+clear&&clear
+rm -f /etc/adm-lite/HYSTERIA/*
+systemctl disable hysteria &>/dev/null
+systemctl remove hysteria &>/dev/null
+rm -f /etc/systemd/system/hysteria.service
+systemctl stop hysteria &>/dev/null
 exit
 ;;
-esac
-;;
-7)
-clear
+  esac  
+}
+
+_menuH2(){
+clear&&clear
 msg -bar
-msg -ama "	START STUNNEL\n	ESTA OPCION ES SOLO SI LLEGA A DETENER EL PUERTO"
-msg -ama
-echo -ne " Desea Continuar? [S/N]: "; read seg
-[[ $seg = @(n|N) ]] && msg -bar && return
-clear
-	#systemctl start stunnel4 &>/dev/null
-	#systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
+cat /etc/adm-lite/HYSTERIA/data.yaml
 msg -bar
-msg -verd "	SERVICIOS STUNNEL REINICIADOS"
+green "$APP_IMPORT_GUIDE"
+yellow "El URI de configuraci�n de Hysteria 2 (con salto de puerto) "
+red "$(cat /root/hy/url.txt)"
+yellow "El URI de configuraci�n de Hysteria 2 (sin salto de puerto) "
+red "$(cat /root/hy/url-nohop.txt)"
 msg -bar
-;;
-8)
-clear
-msg -tit
-if [[ ! -z $(crontab -l|grep -w "onssl.sh") ]]; then
-    msg -azu " Auto-Inicio SSL programada cada $(msg -verd "[ $(crontab -l|grep -w "onssl.sh"|awk '{print $2}'|sed $'s/[^[:alnum:]\t]//g')HS ]")"
-    msg -bar
-    while :
-    do
-    echo -ne "$(msg -azu " Detener Auto-Inicio SSL [S/N]: ")" && read yesno
-    tput cuu1 && tput dl1
-    case $yesno in
-      s|S) crontab -l > /root/cron && sed -i '/onssl.sh/ d' /root/cron && crontab /root/cron && rm /tmp/st/onssl.sh
-           msg -azu " Auto-Inicio SSL Detenida!" && msg -bar && sleep 2
-           return 1;;
-      n|N)return 1;;
-      *)return 1 ;;
-    esac
+unset op
+[[ $(cat /etc/adm-lite/HYSTERIA/config.yaml | grep -w '//"alpn"') ]] && _ap='\033[0;31mOFF' || _ap='\033[0;32mON'
+menu_func "CAMBIAR PUERTO" "CAMBIAR CONTRASE�A" "REINICIAR SERVICIO" "\033[0;31mREMOVER SERVICIO"
+msg -bar
+  selecy=$(selection_fun 5)  
+case $selecy in
+1)
+clear&&clear
+unset _col
+msg -bar
+    oldport=$(cat /etc/adm-lite/HYSTERIA/config.yaml 2>/dev/null | sed -n 1p | awk '{print $2}' | awk -F ":" '{print $2}')    
+	echo  -e "INGRESE EL NUEVO PUERTO DE SERVICIO "
+	read -p "Puerto [1-65535] (Puerto Ramdom Enter): " port
+    [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
+    until [[ -z $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; do
+        if [[ -n $(ss -tunlp | grep -w udp | awk '{print $5}' | sed 's/.*://g' | grep -w "$port") ]]; then
+            echo -e "${RED} $port ${PLAIN} Puerto Ocupado , Reintente Nuevamente!  "
+            read -p "Puerto [1-65535] (Puerto Ramdom Enter): " port
+            [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
+        fi
     done
-  fi 
-  clear
+    sed -i "1s#$oldport#$port#g" /etc/adm-lite/HYSTERIA/config.yaml
+    sed -i "1s#$oldport#$port#g" /root/hy/hy-client.yaml
+    sed -i "2s#$oldport#$port#g" /root/hy/hy-client.json
+    sed -i "s#$oldport#$port#g" /root/hy/url.txt
+    stophysteria && starthysteria
+    green "Su puerto fue modificado Exitosamente : $port"
+    cat /root/hy/url.txt
+  ;;
+  2)
+clear&&clear
+unset _col
+msg -bar
+    oldpasswd=$(cat /etc/adm-lite/HYSTERIA/config.yaml 2>/dev/null | sed -n 20p | awk '{print $2}')
+    oldobfs=$(cat /etc/adm-lite/HYSTERIA/config.yaml 2>/dev/null | sed -n 10p | awk '{print $2}')
+	echo  -e "INGRESE SU NUEVA CLAVE/CONTRASE�A "
+    read -p " (Enter Clave RAMDON): " passwd
+    [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
+
+    sed -i "20s#$oldpasswd#$passwd#g" /etc/adm-lite/HYSTERIA/config.yaml
+    sed -i "10s#$oldobfs#$passwd#g" /etc/adm-lite/HYSTERIA/config.yaml
+    sed -i "3s#$oldpasswd#$passwd#g" /root/hy/hy-client.yaml
+    sed -i "9s#$oldobfs#$passwd#g" /root/hy/hy-client.yaml
+    sed -i "3s#$oldpasswd#$passwd#g" /root/hy/hy-client.json
+    sed -i "8s#$oldobfs#$passwd#g" /root/hy/hy-client.json
+    sed -i "s#$oldpasswd#$passwd#g" /root/hy/url.txt
+    sed -i "s#$oldobfs#$passwd#g" /root/hy/url.txt
+    stophysteria && starthysteria
+    green "Su nueva contrase�a $passwd se aplico Exitosamente"
+    cat /root/hy/url.txt
+;;
+3)
+stophysteria && starthysteria
+;;
+4)
+clear&&clear
+rm -f /etc/adm-lite/HYSTERIA/*
+    systemctl stop hysteria-server.service >/dev/null 2>&1
+    systemctl disable hysteria-server.service >/dev/null 2>&1
+    rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-server@.service
+    rm -rf /bin/Hysteria2 /etc/hysteria /root/hy /root/hysteria.sh
+    rm -f /bin/Hysteria2
+    iptables -t nat -F PREROUTING >/dev/null 2>&1
+    netfilter-persistent save >/dev/null 2>&1
+exit
+;;
+  esac  
+}
+
+unset _So _Cu _HIS _HIS2
+while : 
+[[ $(ps x | grep -w 'udpServer'| grep -v grep) ]] && _So="$(msg -verd 'ON')" || _So="$(msg -verm2 'OFF')"
+[[ $(ps x | grep -w udp-custom| grep -v grep) ]] && _Cu="$(msg -verd 'ON')" || _Cu="$(msg -verm2 'OFF')"
+[[ $(ps x | grep -w '/bin/hysteria' | grep -v grep) ]] && _HIS="$(msg -verd 'ON')" || _HIS="$(msg -verm2 'OFF')"
+[[ $(ps x | grep -w '/bin/Hysteria2'| grep -v grep) ]] && _HIS2="$(msg -verd 'ON')" || _HIS2="$(msg -verm2 'OFF')"
+_MSYS=" \n$(print_center "\033[0;35mUsuarios SSH del Sistema")"
+_MSYS1=" \n$(print_center "\033[0;35mPrimero descarga UDP")"
+
+_MSYS2="\n$(print_center "\033[0;35mNO SOPORTA USERS DE SISTEMA")"
+
+do
+unset port
   msg -bar
-msg -ama "	  \e[1;97m\e[2;100mAUTO-INICIAR SSL \e[0m"
-msg -bar 
-echo -ne "$(msg -azu "Desea programar El Auto-Inicio SSL [s/n]:") "
-  read initio
-  if [[ $initio = @(s|S|y|Y) ]]; then
-    tput cuu1 && tput dl1
-    echo -ne "$(msg -azu " PONGA UN NÚMERO, EJEMPLO [1-12HORAS]:") "
-    read initio
-    if [[ $initio =~ ^[0-9]+$ ]]; then
-      crontab -l > /root/cron
-      [[ ! -d /tmp/st ]] && mkdir /tmp/st
-	[[ ! -e /tmp/st/onssl.sh ]] && wget -O /tmp/st/onssl.sh https://www.dropbox.com/s/sjbulk4bz6wu2p0/onssl.sh &>/dev/null
-	chmod 777 /tmp/st/onssl.sh
-      echo "0 */$initio * * * bash /tmp/st/onssl.sh" >> /root/cron
-      crontab /root/cron
-      
-      service cron restart
-      rm /root/cron
-      tput cuu1 && tput dl1
-      msg -azu " Auto-Limpieza programada cada: $(msg -verd "${initio} HORAS")" && msg -bar && sleep 2
-    else
-      tput cuu1 && tput dl1
-      msg -verm2 " ingresar solo numeros entre 1 y 12"
-      sleep 2
-      msg -bar
-    fi
-  fi
-  return 1
-;;
-9)
-clear
-msg -bar
-msg -ama "	CERTIFICADOS ALMACENADOS de Zerossl\n	QUIERES USAR EL CERTIFICADO DE ZEROSSL?\n  private.key certificate.crt ca_bundle.crt"
-msg -ama
-echo -ne " Desea Continuar? [S/N]: "; read seg
-[[ $seg = @(n|N) ]] && msg -bar && return
-clear
-cd /etc/stunnel/
-cat private.key certificate.crt ca_bundle.crt > stunnel.pem
-#systemctl start stunnel4 &>/dev/null
-	#systemctl start stunnel &>/dev/null
-	systemctl restart stunnel4 &>/dev/null
-	systemctl restart stunnel &>/dev/null
-msg -bar
-msg -verd "	CERTIFICADO ZEROSSL AGREGADO\n	SERVICIO SSL INICIADO"
-msg -bar
-;;
-esac
+  msg -tit
+  msg -bar
+  #menu_func " UDP-REQUEST  SocksIP    \033[0;31m[${_So}\033[0;31m]${_MSYS}" "UDP-CUSTOM HTTPCustom \033[0;31m[${_Cu}\033[0;31m]${_MSYS}" "UDP-Hysteria APPMod's \033[0;31m[${_HIS}\033[0;31m] ${_MSYS}"
+  echo -e "\e[1;93m  [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m MENU UDP-CUSTOM \033[0;31m[${_Cu}\033[0;31m] "               #Ban_BT
+  echo -e "\e[1;93m  [\e[1;32m2\e[1;93m]\033[1;31m > \e[1;97m ZIVPN EN CURSO OFF \033[0;31m[${_HIS}\033[0;31m] "              #Ban_BT
+  echo -e "\e[1;93m  [\e[1;32m3\e[1;93m]\033[1;31m > \e[1;97m UDP-Hysteria2 HTTP-Injector \033[0;31m[${_HIS2}\033[0;31m] "              #Ban_BT
+  msg -bar
+  echo -e "    \e[97m\033[1;41m ENTER SIN RESPUESTA REGRESA A MENU ANTERIOR \033[0;97m"
+  msg -bar
+  #echo -ne "\033[1;97m   └⊳ Seleccione una opcion [0-18]: \033[1;32m" && read num
+  
+  opcion=$(selection_fun 3)
+  case $opcion in
+  1) source <(curl -sSL https://gitlab.com/fdarnix/chukkmod-files/-/raw/main/source/udpS/UDPserver.org.sh) && exit;;
+  2) crear_subdominio ;;
+  3) [[ $(ps x | grep -w "/bin/Hysteria2"| grep -v grep) ]] && _menuH2 || _hysteria2 ;;
+  *)
+    menu
+    ;;
+  esac
+  exit 0
+done
+
+
+pruebas(){
+
+echo '[Unit]
+Description=HysteriaUDP MOD Service BY @drowkid01
+After=network.target
+
+[Service]
+User=root
+Group=root'	> /etc/adm-lite/HYSTERIA/hysteria.service
+echo "ExecStartPost=${sys} net.ipv4.ip_forward=1
+ExecStartPost=${sys} net.ipv4.conf.all.rp_filter=0
+ExecStartPost=${sys} net.ipv4.conf.${interfas}.rp_filter=0
+ExecStartPost=${ip4t} -t nat -A PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712
+ExecStartPost=${ip6t} -t nat -A PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712
+ExecStopPost=${ip4t} -t nat -D PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712
+ExecStopPost=${ip6t} -t nat -D PREROUTING -i ${interfas} -p udp --dport 10000:65000 -j DNAT --to-destination :36712" >> /etc/adm-lite/HYSTERIA/hysteria.service
+
+echo 'WorkingDirectory=/etc/adm-lite/HYSTERIA
+Environment="PATH=/etc/adm-lite/HYSTERIA"
+ExecStart=/bin/hysteria -config /etc/adm-lite/HYSTERIA/config.json server
+
+[Install]
+WantedBy=multi-user.target
+' >> /etc/adm-lite/HYSTERIA/hysteria.service
+		
+}
