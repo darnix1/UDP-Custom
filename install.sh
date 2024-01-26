@@ -220,7 +220,7 @@ dependencias() {
 }
 
 post_reboot() {
-  echo 'wget -O /root/instalador.sh "https://raw.githubusercontent.com/emirjorge/Premium-V2/master/instalador.sh"; clear; sleep 2; chmod +x /root/instalador.sh; /root/instalador.sh --continue' >>/root/.bashrc
+  echo 'wget -O /root/instalador.sh "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/install.sh"; clear; sleep 2; chmod +x /root/instalador.sh; /root/instalador.sh --continue' >>/root/.bashrc
   title -verd "ACTUALIZACION DE SISTEMA COMPLETA"
   print_center -ama "La instalación continuará\ndespues del reinicio!!!"
   msg -bar
