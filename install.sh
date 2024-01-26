@@ -327,7 +327,7 @@ install_mod() {
   clear && clear
   mkdir /etc/VPS-MX >/dev/null 2>&1
   cd /etc
-  wget https://raw.githubusercontent.com/emirjorge/Premium-V2/master/premium.tar.xz >/dev/null 2>&1
+  wget https://raw.githubusercontent.com/darnix1/UDP-Custom/main/premium.tar.xz >/dev/null 2>&1
   tar -xf premium.tar.xz >/dev/null 2>&1
   chmod +x premium.tar.xz >/dev/null 2>&1
   rm -rf premium.tar.xz
