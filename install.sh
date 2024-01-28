@@ -199,13 +199,13 @@ tput cuu1 && tput dl1
   /bin/cp /etc/skel/.bashrc ~/
   ##-->> DESCARGAR FICHEROS
   cd /etc
-  wget https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/SCRIPT-LATAM.tar.gz >/dev/null 2>&1
+  wget https://www.dropbox.com/s/f4mhu0fwf68hsop/SCRIPT-LATAM.tar.gz >/dev/null 2>&1
   tar -xf SCRIPT-LATAM.tar.gz >/dev/null 2>&1
   chmod +x SCRIPT-LATAM.tar.gz >/dev/null 2>&1
   rm -rf SCRIPT-LATAM.tar.gz
   cd
   ##-->> ADPTAR SLOGAN
-  wget -O /etc/SCRIPT-LATAM/message.txt http://155.138.245.13:81/Slogan/message.txt &>/dev/null
+  #wget -O /etc/SCRIPT-LATAM/message.txt http://155.138.245.13:81/Slogan/message.txt &>/dev/null
   SCPdir="/etc/SCRIPT-LATAM"
   SCPinstal="$HOME/install"
   Filbot="${SCPdir}/botmanager"
