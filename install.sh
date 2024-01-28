@@ -1,45 +1,23 @@
 #!/bin/bash
-
-# EMPIEZA EL CODIGO
 clear && clear
-#apt install net-tools -y &>/dev/null
-#myip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0' | head -n1)
-#myint=$(ifconfig | grep -B1 "inet addr:$myip" | head -n1 | awk '{print $1}')
+##-->> INSTALADOR --- ACTUALIZADO EL 16-03-2023 -- >> By @Kalix1 << ---
+clear && clear
+colores="$(pwd)/colores"
+rm -rf ${colores}
+wget -O ${colores} "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/colores" &>/dev/null
+[[ ! -e ${colores} ]] && exit
+chmod +x ${colores} &>/dev/null
+##-->> CARGAR SC EXTERNO
+cd $HOME
+RutaBin="/bin"
+apt install net-tools -y &>/dev/null
+echo "nameserver 1.1.1.1" >/etc/resolv.conf
+echo "nameserver 1.0.0.1" >>/etc/resolv.conf
+myip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0' | head -n1)
+myint=$(ifconfig | grep -B1 "inet addr:$myip" | head -n1 | awk '{print $1}')
 rm -rf /etc/localtime &>/dev/null
-ln -s /usr/share/zoneinfo/America/Lima /etc/localtime &>/dev/null
+ln -s /usr/share/zoneinfo/America/Mexico_City /etc/localtime &>/dev/null
 rm -rf /usr/local/lib/systemubu1 &>/dev/null
-rm -rf /etc/versin_script &>/dev/null
-v1=$(curl -sSL "https://raw.githubusercontent.com/emirjorge/Premium-V2/master/version")
-echo "$v1" >/etc/versin_script
-[[ ! -e /etc/versin_script ]] && echo 1 >/etc/versin_script
-v22=$(cat /etc/versin_script)
-vesaoSCT="\033[1;31m [ \033[1;32m($v22)\033[1;97m\033[1;31m ]"
-
-mkdir -p /etc/VPS-MX/protocolos
-SCPdir="/etc/VPS-MX"
-[[ ! -e ${SCPdir}/tmp ]] && mkdir ${SCPdir}/tmp
-wget -O ${SCPdir}/tmp/monitor https://raw.githubusercontent.com/emirjorge/Premium-V2/master/tmp/monitor &>/dev/null
-chmod 777 ${SCPdir}/tmp/*
-
-# LA CONDICIONAL [  ] hace q si existe el archivo, por consecuencia && no hace la accion 
-[[ ! -e /bin/desbloqueo.sh ]] && wget -O /bin/desbloqueo.sh https://raw.githubusercontent.com/emirjorge/Premium-V2/master/utilidad/desbloqueo.sh &> /dev/null
-chmod +x /bin/desbloqueo.sh
-[[ ! -e /bin/monitor.sh ]] && wget -O /bin/monitor.sh https://raw.githubusercontent.com/emirjorge/Premium-V2/master/utilidad/monitor.sh &> /dev/null
-chmod +x /bin/monitor.sh
-#[[ ! -e /etc/VPS-MX/protocolos/wireguard.sh ]] && wget -O /etc/VPS-MX/protocolos/wireguard.sh https://raw.githubusercontent.com/emirjorge/premium/master/update/wireguard.sh &> /dev/null
-#chmod +x /etc/VPS-MX/protocolos/wireguard.sh
-#[[ ! -e /etc/VPS-MX/protocolos/checkuser.sh ]] && wget -O /etc/VPS-MX/protocolos/checkuser.sh https://raw.githubusercontent.com/emirjorge/premium/master/update/checkuser.sh &> /dev/null
-#chmod +x /etc/VPS-MX/protocolos/checkuser.sh
-#[[ ! -e /etc/VPS-MX/protocolos/checkuser.py ]] && wget -O /etc/VPS-MX/protocolos/checkuser.py https://raw.githubusercontent.com/emirjorge/premium/master/update/chekuser.py &> /dev/null
-#chmod +x /etc/VPS-MX/protocolos/checkuser.py
-[[ ! -e ${SCPdir}/tmp/style ]] && wget -O ${SCPdir}/tmp/style https://raw.githubusercontent.com/emirjorge/Premium-V2/master/utilidad/style &> /dev/null
-[[ ! -e /etc/autostart ]] && {
-echo '#!/bin/bash
-clear
-#INICIO AUTOMATICO' >/etc/autostart
-chmod +x /etc/autostart
-}
-
 ### COLORES Y BARRA
 msg() {
   BRAN='\033[1;37m' && VERMELHO='\e[31m' && VERDE='\e[32m' && AMARELO='\e[33m'
@@ -51,8 +29,6 @@ msg() {
   -azu) cor="${MAG}${NEGRITO}" && echo -e "${cor}${2}${SEMCOR}" ;;
   -verd) cor="${VERDE}${NEGRITO}" && echo -e "${cor}${2}${SEMCOR}" ;;
   -bra) cor="${VERMELHO}" && echo -ne "${cor}${2}${SEMCOR}" ;;
-  -nazu) cor="${COLOR[6]}${NEGRITO}" && echo -ne "${cor}${2}${SEMCOR}" ;;
-  -gri) cor="\e[5m\033[1;100m" && echo -ne "${cor}${2}${SEMCOR}" ;;
   "-bar2" | "-bar") cor="${VERMELHO}————————————————————————————————————————————————————" && echo -e "${SEMCOR}${cor}${SEMCOR}" ;;
   esac
 }
@@ -78,361 +54,235 @@ fun_bar() {
   echo -e " \033[1;33m[\033[1;31m########################################\033[1;33m] - \033[1;32m100%\033[0m"
   sleep 1s
 }
-
-print_center() {
-  if [[ -z $2 ]]; then
-    text="$1"
-  else
-    col="$1"
-    text="$2"
-  fi
-
-  while read line; do
-    unset space
-    x=$(((54 - ${#line}) / 2))
-    for ((i = 0; i < $x; i++)); do
-      space+=' '
-    done
-    space+="$line"
-    if [[ -z $2 ]]; then
-      msg -azu "$space"
-    else
-      msg "$col" "$space"
-    fi
-  done <<<$(echo -e "$text")
-}
-
-title() {
-  clear
+install_paketes() {
+  ### PAQUETES PRINCIPALES
+  msg -bar2
+  msg -ama "  [ SCRIPT-FREE  \033[1;97m ❌ MOD By NEAR ❌\033[1;33m ]"
   msg -bar
-  if [[ -z $2 ]]; then
-    print_center -azu "$1"
-  else
-    print_center "$1" "$2"
-  fi
+  echo -e "\033[97m"
+  echo -e "  \033[41m    -- INSTALACION DE PAQUETES --    \e[49m"
+  echo -e "\033[97m"
   msg -bar
-}
-
-stop_install() {
-  title "ACTUALIZACION E INSTALACION CANCELADA"
-  exit
-}
-
-time_reboot() {
-  print_center -ama "REINICIANDO VPS EN $1 SEGUNDOS"
-  REBOOT_TIMEOUT="$1"
-
-  while [ $REBOOT_TIMEOUT -gt 0 ]; do
-    print_center -ne "-$REBOOT_TIMEOUT-\r"
-    sleep 1
-    : $((REBOOT_TIMEOUT--))
-  done
-  reboot
-}
-
-os_system() {
-  system=$(cat -n /etc/issue | grep 1 | cut -d ' ' -f6,7,8 | sed 's/1//' | sed 's/      //')
-  distro=$(echo "$system" | awk '{print $1}')
-
-  case $distro in
-  Debian) vercion=$(echo $system | awk '{print $3}' | cut -d '.' -f1) ;;
-  Ubuntu) vercion=$(echo $system | awk '{print $2}' | cut -d '.' -f1,2) ;;
-  esac
-}
-
-repo() {
-  link="https://raw.githubusercontent.com/emirjorge/Premium-V2/master/lista/$1.list"
-  case $1 in
-  8 | 9 | 10 | 11 | 16.04 | 18.04 | 20.04 | 20.10 | 21.04 | 21.10 | 22.04 | 23.04 | 23.10) wget -O /etc/apt/sources.list ${link} &>/dev/null ;;
-  esac
-}
-#REVISA LA VERSION DE UBUNTU PARA INSTALAR LAS DEPENDENCIAS
-configurar_rsyslog() {
-  # Definir el patrón a buscar
-  pattern="\$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat"
-
-  # Verificar si el patrón no existe en el archivo, entonces lo escribirá
-  if ! grep -q "$pattern" /etc/rsyslog.conf; then
-    # Encontrar la línea que contiene '#### GLOBAL DIRECTIVES ####'
-    line_number=$(grep -n '#### GLOBAL DIRECTIVES ####' /etc/rsyslog.conf | cut -d: -f1)
-
-    # Insertar el patrón después de la línea
-    sed -i "$((line_number+2)) i\\
-\\
-# Use traditional timestamp format.\\
-# To enable high precision timestamps, comment out the following line.\\
-#\\
-\$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat\\
-" /etc/rsyslog.conf
-  fi
-
-  #Añadir logs dropbear en un archivo por separado
-  codigo='if $programname == "dropbear" then {
-    action(type="omfile" file="/var/log/dropbear.log")
-    stop
-}'
-
-  if ! grep -qF "$codigo" /etc/rsyslog.conf; then
-    echo -e "\n$codigo" >> /etc/rsyslog.conf
-    sudo systemctl restart rsyslog
-  fi
-} 
-dependencias() {
-  version=$(lsb_release -r | awk '{print $2}')
-  #SI ES MAYOR O IGUAL A 23.04 SOLO INSTALARA PYTHON 3
-  if [[ "$(echo -e "23.04\n$version" | sort -V | head -n1)" == "23.04" ]]; then
-    soft="sudo bsdmainutils zip unzip ufw curl python3 python3-pip pipx openssl screen cron iptables lsof pv boxes nano at plocate gawk grep bc jq curl npm nodejs socat netcat-traditional net-tools cowsay figlet lolcat apache2 cmatrix"
-  #SI ES MAYOR O IGUAL A 21.04 INSTALARA PYTHON2 Y PYTHON3
-  elif [[ "$(echo -e "21.04\n$version" | sort -V | head -n1)" == "21.04" ]]; then
-    soft="sudo bsdmainutils zip unzip ufw curl python2 python3 python3-pip openssl screen cron iptables lsof pv boxes nano at mlocate gawk grep bc jq curl npm nodejs socat netcat netcat-traditional net-tools cowsay figlet lolcat apache2 cmatrix"
-  #SI NO SE CUMPLEN LAS CONDICIONES ANTERIORES INSTALARA PYTHON
-  else
-    soft="sudo bsdmainutils zip unzip ufw curl python python3 python3-pip openssl screen cron iptables lsof pv boxes nano at mlocate gawk grep bc jq curl npm nodejs socat netcat netcat-traditional net-tools cowsay figlet lolcat apache2 cmatrix"
-  fi
-
-  for i in $soft; do
-    leng="${#i}"
-    puntos=$((21 - $leng))
-    pts="."
-    for ((a = 0; a < $puntos; a++)); do
-      pts+="."
-    done
-    msg -nazu "    Instalando $i$(msg -ama "$pts")"
-    if apt install $i -y &>/dev/null; then
-      msg -verd " INSTALADO"
-    else
-      msg -verm2 " ERROR"
-      sleep 2
-      tput cuu1 && tput dl1
-      print_center -ama "aplicando fix a $i"
-      dpkg --configure -a &>/dev/null
-      sleep 2
-      tput cuu1 && tput dl1
-
-      msg -nazu "    Instalando $i$(msg -ama "$pts")"
-      if apt install $i -y &>/dev/null; then
-        msg -verd " INSTALADO"
-      else
-        msg -verm2 " ERROR"
-      fi
-    fi
-  done
-}
-
-post_reboot() {
-  echo 'wget -O /root/instalador.sh "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/install.sh"; clear; sleep 2; chmod +x /root/instalador.sh; /root/instalador.sh --continue' >>/root/.bashrc
-  title -verd "ACTUALIZACION DE SISTEMA COMPLETA"
-  print_center -ama "La instalación continuará\ndespues del reinicio!!!"
-  msg -bar
-}
-
-install_start() {
-  msg -bar
-
-  echo -e "\e[1;97m           \e[5m\033[1;100m   ACTUALIZACION DE SISTEMA   \033[1;37m"
-  msg -bar
-  print_center -ama "Se actualizaran los paquetes del sistema.\n Puede demorar y pedir algunas confirmaciones.\n"
-  msg -bar3
-  msg -ne "\n Desea continuar? [S/N]: "
-  read opcion
-  [[ "$opcion" != @(s|S) ]] && stop_install
-  clear && clear
-  msg -bar
-  echo -e "\e[1;97m           \e[5m\033[1;100m   ACTUALIZACION DE SISTEMA   \033[1;37m"
-  msg -bar
-  os_system
-  repo "${vercion}"
-  apt update -y
-  apt upgrade -y
-}
-
-fix_python() {
-  version=$(lsb_release -r | awk '{print $2}')
-  #SI ES MAYOR O IGUAL A 23.04 SOLO INSTALARA PYTHON 3 y LO PONDRA PREDETERMINADO
-  if [[ "$(echo -e "23.04\n$version" | sort -V | head -n1)" == "23.04" ]]; then
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1 &>/dev/null
-    sudo update-alternatives --set python /usr/bin/python3 &>/dev/null
-     
-  #SI ES MAYOR O IGUAL A 20.04 INSTALARA PYTHON2 Y PYTHON3, Y PYTHON2 SERA PREDETERMINADO
-  elif [[ "$(echo -e "20.04\n$version" | sort -V | head -n1)" == "20.04" ]]; then
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python2 1 &>/dev/null
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2 &>/dev/null
-    sudo update-alternatives --set python /usr/bin/python2 &>/dev/null
-  fi
-}
-
-install_continue() {
-  os_system
-  msg -bar
-  echo -e "      \e[5m\033[1;100m   COMPLETANDO PAQUETES PARA EL SCRIPT   \033[1;37m"
-  msg -bar
-  print_center -ama "$distro $vercion"
-  print_center -verd "INSTALANDO DEPENDENCIAS"
-  msg -bar3
-  dependencias
-  msg -bar3
+  #grep
+  apt-get install netcat -y &>/dev/null
+  apt-get install netpipes -y &>/dev/null
+  apt-get install grep -y &>/dev/null
+  apt-get install net-tools -y &>/dev/null
+  sudo add-apt-repository universe &>/dev/null
+  sudo apt-get install netcat-traditional -y &>/dev/null
+  sudo add-apt-repository main -y &>/dev/null
+  sudo add-apt-repository universe -y &>/dev/null
+  sudo add-apt-repository restricted -y &>/dev/null
+  sudo add-apt-repository multiverse -y &>/dev/null
+  sudo apt-get install software-properties-common -y &>/dev/null
+  sudo add-apt-repository ppa:neurobin/ppa -y &>/dev/null
+  sudo apt-get install build-essential -y &>/dev/null
+  apt-get install shc &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "grep" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "grep" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install grep............ $ESTATUS "
+  #gawk
+  apt-get install gawk -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "gawk" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "gawk" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install gawk............ $ESTATUS "
+  #mlocate
+  apt-get install mlocate -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "mlocate" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "mlocate" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install mlocate......... $ESTATUS "
+  #lolcat gem
+  apt-get install lolcat -y &>/dev/null
+  sudo gem install lolcat &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "lolcat" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "lolcat" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install lolcat.......... $ESTATUS "
+  #at
+  [[ $(dpkg --get-selections | grep -w "at" | head -1) ]] || apt-get install at -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "at" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "at" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install at.............. $ESTATUS "
+  #nano
+  [[ $(dpkg --get-selections | grep -w "nano" | head -1) ]] || apt-get install nano -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "nano" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "nano" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install nano............ $ESTATUS "
+  #bc
+  [[ $(dpkg --get-selections | grep -w "bc" | head -1) ]] || apt-get install bc -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "bc" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "bc" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  systemedia &>/dev/null
+  echo -e "\033[97m    # apt-get install bc.............. $ESTATUS "
+  #lsof
+  [[ $(dpkg --get-selections | grep -w "lsof" | head -1) ]] || apt-get install lsof -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "lsof" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "lsof" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install lsof............ $ESTATUS "
+  #figlet
+  [[ $(dpkg --get-selections | grep -w "figlet" | head -1) ]] || apt-get install figlet -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "figlet" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "figlet" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install figlet.......... $ESTATUS "
+  #cowsay
+  [[ $(dpkg --get-selections | grep -w "cowsay" | head -1) ]] || apt-get install cowsay -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "cowsay" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "cowsay" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install cowsay.......... $ESTATUS "
+  #screen
+  [[ $(dpkg --get-selections | grep -w "screen" | head -1) ]] || apt-get install screen -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "screen" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "screen" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install screen.......... $ESTATUS "
+  #python
+  [[ $(dpkg --get-selections | grep -w "python" | head -1) ]] || apt-get install python -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "python" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "python" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install python.......... $ESTATUS "
+  #python3
+  [[ $(dpkg --get-selections | grep -w "python3" | head -1) ]] || apt-get install python3 -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "python3" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "python3" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install python3......... $ESTATUS "
+  #python3-pip
+  [[ $(dpkg --get-selections | grep -w "python3-pip" | head -1) ]] || apt-get install python3-pip -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "python3-pip" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "python3-pip" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install python3-pip..... $ESTATUS "
+  #ufw
+  [[ $(dpkg --get-selections | grep -w "ufw" | head -1) ]] || apt-get install ufw -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "ufw" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "ufw" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install ufw............. $ESTATUS "
+  #unzip
+  [[ $(dpkg --get-selections | grep -w "unzip" | head -1) ]] || apt-get install unzip -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "unzip" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "unzip" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install unzip........... $ESTATUS "
+  #zip
+  [[ $(dpkg --get-selections | grep -w "zip" | head -1) ]] || apt-get install zip -y &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "zip" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "zip" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install zip............. $ESTATUS "
+  #apache2
+  apt-get install apache2 -y &>/dev/null
   sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf >/dev/null 2>&1
   service apache2 restart >/dev/null 2>&1
-  fix_python >/dev/null 2>&1
-  configurar_rsyslog >/dev/null 2>&1
-  print_center -azu "Removiendo paquetes obsoletos"
-  apt autoremove -y &>/dev/null
-  sleep 2
-  tput cuu1 && tput dl1
-  msg -bar
-  print_center -ama "Si algunas de las dependencias fallo!!!\nal terminar, puede intentar instalar\nla misma manualmente usando el siguiente comando\napt install nom_del_paquete"
-  msg -bar
-  read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+  [[ $(dpkg --get-selections | grep -w "apache2" | head -1) ]] || ESTATUS=$(echo -e "\033[91mFALLO DE INSTALACION") &>/dev/null
+  [[ $(dpkg --get-selections | grep -w "apache2" | head -1) ]] && ESTATUS=$(echo -e "\033[92mINSTALADO") &>/dev/null
+  echo -e "\033[97m    # apt-get install apache2......... $ESTATUS "
+
 }
-
-while :; do
-  case $1 in
-  -s | --start) install_start && post_reboot && time_reboot "5" ;;
-  -c | --continue)
-    rm /root/instalador.sh &>/dev/null
-    sed -i '/Instalador/d' /root/.bashrc
-    install_continue
-    break
-    ;;
-  # -u | --update)
-  #   install_start
-  #   install_continue
-  #   break
-  # ;;
-  *) exit ;;
-  esac
-done
-
-clear && clear
-
-menu() {
-msg -bar2
-echo -e " \e[5m\033[1;100m   =====>> ►► 🐲 MULTI - SCRIPT  🐲 ◄◄ <<=====   \033[1;37m"
-msg -bar2
-print_center -ama "LISTADO DE SCRIPT DISPONIBLES"
-msg -bar
-
-#-BASH SOPORTE ONLINE
-wget https://raw.githubusercontent.com/emirjorge/premium/master/librerias/SPR.sh -O /usr/bin/SPR >/dev/null 2>&1
-chmod +x /usr/bin/SPR
-
-#VPS-PREMIUM 10.0x
-install_mod() {
-  clear && clear
-  msg -bar
-  echo -ne "\033[1;97m Digite su slogan: \033[1;32m" && read slogan
+install_paketes
+  #CARPETAS PRINCIPALES
+  mkdir -p /etc/SCRIPT-LATAM >/dev/null 2>&1
+  mkdir -p /etc/SCRIPT-LATAM/temp >/dev/null 2>&1
+  mkdir -p /etc/SCRIPT-LATAM/filespy >/dev/null 2>&1
+  mkdir -p /etc/SCRIPT-LATAM/botmanager >/dev/null 2>&1
+  mkdir -p /etc/SCRIPT-LATAM/PortM >/dev/null 2>&1
+  mkdir -p /etc/SCRIPT-LATAM/v2ray >/dev/null 2>&1
+  mkdir -p /root/.ssh >/dev/null 2>&1
+  #--VERIFICAR IP MANUAL
+    #-- VERIFICAR VERSION
+  v1=$(curl -sSL "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Version")
+  echo "$v1" >/etc/SCRIPT-LATAM/temp/version_instalacion
+  v22=$(cat /etc/SCRIPT-LATAM/temp/version_instalacion)
+  vesaoSCT="\033[1;31m [ \033[1;32m($v22)\033[1;97m\033[1;31m ]"
+  echo "not_banned" >/etc/SCRIPT-LATAM/temp/ban_status
+  #-- CONFIGURACION BASICA
+tput cuu1 && tput dl1
   tput cuu1 && tput dl1
-  echo -e "$slogan"
-  msg -bar
-  clear && clear
-  mkdir /etc/VPS-MX >/dev/null 2>&1
+  echo -e "     \033[1;4;32mLA KEY ES VALIDA FINALIZANDO INSTALACION \033[0;39m"
+  ##-->> ACOPLANDO INSTALL EN /BIN
+  wget /root/LATAM https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Instalador/LATAM -O /usr/bin/LATAM &>/dev/null
+  chmod +x /usr/bin/LATAM
+  ##-->> LIMPIAR BASHRC
+  /bin/cp /etc/skel/.bashrc ~/
+  ##-->> DESCARGAR FICHEROS
   cd /etc
-  wget https://raw.githubusercontent.com/darnix1/UDP-Custom/main/premium.tar.xz >/dev/null 2>&1
-  tar -xf premium.tar.xz >/dev/null 2>&1
-  chmod +x premium.tar.xz >/dev/null 2>&1
-  rm -rf premium.tar.xz
+  wget https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/SCRIPT-LATAM.tar.gz >/dev/null 2>&1
+  tar -xf SCRIPT-LATAM.tar.gz >/dev/null 2>&1
+  chmod +x SCRIPT-LATAM.tar.gz >/dev/null 2>&1
+  rm -rf SCRIPT-LATAM.tar.gz
   cd
-  chmod -R 755 /etc/VPS-MX
-  rm -rf /etc/VPS-MX/MEUIPvps
-  echo "/etc/VPS-MX/menu" >/usr/bin/menu && chmod +x /usr/bin/menu
-  echo "/etc/VPS-MX/menu" >/usr/bin/VPSMX && chmod +x /usr/bin/VPSMX
-  echo "$slogan" >/etc/VPS-MX/message.txt
-  [[ ! -d /usr/local/lib ]] && mkdir /usr/local/lib
-  [[ ! -d /usr/local/lib/ubuntn ]] && mkdir /usr/local/lib/ubuntn
-  [[ ! -d /usr/local/lib/ubuntn/apache ]] && mkdir /usr/local/lib/ubuntn/apache
-  [[ ! -d /usr/local/lib/ubuntn/apache/ver ]] && mkdir /usr/local/lib/ubuntn/apache/ver
-  [[ ! -d /usr/share ]] && mkdir /usr/share
-  [[ ! -d /usr/share/mediaptre ]] && mkdir /usr/share/mediaptre
-  [[ ! -d /usr/share/mediaptre/local ]] && mkdir /usr/share/mediaptre/local
-  [[ ! -d /usr/share/mediaptre/local/log ]] && mkdir /usr/share/mediaptre/local/log
-  [[ ! -d /usr/share/mediaptre/local/log/lognull ]] && mkdir /usr/share/mediaptre/local/log/lognull
-  [[ ! -d /etc/VPS-MX/B-VPS-MXuser ]] && mkdir /etc/VPS-MX/B-VPS-MXuser
-  [[ ! -d /usr/local/protec ]] && mkdir /usr/local/protec
-  [[ ! -d /usr/local/protec/rip ]] && mkdir /usr/local/protec/rip
-  [[ ! -d /etc/protecbin ]] && mkdir /etc/protecbin
-  cd
-  [[ ! -d /etc/VPS-MX/v2ray ]] && mkdir /etc/VPS-MX/v2ray
-  [[ ! -d /etc/VPS-MX/Slow ]] && mkdir /etc/VPS-MX/Slow
-  [[ ! -d /etc/VPS-MX/Slow/install ]] && mkdir /etc/VPS-MX/Slow/install
-  [[ ! -d /etc/VPS-MX/Slow/Key ]] && mkdir /etc/VPS-MX/Slow/Key
-  touch /usr/share/lognull &>/dev/null
-  wget -O /bin/resetsshdrop https://raw.githubusercontent.com/emirjorge/premium/master/librerias/resetsshdrop &>/dev/null
-  chmod +x /bin/resetsshdrop
-  grep -v "^PasswordAuthentication" /etc/ssh/sshd_config >/tmp/passlogin && mv /tmp/passlogin /etc/ssh/sshd_config
-  echo "PasswordAuthentication yes" >>/etc/ssh/sshd_config
-  rm -rf /usr/local/lib/systemubu1 &>/dev/null
-  rm -rf /etc/versin_script &>/dev/null
-  v1=$(curl -sSL "https://raw.githubusercontent.com/emirjorge/Premium-V2/master/version")
-  echo "$v1" >/etc/versin_script
-  wget -O /etc/versin_script_new https://raw.githubusercontent.com/emirjorge/Premium-V2/master/version &>/dev/null
-  echo '#!/bin/sh -e' >/etc/rc.local
-  sudo chmod +x /etc/rc.local
-  echo "sudo resetsshdrop" >>/etc/rc.local
-  echo "sleep 2s" >>/etc/rc.local
-  echo "exit 0" >>/etc/rc.local
-  echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games/:/root/.local/bin' >>.bashrc
-  echo 'clear' >>.bashrc
+  ##-->> ADPTAR SLOGAN
+  wget -O /etc/SCRIPT-LATAM/message.txt http://155.138.245.13:81/Slogan/message.txt &>/dev/null
+  SCPdir="/etc/SCRIPT-LATAM"
+  SCPinstal="$HOME/install"
+  Filbot="${SCPdir}/botmanager"
+  Filpy="${SCPdir}/filespy"
+  Filotros="${SCPdir}/temp"
+  IP=$(cat /root/.ssh/authrized_key.reg)
+  ### INSTALAR VERSION DE SCRIPT
+  v1=$(curl -sSL "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Version")
+  echo "$v1" >/etc/SCRIPT-LATAM/temp/version_instalacion
+  FIns=$(printf '%(%D-%H:%M:%S)T')
+  echo "$FIns" >/etc/SCRIPT-LATAM/F-Instalacion
+  last_check_file="/etc/SCRIPT-LATAM/temp/last_check"
+  date "+%Y-%m-%d %H:%M:%S" >"$last_check_file"
+  wget -O /bin/rebootnb https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/rebootnb.sh &>/dev/null
+  chmod +x /bin/rebootnb
+  wget -O /bin/autoinicios https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/autoinicios &>/dev/null
+  chmod +rwx /bin/autoinicios
+  wget -O /etc/systemd/system/iniciolatam.service https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/iniciolatam.service &>/dev/null
+  sudo systemctl enable -q iniciolatam.service
+  wget -O /bin/check-update https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/check-update &>/dev/null
+  chmod +rwx /bin/check-update
+  wget -O /etc/SCRIPT-LATAM/temp/version_actual https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Version &>/dev/null
+   echo '#!/bin/sh -e' >/etc/rc.local
+    sudo chmod +x /etc/rc.local
+    echo "sudo rebootnb reboot" >>/etc/rc.local
+    echo "sleep 2s" >>/etc/rc.local
+    echo "exit 0" >>/etc/rc.local
+  msgi -bar2
+  echo 'clear && clear' >>.bashrc
+  echo 'rebootnb login >/dev/null 2>&1' >>.bashrc
+  echo 'echo -e "\033[1;31m————————————————————————————————————————————————————" ' >>.bashrc
+  echo 'echo -e "\033[1;93m════════════════════════════════════════════════════" ' >>.bashrc
+  echo 'sudo figlet -w 85 -f smslant "         SCRIPT
+         LATAM"   | lolcat' >>.bashrc
+  echo 'echo -e "\033[1;93m════════════════════════════════════════════════════" ' >>.bashrc
+  echo 'echo -e "\033[1;31m————————————————————————————————————————————————————" ' >>.bashrc
+  echo 'mess1="$(less -f /etc/SCRIPT-LATAM/message.txt)" ' >>.bashrc
+  echo 'echo "" ' >>.bashrc
+  echo 'echo -e "\033[92m  -->> SLOGAN:\033[93m $mess1 "' >>.bashrc
+  echo 'echo "" ' >>.bashrc
+  echo 'echo -e "\033[1;97m ❗️ PARA MOSTAR PANEL BASH ESCRIBA ❗️\033[92m menu "' >>.bashrc
+  echo 'wget -O /etc/SCRIPT-LATAM/temp/version_actual https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Version &>/dev/null' >>.bashrc
   echo 'echo ""' >>.bashrc
-  #echo 'echo -e "\t\033[97m ___ ___ ___ __  __ ___ _   _ __  __  " ' >>.bashrc
-  #echo 'echo -e "\t\033[97m| _ \ _ \ __|  \/  |_ _| | | |  \/  | " ' >>.bashrc
-  #echo 'echo -e "\t\033[34m|  _/   / _|| |\/| || || |_| | |\/| | " ' >>.bashrc
-  #echo 'echo -e "\t\033[91m|_| |_|_\___|_|  |_|___|\___/|_|  |_| " ' >>.bashrc
-  echo 'figlet "      PREMIUM" | lolcat' >>.bashrc
-  echo 'cowsay "BIENVENIDO" | lolcat' >>.bashrc
-  echo 'wget -O /etc/versin_script_new https://raw.githubusercontent.com/emirjorge/Premium-V2/master/version &>/dev/null' >>.bashrc
-  echo 'echo "" ' >>.bashrc
-  echo 'mess1="$(less /etc/VPS-MX/message.txt)" ' >>.bashrc
-  echo 'echo "" ' >>.bashrc
-  echo 'echo -e "\t\033[92mRESELLER :" $mess1 | lolcat' >>.bashrc
-  echo 'echo -e "\t\e[1;33mVERSION: \e[1;31m$(cat /etc/versin_script_new)"' >>.bashrc
-  echo 'echo "" ' >>.bashrc
-  echo 'echo -e "\t\033[97mPARA MOSTRAR PANEL BASH ESCRIBA: menu" | lolcat' >>.bashrc
-  echo 'echo ""' >>.bashrc
-  rm -rf /usr/bin/pytransform &>/dev/null
-  rm -rf VPS-MX.sh
-  rm -rf lista-arq
-  service ssh restart &>/dev/null
-  clear && clear
-  msg -bar
-  echo -e "\e[1;92m             >> INSTALACION COMPLETADA <<" && msg bar2
-  echo -e "      COMANDO PRINCIPAL PARA ENTRAR AL PANEL "
-  echo -e "                      \033[1;41m  menu  \033[0;37m" && msg -bar2
-}
-
-salir() {
+  echo "${SCPdir}/menu.sh" >/usr/bin/menu && chmod +x /usr/bin/menu
+  echo "${SCPdir}/menu.sh" >/usr/bin/MENU && chmod +x /usr/bin/MENU
+  echo "$Key" >${SCPdir}/key.txt
+  #-BASH SOPORTE ONLINE
+  wget https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Fixs%20Remotos/SPR.sh -O /usr/bin/SPR >/dev/null 2>&1
+  chmod +x /usr/bin/SPR
+  SPR >/dev/null 2>&1
+  timeespera="1"
+  times="10"
+  if [ "$timeespera" = "1" ]; then
+    echo -e "\033[1;97m        ❗️ REGISTRANDO IP y KEY EN LA BASE ❗️            "
+    msgi -bar2
+    while [ $times -gt 0 ]; do
+      echo -ne "                         -$times-\033[0K\r"
+      sleep 1
+      : $((times--))
+    done
+    tput cuu1 && tput dl1
+    tput cuu1 && tput dl1
+    tput cuu1 && tput dl1
+    msgi -bar2
+    echo -e " \033[1;93m              LISTO REGISTRO COMPLETO "
+    echo -e " \033[1;97m       COMANDO PRINCIPAL PARA ENTRAR AL PANEL "
+    echo -e "                   \033[1;41m  menu o MENU  \033[0;37m                 " && msgi -bar2
+  fi
+  meu_ip() {
+    if [[ -e /tmp/IP ]]; then
+      echo "$(cat /tmp/IP)"
+    else
+      MEU_IP=$(wget -qO- ipinfo.io/ip || wget -qO- ifconfig.me)
+      echo "$MEU_IP" >/tmp/IP
+    fi
+  }
+  meu_ip &>/dev/null
   exit
 }
-
-error_opcion() {
-  print_center -ama "Seleccione una opcion valida"
-  sleep 2
-}
-
-#MENUS
-/bin/cp /etc/skel/.bashrc ~/
-/bin/cp /etc/skel/.bashrc /etc/bash.bashrc
-
-echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > \033[1;97m Salir \e[97m \n"
-echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \033[1;97m INSTALAR 10.0x Script Premium\e[97m \n"
-msg -bar
-echo -ne "\033[1;92m Elige una opción:\e[32m "
-read opcao
-case $opcao in
-
-0)
-  salir
-  ;;
-
-1)
-  install_mod
-  ;;
-  
- *)
-  error_opcion
-  clear && clear
-  menu
-  ;;
-esac
-}
-menu
-exit
+service ssh restart &>/dev/null
