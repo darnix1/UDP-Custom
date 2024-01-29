@@ -109,6 +109,11 @@ menu_func(){
   done
  }
 
+darnix() {
+  text=$1
+  echo -e "\033[38;5;239m═════════════════\e[48;5;2\e[38;5;22m  $text  \e[0m\e[38;5;239m════════════════════"
+}
+
 selection_fun() {
   local selection
   local options="$(seq 0 $1 | paste -sd "," -)"
