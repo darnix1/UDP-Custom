@@ -8,6 +8,7 @@ msgi() {
     -ne) cor="${ROJO}${NEGRITA}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
     -ama) cor="${AMARELO}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
     -verm) cor="${AMARELO}${NEGRITA}[!] ${ROJO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+    -verm2) cor="${COLOR[1]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
     -azu) cor="${MAG}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
     -verd) cor="${VERDE}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
     -bra) cor="${ROJO}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
