@@ -69,12 +69,27 @@ barra_intall() {
     sleep 0.5s
 }
 # ------- BARRA CENTRADORA
-txt_center() {
-    if [ -z "$2" ]; then
-        printf "%*s\n" $(((${#1} + 54) / 2)) "$1"
+txt_center(){
+  if [[ -z $2 ]]; then
+    text="$1"
+  else
+    col="$1"
+    text="$2"
+  fi
+
+  while read line; do
+    unset space
+    x=$(( ( 54 - ${#line}) / 2))
+    for (( i = 0; i < $x; i++ )); do
+      space+=' '
+    done
+    space+="$line"
+    if [[ -z $2 ]]; then
+      msg -azu "$space"
     else
-        printf "\033[%sm%*s\033[0m\n" "$1" $(((${#2} + 54) / 2)) "$2"
+      msg "$col" "$space"
     fi
+  done <<< $(echo -e "$text")
 }
 
 
