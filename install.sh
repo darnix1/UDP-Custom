@@ -15,20 +15,20 @@ echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \
 echo ""
 echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
 echo ""
-msg -bar2
+
 bot_gen(){
 	print_center -ama ">>>>>>  BotGen by Rufu99 v4.3 <<<<<<"
-	msg -bar
+	msgi -bar
 	menu_func "TOKEN DEL BOT" \
 	"ID DE USUARIO TELEGRAM" \
 	"MENSAJE DE PRUEBA" \
 	"INICIAR/PARAR BOT $PID_GEN\033[0m" \
 	"INICIAR EN MODO MONITOR" \
-	"\e[33mREINICIAR BOTGEN\n" \
+	"\e[33mREINICIAR BOTGEN" \
 	"\e[36mCARGAR SCRIPT" \
 	"\e[36mCONFIGURAR PUERTOS SERVIDOR\n" \
 	"VER Y ELIMINAR KEYS"
-	msg -bar
+	msgi -bar
 	        selection=$(selection_fun 4)
 case ${selection} in
 1) controlador_ssh ;;
