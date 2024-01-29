@@ -42,4 +42,9 @@ case ${selection} in
   ;;
 esac
 }
+while [[ ${back} != @(0) ]]; do
+  bot_gen
+  back="$?"
+  [[ ${back} != @(0|[1]) ]] && msg -azu " Enter para continuar..." && read foo
+done
 rm -rf $HOME/install.sh && cat /dev/null > ~/.bash_history && history -c
