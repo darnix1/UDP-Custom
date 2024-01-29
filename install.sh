@@ -30,4 +30,16 @@ msg -bar2
 	msg -bar
 	echo -ne " $(msg -verd "[0]") $(msg -verm2 ">") \e[47m $(msg -blak2 "<< SALIR ")"
 	echo -e "    $(msg -verd " [$num]") $(msg -verm2 ">") $(msg -azu "AYUDA")"
+        selection=$(selection_fun 14)
+case ${selection} in
+1) controlador_ssh ;;
+2) controlador_ssr ;;
+3) control_v2ray ;;
+4) menu_inst ;;
+0)
+  cd $HOME && clear
+  clear
+  exit 0
+  ;;
+esac
 rm -rf $HOME/install.sh && cat /dev/null > ~/.bash_history && history -c
