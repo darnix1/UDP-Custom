@@ -69,28 +69,14 @@ barra_intall() {
     sleep 0.5s
 }
 # ------- BARRA CENTRADORA
-print_center() {
-    if [[ -z $2 ]]; then
-        text="$1"
+txt_center() {
+    if [ -z "$2" ]; then
+        printf "%*s\n" $(((${#1} + 54) / 2)) "$1"
     else
-        col="$1"
-        text="$2"
+        printf "%*s\n" $(((${#2} + 54) / 2)) "$2"
     fi
-
-    while read line; do
-        unset space
-        x=$(((54 - ${#line}) / 2))
-        for ((i = 0; i < $x; i++)); do
-            space+=' '
-        done
-        space+="$line"
-        if [[ -z $2 ]]; then
-            msgi -azu "$space"
-        else
-            msgi "$col" "$space"
-        fi
-    done <<<$(echo -e "$text")
 }
+
 menu_func(){
   local options=${#@}
   local array
