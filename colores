@@ -111,11 +111,13 @@ menu_func(){
 
 darnix() {
   text=$1
-  padding=$(( (13 - ${#text}) / 2 ))
+  bar_length=$((13 + 4 + ${#text}))  # Longitud de la barra ajustada al tamaño del texto
+  padding=$(( (bar_length - ${#text}) / 2 ))
   padding_text=$(printf "%${padding}s" "")
   
-  echo -e "\033[38;5;239m═════════════════\e[48;5;2m\e[38;5;15m$padding_text$text$padding_text\e[0m\e[38;5;239m════════════════════"
+  echo -e "\033[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')\e[48;5;2m\e[38;5;15m$padding_text$text$padding_text\e[0m\e[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')"
 }
+
 
 
 selection_fun() {
