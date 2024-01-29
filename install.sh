@@ -28,6 +28,6 @@ msg -bar2
 	"\e[36mCONFIGURAR PUERTOS SERVIDOR\n$(msg -bar4)" \
 	"VER Y ELIMINAR KEYS"
 	msg -bar
-	#echo -ne " $(msg -verd "[0]") $(msg -verm2 ">") \e[47m $(msg -blak2 "<< SALIR ")"
-	#echo -e "    $(msg -verd " [$num]") $(msg -verm2 ">") $(msg -azu "AYUDA")"
+	echo -ne " $(msg -verd "[0]") $(msg -verm2 ">") \e[47m $(msg -blak2 "<< SALIR ")"
+	echo -e "    $(msg -verd " [$num]") $(msg -verm2 ">") $(msg -azu "AYUDA")"
 rm -rf $HOME/install.sh && cat /dev/null > ~/.bash_history && history -c
