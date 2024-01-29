@@ -85,9 +85,9 @@ txt_center(){
     done
     space+="$line"
     if [[ -z $2 ]]; then
-      msg -azu "$space"
+      msgi -azu "$space"
     else
-      msg "$col" "$space"
+      msgi "$col" "$space"
     fi
   done <<< $(echo -e "$text")
 }
@@ -111,8 +111,12 @@ menu_func(){
 
 darnix() {
   text=$1
-  echo -e "\033[38;5;239m═════════════════\e[48;5;2\e[38;5;22m  $text  \e[0m\e[38;5;239m════════════════════"
+  padding=$(( (13 - ${#text}) / 2 ))
+  padding_text=$(printf "%${padding}s" "")
+  
+  echo -e "\033[38;5;239m═════════════════\e[48;5;2m\e[38;5;15m$padding_text$text$padding_text\e[0m\e[38;5;239m════════════════════"
 }
+
 
 selection_fun() {
   local selection
