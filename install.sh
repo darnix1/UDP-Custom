@@ -7,7 +7,7 @@ wget -O ${colores} "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/co
 [[ ! -e ${colores} ]] && exit
 chmod +x ${colores} &>/dev/null
 source ${colores}
-echo -e "             \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO UPDATES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
+txt_center "\033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO UPDATES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
 echo -e "             \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO PACOTES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
 echo -e "\033[1;33mALGUNS PACOTES SAO EXTREMAMENTE  NECESSÁRIOS !\033[0m"
 echo ""
@@ -17,7 +17,7 @@ echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
 echo ""
 
 bot_gen(){
-	print_center -ama ">>>>>>  BotGen by Rufu99 v4.3 <<<<<<"
+	txt_center -ama ">>>>>>  BotGen by Rufu99 v4.3 <<<<<<"
 	msgi -bar
 	menu_func "TOKEN DEL BOT" \
 	"ID DE USUARIO TELEGRAM" \
