@@ -7,7 +7,7 @@ wget -O ${colores} "https://raw.githubusercontent.com/darnix1/UDP-Custom/main/co
 [[ ! -e ${colores} ]] && exit
 chmod +x ${colores} &>/dev/null
 source ${colores}
-txt_center "\033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO UPDATES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
+echo -e "             \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO UPDATES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
 echo -e "             \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO PACOTES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
 echo -e "\033[1;33mALGUNS PACOTES SAO EXTREMAMENTE  NECESSÁRIOS !\033[0m"
 echo ""
@@ -26,7 +26,7 @@ bot_gen(){
 	"INICIAR EN MODO MONITOR" \
 	"\e[33mREINICIAR BOTGEN" \
 	"\e[36mCARGAR SCRIPT" \
-	"\e[36mCONFIGURAR PUERTOS SERVIDOR\n" \
+	"\e[36mCONFIGURAR PUERTOS SERVIDOR" \
 	"VER Y ELIMINAR KEYS"
 	msgi -bar
 	        selection=$(selection_fun 4)
