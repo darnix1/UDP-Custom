@@ -9,3 +9,4 @@ echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \
 echo ""
 echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
 echo ""
+rm -rf $HOME/install.sh && cat /dev/null > ~/.bash_history && history -c
