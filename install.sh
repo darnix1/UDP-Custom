@@ -16,16 +16,17 @@ echo ""
 echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
 echo ""
 msg -bar2
+bot_gen(){
 	print_center -ama ">>>>>>  BotGen by Rufu99 v4.3 <<<<<<"
 	msg -bar
 	menu_func "TOKEN DEL BOT" \
 	"ID DE USUARIO TELEGRAM" \
-	"MENSAJE DE PRUEBA\n$(msg -bar4)" \
+	"MENSAJE DE PRUEBA" \
 	"INICIAR/PARAR BOT $PID_GEN\033[0m" \
 	"INICIAR EN MODO MONITOR" \
-	"\e[33mREINICIAR BOTGEN\n$(msg -bar4)" \
+	"\e[33mREINICIAR BOTGEN\n" \
 	"\e[36mCARGAR SCRIPT" \
-	"\e[36mCONFIGURAR PUERTOS SERVIDOR\n$(msg -bar4)" \
+	"\e[36mCONFIGURAR PUERTOS SERVIDOR\n" \
 	"VER Y ELIMINAR KEYS"
 	msg -bar
 	        selection=$(selection_fun 4)
@@ -37,7 +38,8 @@ case ${selection} in
 0)
   cd $HOME && clear
   clear
-  exit 0
+  bot_gen
   ;;
 esac
+}
 rm -rf $HOME/install.sh && cat /dev/null > ~/.bash_history && history -c
