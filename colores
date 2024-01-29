@@ -73,9 +73,10 @@ txt_center() {
     if [ -z "$2" ]; then
         printf "%*s\n" $(((${#1} + 54) / 2)) "$1"
     else
-        printf "%*s\n" $(((${#2} + 54) / 2)) "$2"
+        printf "\033[%sm%*s\033[0m\n" "$1" $(((${#2} + 54) / 2)) "$2"
     fi
 }
+
 
 menu_func(){
   local options=${#@}
