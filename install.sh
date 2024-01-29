@@ -19,6 +19,7 @@ echo ""
 bot_gen(){
 	txt_center -ama ">>>>>>  BotGen by Rufu99 v4.3 <<<<<<"
 	msgi -bar
+        darnix "CONTROLADORSSH"
 	menu_func "TOKEN DEL BOT" \
 	"ID DE USUARIO TELEGRAM" \
 	"MENSAJE DE PRUEBA" \
