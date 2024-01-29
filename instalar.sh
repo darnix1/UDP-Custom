@@ -1,99 +1,90 @@
 #!/bin/bash
-fun_bar () {
-comando[0]="$1"
-comando[1]="$2"
- (
-[[ -e $HOME/fim ]] && rm $HOME/fim
-[[ ! -e /usr/lib/ADMPLUS-MANAGER-PRO ]] && rm -rf /bin/menu > /dev/null 2>&1
-${comando[0]} -y > /dev/null 2>&1
-${comando[1]} -y > /dev/null 2>&1
-touch $HOME/fim
- ) > /dev/null 2>&1 &
- tput civis
-echo -ne "\033[1;33m["
-while true; do
-   for((i=0; i<18; i++)); do
-   echo -ne "\033[1;31m#"
-   sleep 0.1s
-   done
-   [[ -e $HOME/fim ]] && rm $HOME/fim && break
-   echo -e "\033[1;33m]"
-   sleep 1s
-   tput cuu1
-   tput dl1
-   echo -ne "\033[1;33m["
+apt-get install netcat -y &>/dev/null
+IVAR="/etc/http-instas"
+SCPT_DIR="/etc/SCRIPT"
+rm $(pwd)/$0
+ofus () {
+unset txtofus
+number=$(expr length $1)
+for((i=1; i<$number+1; i++)); do
+txt[$i]=$(echo "$1" | cut -b $i)
+case ${txt[$i]} in
+".")txt[$i]="+";;
+"+")txt[$i]=".";;
+"1")txt[$i]="@";;
+"@")txt[$i]="1";;
+"2")txt[$i]="?";;
+"?")txt[$i]="2";;
+"3")txt[$i]="%";;
+"%")txt[$i]="3";;
+"/")txt[$i]="K";;
+"K")txt[$i]="/";;
+esac
+txtofus+="${txt[$i]}"
 done
-echo -e "\033[1;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
-tput cnorm
+echo "$txtofus" | rev
 }
-IP=$(cat /etc/IP)
-
-#PREENXE A VARIAVEL $IP
-meu_ip () {
-MEU_IP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
-MEU_IP2=$(wget -qO- ipv4.icanhazip.com)
-[[ "$MEU_IP" != "$MEU_IP2" ]] && IP="$MEU_IP2" || IP="$MEU_IP"
+veryfy_fun () {
+[[ ! -d ${IVAR} ]] && touch ${IVAR}
+[[ ! -d ${SCPT_DIR} ]] && mkdir ${SCPT_DIR}
+unset ARQ
+case $1 in
+"gerar.sh")ARQ="/usr/bin/";;
+"http-server.py")ARQ="/bin/";;
+*)ARQ="${SCPT_DIR}/";;
+esac
+mv -f $HOME/$1 ${ARQ}/$1
+chmod +x ${ARQ}/$1
 }
-
-vnc_fun () {
-# VNC Instala
-if [ -d  /root/.vnc/ ];then
-vnc=$(ls /root/.vnc/ | grep :1.pid)
-else
-vnc=""
-fi
-meu_ip
-if [[ $vnc = "" ]]; then
-clear
-echo -e "\E[44;1;37m                       VNC                        \E[0m"
-echo ""
-echo -ne "\033[1;32mVNC não está ativo Deseja ativar? [S/N]: "; read x
-[[ $x = @(n|N) ]] && echo "" && conexao
-echo ""
-echo -e "\033[1;32m Installing VNC:"
-echo ""
-fun_bar 'apt-get install xfce4 xfce4-goodies gnome-icon-theme tightvncserver -y'
-echo -e "\033[1;32m Installing DEPENDENCE:"
-echo ""
-fun_bar 'apt-get install iceweasel -y'
-echo -e "\033[1;32m Installing FIREFOX:"
-echo ""
-fun_bar 'apt-get install firefox -y'
-echo "#VNC-ADM ON" > /etc/vnc-on
-echo ""
-echo -e "\033[1;37mENTRE UMA SENHA E DEPOIS DE CONFIRMAR\033[1;32m"
-echo ""
-vncserver
-echo ""
-echo -e "\033[1;32m VNC conecta usando o ip do vps na porta \033[1;37m5901"
-echo -e "\033[1;37m Ex: $IP:5901"
-echo -e "\033[1;32m Para acessar a interface gráfica "
-echo -e "\033[1;32m Faça o download da PlayStore: VNC VIWER"
-# VNC Desintala
-elif [[ $vnc != "" ]]; then
-clear
-echo -e "\E[44;1;37m                       VNC                        \E[0m"
-echo ""
-echo -ne "\033[1;32mSi VNC está ativo Deseja desabilitar? [S/N]: "; read x
-[[ $x = @(n|N) ]] && echo "" && conexao
-echo ""
-vncserver -kill :1 > /dev/null 2>&1
-echo -e "\033[1;32m removing VNC:"
-echo ""
-fun_bar 'apt-get purge xfce4 xfce4-goodies gnome-icon-theme tightvncserver -y'
-echo -e "\033[1;32m removing DEPENDENCES:"
-echo ""
-fun_bar 'apt-get purge iceweasel -y'
-echo -e "\033[1;32m removing FIREFOX:"
-echo ""
-fun_bar 'apt-get purge firefox -y'
-rm -rf /etc/vnc-on
-vncserver -kill :1 > /dev/null 2>&1
-vncserver -kill :2 > /dev/null 2>&1
-vncserver -kill :3 > /dev/null 2>&1
-fi
-echo -ne "\n\033[1;31mENTER \033[1;33mpara retornar ao \033[1;32mMENU!\033[0m"; read ENTER
-conexao
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+echo -e "\033[1;36m-KEY GENERATOR UPDATER\033[0m"
+read -p "INTRODUZCA SU KEY DE ACTUALIZACION: " Key
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+[[ ! $Key ]] && {
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+echo -e "\033[1;33mKey inv�lida!"
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
 exit
 }
-vnc_fun
+meu_ip () {
+MIP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
+MIP2=$(wget -qO- ipv4.icanhazip.com)
+[[ "$MIP" != "$MIP2" ]] && IP="$MIP2" || IP="$MIP"
+echo "$IP" > /usr/bin/vendor_code
+}
+meu_ip
+echo -e "\033[1;33mVerificando key... "
+cd $HOME
+wget -O "$HOME/lista-arq" $(ofus "$Key")/$IP > /dev/null 2>&1
+IP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+sleep 1s
+[[ -e $HOME/lista-arq ]] && {
+REQUEST=$(ofus "$Key" |cut -d'/' -f2)
+for arqx in `cat $HOME/lista-arq`; do
+echo -ne "\033[1;33mDescargando archivo: \033[1;31m[$arqx] "
+wget -O $HOME/$arqx ${IP}:81/${REQUEST}/${arqx} > /dev/null 2>&1 && echo -e "\033[1;31m- \033[1;32mRecibido con exito!" || echo -e "\033[1;31m- \033[1;31mFalla (no recibido!)"
+[[ -e $HOME/$arqx ]] && veryfy_fun $arqx
+done
+[[ ! -e /usr/bin/trans ]] && wget -O /usr/bin/trans http://git.io/trans &> /dev/null
+[[ -e /bin/http-server.py ]] && mv -f /bin/http-server.py /bin/http-server.sh && chmod +x /bin/http-server.sh
+[[ $(dpkg --get-selections|grep -w "bc"|head -1) ]] || apt-get install bc -y &>/dev/null
+[[ $(dpkg --get-selections|grep -w "screen"|head -1) ]] || apt-get install screen -y &>/dev/null
+[[ $(dpkg --get-selections|grep -w "nano"|head -1) ]] || apt-get install nano -y &>/dev/null
+[[ $(dpkg --get-selections|grep -w "curl"|head -1) ]] || apt-get install curl -y &>/dev/null
+[[ $(dpkg --get-selections|grep -w "netcat"|head -1) ]] || apt-get install netcat -y &>/dev/null
+[[ $(dpkg --get-selections|grep -w "apache2"|head -1) ]] || apt-get install apache2 -y &>/dev/null
+sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf
+service apache2 restart > /dev/null 2>&1 &
+IVAR2="/etc/key-gerador"
+echo "$Key" > $IVAR2
+rm $HOME/lista-arq
+} || {
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+echo -e "\033[1;33mKey Invalida!"
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+}
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+echo -e "\033[1;31m-------------------\033[0m \033[1;33mACTUALIZACION FINALIZADA\033[0m \033[1;31m-------------------------\033[0m"
+echo -e "\033[1;31m--------------------------------------------------------------------\033[0m"
+sleep 3
+exit
