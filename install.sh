@@ -28,9 +28,7 @@ msg -bar2
 	"\e[36mCONFIGURAR PUERTOS SERVIDOR\n$(msg -bar4)" \
 	"VER Y ELIMINAR KEYS"
 	msg -bar
-	echo -ne " $(msg -verd "[0]") $(msg -verm2 ">") \e[47m $(msg -blak2 "<< SALIR ")"
-	echo -e "    $(msg -verd " [$num]") $(msg -verm2 ">") $(msg -azu "AYUDA")"
-        selection=$(selection_fun 14)
+	        selection=$(selection_fun 4)
 case ${selection} in
 1) controlador_ssh ;;
 2) controlador_ssr ;;
