@@ -83,8 +83,34 @@ txt_center(){
     fi
   done <<< $(echo -e "$text")
 }
+darnix() {
+  if [[ -z $2 ]]; then
+    text="$1"
+  else
+    col="$1"
+    text="$2"
+  fi
+
+  while read -r line; do
+    unset space
+    x=$(( ( 54 - ${#line}) / 2))
+    for (( i = 0; i < $x; i++ )); do
+      space+=' '
+    done
+    space+="$line"
+    if [[ -z $2 ]]; then
+      msgi -azu "$space"
+    else
+      msgi "$col" "$(msgi -f white -b green "$space")"
+    fi
+  done <<< $(echo -e "$text")
+}
+
+# Uso: txt_center "TuTexto"
+# Ejemplo con otro color: txt_center "green" "TuTexto"
 
 
+#MENU DE OPCIONES 
 menu_func(){
   local options=${#@}
   local array
@@ -100,19 +126,6 @@ menu_func(){
     esac
   done
  }
-
-darnix() {
-  text=$1
-  bar_length=$((13 + 4 + ${#text} + 4))  # Longitud de la barra ajustada al tamaño del texto
-  padding=$(( (bar_length - ${#text}) / 2 ))
-  padding_text=$(printf "%${padding}s" "")
-  
-  echo -e "\033[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')\033[0m"
-  echo -e "\033[48;5;2m\033[38;5;15m$padding_text$text$padding_text\033[0m"
-  echo -e "\033[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')\033[0m"
-}
-
-
 
 
 
