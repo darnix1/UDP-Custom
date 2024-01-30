@@ -83,6 +83,7 @@ txt_center(){
     fi
   done <<< $(echo -e "$text")
 }
+
 darnix() {
   if [[ -z $2 ]]; then
     text="$1"
@@ -99,7 +100,7 @@ darnix() {
     done
     space+="$line"
     if [[ -z $2 ]]; then
-      msgi -azu "$space"
+      msgi "$space"
     else
       msgi "$col" "$(msgi -f white -b green "$space")"
     fi
