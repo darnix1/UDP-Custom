@@ -152,7 +152,7 @@ install_start(){
 }
 
 install_continue(){
-  title "INSTALADOR ADMRufu"
+  title "INSTALADOR ADMRufdddu"
   print_center -ama "$PRETTY_NAME"
   print_center -verd "INSTALANDO DEPENDENCIAS"
   msg -bar3
@@ -185,7 +185,7 @@ do
   esac
 done
 
-title "INSTALADOR ADMRufu"
+title "INSTALADOR ADMRufus"
 fun_ip
 
 msg -ne " Verificando Datos: "
@@ -316,7 +316,7 @@ echo '[[ -e /etc/ADMRufu/bashrc ]] && source /etc/ADMRufu/bashrc' >> /etc/bash.b
 update-locale LANG=en_US.UTF-8 LANGUAGE=en
 [[ ! $(cat /etc/shells|grep "/bin/false") ]] && echo -e "/bin/false" >> /etc/shells
 clear
-title "-- ADMRufu INSTALADO --"
+title "-- ADMRufu INSTALADOs --"
 
 mv -f ${module} /etc/ADMRufu/module
 time_reboot "10"
