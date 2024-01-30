@@ -100,9 +100,9 @@ darnix() {
     done
     space+="$line"
     if [[ -z $2 ]]; then
-      msgi "$space"
+      echo -e "\e[34m$space\e[0m"
     else
-      msgi "$col" "$(msgi -f white -b green "$space")"
+      echo -e "\e[38;5;15;48;5;2m$space\e[0m"
     fi
   done <<< $(echo -e "$text")
 }
