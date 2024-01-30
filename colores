@@ -100,9 +100,9 @@ darnix() {
     done
     space+="$line"
     if [[ -z $2 ]]; then
-      echo -e "\e[34m$space\e[0m"
+      echo -e "\e[97m$space\e[0m"  # Letras blancas
     else
-      echo -e "\e[38;5;15;48;5;2m$space\e[0m"
+      echo -e "\e[32;1m$space\e[0m"  # Letras en verde, negrita
     fi
   done <<< $(echo -e "$text")
 }
