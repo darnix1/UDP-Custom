@@ -227,15 +227,18 @@ sleep 2; del 1
 print_center -ama 'Descarga de archivos.....'
 
 for arqx in $(echo $arch); do
-  wget --no-check-certificate -O ${SCPinstal}/${arqx} ${lisArq}/${arqx} > /dev/null 2>&1 && {
+  wget --no-check-certificate -O ${SCPinstal}/${arqx} ${lisArq}/${arqx} > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
     verificar_arq "${arqx}"
-  } || {
+  else
     del 1
-    print_center -verm2 'Instalacion fallida'
+    print_center -verm2 "La descarga de ${arqx} falló"
     sleep 2s
-    error_fun
-  }
+    # Puedes decidir si deseas continuar o salir
+    # Puedes agregar un mensaje o realizar acciones adicionales aquí si es necesario.
+  fi
 done
+
 
 url='https://github.com/rudi9999/ADMRufu/raw/main/Utils'
 
