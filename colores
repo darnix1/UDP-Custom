@@ -84,31 +84,6 @@ txt_center(){
   done <<< $(echo -e "$text")
 }
 
-darnix() {
-  if [[ -z $2 ]]; then
-    text="$1"
-  else
-    col="$1"
-    text="$2"
-  fi
-
-  while read -r line; do
-    unset space
-    x=$(( ( 54 - ${#line}) / 2))
-    for (( i = 0; i < $x; i++ )); do
-      space+=' '
-    done
-    space+="$line"
-    if [[ -z $2 ]]; then
-      echo -e "\e[97m$space\e[0m"  # Letras blancas
-    else
-      echo -e "\e[32;1m$space\e[0m"  # Letras en verde, negrita
-    fi
-  done <<< $(echo -e "$text")
-}
-
-# Uso: txt_center "TuTexto"
-# Ejemplo con otro color: txt_center "green" "TuTexto"
 
 
 #MENU DE OPCIONES 
