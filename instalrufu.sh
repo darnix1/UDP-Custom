@@ -31,7 +31,7 @@ SCPinstal="$HOME/install"
 #rm -rf /etc/localtime &>/dev/null
 #ln -s /usr/share/zoneinfo/America/Argentina/Tucuman /etc/localtime &>/dev/null
 cp -f $0 ${ADMRufu}/install.sh
-rm $(pwd)/$0 &> /dev/null
+
 
 time_reboot(){
   print_center -ama "REINICIANDO VPS EN $1 SEGUNDOS"
