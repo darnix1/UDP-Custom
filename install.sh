@@ -17,7 +17,7 @@ echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
 echo ""
 
 bot_gen(){
-	txt_center -ama ">>>>>>  BotGen by Rufu99 v4.3 <<<<<<"
+	txt_center -ama "BOT DARNIX"
 	msgi -bar
         darnix "CONTROLADORSSH"
 	menu_func "TOKEN DEL BOT" \
