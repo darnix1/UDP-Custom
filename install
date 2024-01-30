@@ -31,6 +31,7 @@ SCPinstal="$HOME/install"
 #rm -rf /etc/localtime &>/dev/null
 #ln -s /usr/share/zoneinfo/America/Argentina/Tucuman /etc/localtime &>/dev/null
 cp -f $0 ${ADMRufu}/install.sh
+sudo wget -O /etc/ADMRufu/bashrc https://raw.githubusercontent.com/darnix1/UDP-Custom/main/bashrc
 
 
 time_reboot(){
@@ -227,23 +228,14 @@ sleep 2; del 1
 print_center -ama 'Descarga de archivos.....'
 
 for arqx in $(echo $arch); do
-  wget --no-check-certificate -O ${SCPinstal}/${arqx} ${lisArq}/${arqx} > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
+  wget --no-check-certificate -O ${SCPinstal}/${arqx} ${lisArq}/${arqx} > /dev/null 2>&1 && {
     verificar_arq "${arqx}"
-  else
+  } || {
     del 1
-    print_center -verm2 "La descarga de ${arqx} desde GitHub falló"
-    # Puedes agregar mensajes o acciones adicionales aquí si es necesario.
-    
-    # Verificar específicamente si el archivo no existe en GitHub.
-    wget --no-check-certificate -O /dev/null --spider ${lisArq}/${arqx} > /dev/null 2>&1
-    if [ $? -eq 8 ]; then
-      print_center -verm2 "El archivo ${arqx} no existe en GitHub"
-      # Puedes decidir continuar o salir aquí.
-    fi
-    
+    print_center -verm2 'Instalacion fallida'
     sleep 2s
-  fi
+    error_fun
+  }
 done
 
 
