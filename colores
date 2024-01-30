@@ -107,8 +107,9 @@ darnix() {
   padding=$(( (bar_length - ${#text}) / 2 ))
   padding_text=$(printf "%${padding}s" "")
   
-  echo -e "\033[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')\e[48;5;2m\e[38;5;15m$padding_text$text$padding_text\e[0m\e[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')"
+  echo -e "\033[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')\e[48;5;2m\e[38;5;15m$padding_text$text$padding_text\e[0m\e[38;5;239m$(printf "%${bar_length}s" | tr ' ' '═')\033[0m"
 }
+
 
 
 
