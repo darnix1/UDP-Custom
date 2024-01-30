@@ -19,7 +19,7 @@ echo ""
 bot_gen(){
 	txt_center -ama "BOT DARNIX"
 	msgi -bar
-        txt_center -verc "CONTROTEST"
+        txt_center -verc "CONST"
 	menu_func "TOKEN DEL BOT" \
 	"ID DE USUARIO TELEGRAM" \
 	"MENSAJE DE PRUEBA" \
