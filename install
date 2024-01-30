@@ -162,7 +162,7 @@ source /etc/os-release; export PRETTY_NAME
 while :
 do
   case $1 in
-    -s|--start)install_start; post_reboot; time_reboot "15";;
+    -s|--start)install_start; break;;
     -c|--continue)sed -i '/Rufu/d' /root/.bashrc
                   install_continue
                   break;;
