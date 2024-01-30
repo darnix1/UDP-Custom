@@ -11,7 +11,7 @@ msgi() {
     -azu) cor="${MAG}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
     -verd) cor="${VERDE}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
     -bra) cor="${ROJO}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
-    -verc) cor="${VERDE}${AMARELO}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}${VERDE}" ;;
+    -verc) cor="\e[48;5;40m\e[38;5;15m${2}${SINCOLOR}" ;;
     "-bar2" | "-bar") cor="${ROJO}════════════════════════════════════════════════════" && echo -e "${SINCOLOR}${cor}${SINCOLOR}" ;;
     esac
 }
