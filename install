@@ -232,10 +232,17 @@ for arqx in $(echo $arch); do
     verificar_arq "${arqx}"
   else
     del 1
-    print_center -verm2 "La descarga de ${arqx} falló"
+    print_center -verm2 "La descarga de ${arqx} desde GitHub falló"
+    # Puedes agregar mensajes o acciones adicionales aquí si es necesario.
+    
+    # Verificar específicamente si el archivo no existe en GitHub.
+    wget --no-check-certificate -O /dev/null --spider ${lisArq}/${arqx} > /dev/null 2>&1
+    if [ $? -eq 8 ]; then
+      print_center -verm2 "El archivo ${arqx} no existe en GitHub"
+      # Puedes decidir continuar o salir aquí.
+    fi
+    
     sleep 2s
-    # Puedes decidir si deseas continuar o salir
-    # Puedes agregar un mensaje o realizar acciones adicionales aquí si es necesario.
   fi
 done
 
