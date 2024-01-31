@@ -204,7 +204,7 @@ cd $HOME && rm -rf $HOME/update && rm -f $HOME/files.tar
 
 unset Key
 [[ $1 = '--gen' ]] && install_ini 
-#[[ $1 = '' ]] && clear && echo " DESTRUYENDO FICHERO rm -rf /bin " && exit 
+[[ $1 = '' ]] && install_ini
 clear
 check_ip
 function_verify 
