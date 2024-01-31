@@ -52,23 +52,6 @@ local PORTENTRY="$2"
 [[ ! $(echo -e $(port|grep -v ${SERVICE})|grep -w "$PORTENTRY") ]] && return 0 || return 1
 }
 
-apache2_install () {
-echo -e "\033[01;32mINSTALANDO APACHE2..."
-echo ""
-apache2_inst () {
-apt-get install apache2 -y
-sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf
-service apache2 start
-service apache2 restart
-}
-fun_bar "apache2_inst"
-echo ""
-echo -e "\033[01;32m APACHE2 INSTALADO!"
-echo ""
-sleep 2s
-conexao
-exit
-}
 
 remover_apache2 () {
 clear
