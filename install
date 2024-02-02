@@ -7,6 +7,19 @@ wget -O ${module} "https://raw.githubusercontent.com/rudi9999/Herramientas/main/
 chmod +x ${module} &>/dev/null
 source ${module}
 
+
+mportas () {
+unset portas
+portas_var=$(lsof -V -i tcp -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND" | grep "LISTEN")
+while read port; do
+var1=$(echo $port | awk '{print $1}') && var2=$(echo $port | awk '{print $9}' | awk -F ":" '{print $2}')
+[[ "$(echo -e $portas|grep "$var1 $var2")" ]] || portas+="$var1 $var2\n"
+done <<< "$portas_var"
+i=1
+echo -e "$portas"
+}
+
+
 install_file(){
 	filemanager_os="unsupported"
 	filemanager_arch="unknown"
@@ -340,30 +353,29 @@ EOF
 }
 
 set_user(){
-	while [[ -z $user ]]; do
-		in_opcion -nama "Nombre de usuario [admin]"
-		tput cuu1 && tput dl1
-		user="$opcion"
-		if [[ "$user" =~ "$tx_num"  ]]; then
-			print_center -verm2 'ingresa solo numeros y letras'
-			sleep 2
-			unset user
-		fi
-	done
+    while [[ -z $user ]]; do
+        in_opcion -nama "Nombre de usuario [admin]"
+        tput cuu1 && tput dl1
+        user="$opcion"
+        if [[ -z $user ]]; then
+            print_center -verm2 'El nombre de usuario no puede estar vacío'
+            sleep 2
+        fi
+    done
 }
 
 set_password(){
-	while [[ -z $pass ]]; do
-		in_opcion -nama "Contraseña de usuario [admin]"
-		tput cuu1 && tput dl1
-		pass=$opcion
-		if [[ "$pass" =~ "$tx_num"  ]]; then
-			print_center -verm2 'ingresa solo numeros y letras'
-			sleep 2
-			unset pass
-		fi
-	done
+    while [[ -z $pass ]]; do
+        in_opcion -nama "Contraseña de usuario [admin]"
+        tput cuu1 && tput dl1
+        pass=$opcion
+        if [[ -z $pass ]]; then
+            print_center -verm2 'La contraseña no puede estar vacía'
+            sleep 2
+        fi
+    done
 }
+
 
 set_autoport(){
 	port_f=8000
