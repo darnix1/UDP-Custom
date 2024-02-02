@@ -7,308 +7,105 @@ wget -O ${module} "https://raw.githubusercontent.com/rudi9999/Herramientas/main/
 chmod +x ${module} &>/dev/null
 source ${module}
 
-CTRL_C(){
-  rm -rf ${module}; exit
+
+#source ../module
+#ADMRufu="/etc/ADMRufu"
+#ADM_src="${ADMRufu}/source"
+
+ip=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}' | sed -n 1p)
+public_ip=$(grep -m 1 -oE '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' <<< "$(wget -T 10 -t 1 -4qO- "http://ip1.dynupdate.no-ip.com/" || curl -m 10 -4Ls "http://ip1.dynupdate.no-ip.com/")")
+ip_vps=$([[ -n "$public_ip" ]] && echo "$public_ip" || echo "$ip")
+
+verific_ip(){
+	title 'GENERADOR DE SUB-DOMINIOS'
+	print_center -ama 'verificando ip del vps....'
+
+	source <(curl -sSL "https://api.admrufu.ml/?request=info&salto=shell&dato=$ip_vps")
+	del 1
+	if [[ $status = 'true' ]]; then
+		del 2
+		print_center -ama 'tu direccion ip ya esta asociada al sub-dominio\n\n'
+		print_center -verd "$name\n\n"
+		print_center -ama 'se guardara para este servidor'
+		enter
+		echo "${name}" > ${ADM_src}/dominio.txt
+		return 1
+	elif [[ $status = 'false' ]]; then
+		unset status
+	else
+		del 1
+		print_center -ama 'oops!!!\nalgo salio mal, se cansela la operacion'
+		enter
+		return 1
+	fi
 }
 
-if [[ ! $(id -u) = 0 ]]; then
-  clear
-  msg -bar
-  print_center -ama "ERROR DE EJECUCION"
-  msg -bar
-  print_center -ama "DEVE EJECUTAR DESDE EL USUSRIO ROOT"
-  msg -bar
-  CTRL_C
-fi
-
-trap "CTRL_C" INT TERM EXIT
-
-ADMRufu="/etc/ADMRufu" && [[ ! -d ${ADMRufu} ]] && mkdir ${ADMRufu}
-ADM_inst="${ADMRufu}/install" && [[ ! -d ${ADM_inst} ]] && mkdir ${ADM_inst}
-tmp="${ADMRufu}/tmp" && [[ ! -d ${tmp} ]] && mkdir ${tmp}
-SCPinstal="$HOME/install"
-
-#rm -rf /etc/localtime &>/dev/null
-#ln -s /usr/share/zoneinfo/America/Argentina/Tucuman /etc/localtime &>/dev/null
-cp -f $0 ${ADMRufu}/install.sh
-sudo wget -O /etc/ADMRufu/bashrc https://raw.githubusercontent.com/darnix1/UDP-Custom/main/bashrc
-
-
-time_reboot(){
-  print_center -ama "REINICIANDO VPS EN $1 SEGUNDOS"
-  REBOOT_TIMEOUT="$1"
-  
-  while [ $REBOOT_TIMEOUT -gt 0 ]; do
-     print_center -ne "-$REBOOT_TIMEOUT-\r"
-     sleep 1
-     : $((REBOOT_TIMEOUT--))
-  done
-  reboot
+getBase(){
+	print_center -ama 'Verificando, dominio base....'
+	source <(curl -sSL "https://api.admrufu.ml?salto=shell")
+	del 1
+	if [[ $status = 'false' ]]; then
+		print_center -verm2 'Falla al verifcar el dominio base!\nEs posible que la funcion\nno se encuentre disponible'
+		enter
+		return 1
+	elif [[ $status = 'true' ]]; then
+		print_center -verd "Dominio base:  $dominio"
+		msg -bar
+		unset status
+	else
+		error
+		return 1
+	fi
+	
 }
 
-repo_install(){
-  link="https://raw.githubusercontent.com/rudi9999/ADMRufu/main/Repositorios/$VERSION_ID.list"
-  case $VERSION_ID in
-    8*|9*|10*|11*|16.04*|18.04*|20.04*|20.10*|21.04*|21.10*|22.04*) [[ ! -e /etc/apt/sources.list.back ]] && cp /etc/apt/sources.list /etc/apt/sources.list.back
-                                                                    wget -O /etc/apt/sources.list ${link} &>/dev/null;;
-  esac
+getDatos(){
+	print_center -ama "Igresa un nombre para tu sub-dominio, recuerda que\nel domino base se llama $dominio\ny solo deves escribir un nombre"
+	in_opcion_down 'nombre para tu sub-dominio'
+	name=$(echo "$opcion" | tr -d '[[:space:]]')
+	del 5
+	print_center -ama 'Verificando disponibilidad....'
+
+	source <(curl -sSL "https://api.admrufu.ml/?request=info&salto=shell&dato=$name")
+	del 1
+	if [[ $status = 'true' ]]; then
+		print_center -ama "el sub-dominio $name.$dominio\nno se encuentra disponible"
+		enter
+		return 1
+	elif [[ $status = 'false' ]]; then
+		unset status
+	else
+		error
+		return 1
+	fi
 }
 
-dependencias(){
-  soft="sudo bsdmainutils zip unzip ufw curl python python3 python3-pip openssl screen cron iptables lsof nano at mlocate gawk grep bc jq curl npm nodejs socat netcat netcat-traditional net-tools cowsay figlet lolcat"
+makeDomain(){
+	print_center -ama "Generando sub-dominio $name.$dominio"
 
-  for install in $soft; do
-    leng="${#install}"
-    puntos=$(( 21 - $leng))
-    pts="."
-    for (( a = 0; a < $puntos; a++ )); do
-      pts+="."
-    done
-    msg -nazu "      instalando $install $(msg -ama "$pts")"
-    if apt install $install -y &>/dev/null ; then
-      msg -verd "INSTALL"
-    else
-      msg -verm2 "FAIL"
-      sleep 2
-      del 1
-      if [[ $install = "python" ]]; then
-        pts=$(echo ${pts:1})
-        msg -nazu "      instalando python2 $(msg -ama "$pts")"
-        if apt install python2 -y &>/dev/null ; then
-          [[ ! -e /usr/bin/python ]] && ln -s /usr/bin/python2 /usr/bin/python
-          msg -verd "INSTALL"
-        else
-          msg -verm2 "FAIL"
-        fi
-        continue
-      fi
-      print_center -ama "aplicando fix a $install"
-      dpkg --configure -a &>/dev/null
-      sleep 2
-      del 1
-      msg -nazu "      instalando $install $(msg -ama "$pts")"
-      if apt install $install -y &>/dev/null ; then
-        msg -verd "INSTALL"
-      else
-        msg -verm2 "FAIL"
-      fi
-    fi
-  done
+	source <(curl -sSL "https://api.admrufu.ml/?request=create&domi=$name&ip=$ip_vps")
+	del 1
+	if [[ $status = 'true' ]]; then
+		echo "$name.$dominio" > ${ADM_src}/dominio.txt
+		print_center -ama 'Se genero y guardo el sub-dominio\n'
+		print_center -verd "$name.$dominio"
+		enter
+	elif [[ $status = 'false' ]]; then
+		print_center -verm2 'falla al generar el sub-dominio'
+		enter
+	else
+		error
+	fi
 }
 
-verificar_arq(){
-  unset ARQ
-  case $1 in
-    menu|menu_inst.sh|tool_extras.sh|chekup.sh|bashrc)ARQ="${ADMRufu}";;
-    ADMRufu)ARQ="/usr/bin";;
-    message.txt)ARQ="${tmp}";;
-    *)ARQ="${ADM_inst}";;
-  esac
-  mv -f ${SCPinstal}/$1 ${ARQ}/$1
-  chmod +x ${ARQ}/$1
+error(){
+	del 1
+	print_center -verm2 'oops!!!\nalgo salio mal, se cansela la operacion'
+	enter
 }
 
-error_fun(){
-  msg -bar3
-  print_center -verm "ERROR de enlace VPS<-->GENERADOR"
-  msg -bar3
-  [[ -d ${SCPinstal} ]] && rm -rf ${SCPinstal}
-  exit
-}
-
-post_reboot(){
-  echo 'clear; sleep 2; /etc/ADMRufu/install.sh --continue' >> /root/.bashrc
-  title "INSTALADOR ADMRufu"
-  print_center -ama "La instalacion continuara\ndespues del reinicio!!!"
-  msg -bar
-}
-
-install_start(){
-  title "INSTALADOR ADMRufu"
-  print_center -ama "A continuacion se actualizaran los paquetes\ndel systema. Esto podria tomar tiempo,\ny requerir algunas preguntas\npropias de las actualizaciones."
-  msg -bar3
-  read -rp "$(msg -verm2 " Desea continuar? [S/N]:") " -e -i S opcion
-  [[ "$opcion" != @(s|S) ]] && stop_install
-  title "INSTALADOR ADMRufu"
-  print_center -ama 'Esto modificara la hora y fecha automatica\nsegun la Zona horaria establecida.'
-  msg -bar
-  read -rp "$(msg -ama " Modificar la zona horaria? [S/N]:") " -e -i N opcion
-  [[ "$opcion" != @(n|N) ]] && source <(curl -sSL "https://raw.githubusercontent.com/rudi9999/ADMRufu/main/online/timeZone.sh")
-  title "INSTALADOR ADMRufu"
-  repo_install
-  mysis=$(echo "$VERSION_ID"|cut -d '.' -f1)
-  #[[ ! $mysis = '22' ]] && add-apt-repository -y ppa:ondrej/php &>/dev/null
-  apt update -y; apt upgrade -y
-  [[ "$VERSION_ID" = '9' ]] && source <(curl -sL https://deb.nodesource.com/setup_10.x)
-}
-
-install_continue(){
-  title "INSTALADOR ADMRufdddu"
-  print_center -ama "$PRETTY_NAME"
-  print_center -verd "INSTALANDO DEPENDENCIAS"
-  msg -bar3
-  dependencias
-  msg -bar3
-  print_center -azu "Removiendo paquetes obsoletos"
-  apt autoremove -y &>/dev/null
-  [[ "$VERSION_ID" = '9' ]] && apt remove unscd -y &>/dev/null
-  sleep 2
-  tput cuu1 && tput dl1
-  print_center -ama "si algunas de las dependencias falla!!!\nal terminar, puede intentar instalar\nla misma manualmente usando el siguiente comando\napt install nom_del_paquete"
-  enter
-}
-
-source /etc/os-release; export PRETTY_NAME
-
-while :
-do
-  case $1 in
-    -s|--start)install_start; break;;
-    -c|--continue)sed -i '/Rufu/d' /root/.bashrc
-                  install_continue
-                  break;;
-    -u|--update)install_start
-                rm -rf /etc/ADMRufu/tmp/style
-                install_continue
-                break;;
-    -t|--test)break;;
-    *)exit;;
-  esac
+words='verific_ip getBase getDatos makeDomain'
+for i in $words; do
+	$i
+	[[ ! $? -eq 0 ]] && break
 done
-
-title "INSTALADOR ADMRufus"
-fun_ip
-
-msg -ne " Verificando Datos: "
-cd $HOME
-
-arch='ADMRufu
-bashrc
-budp.sh
-cert.sh
-chekup.sh
-chekuser.sh
-confDNS.sh
-domain.sh
-filebrowser.sh
-limitador.sh
-menu
-menu_inst.sh
-openvpn.sh
-PDirect.py
-PGet.py
-POpen.py
-PPriv.py
-PPub.py
-sockspy.sh
-squid.sh
-swapfile.sh
-tcpbbr.sh
-tool_extras.sh
-userHWID
-userSSH
-userTOKEN
-userV2ray.sh
-userWG.sh
-v2ray.sh
-wireguard.sh
-ws-cdn.sh
-WS-Proxy.js'
-
-lisArq="https://raw.githubusercontent.com/rudi9999/ADMRufu/main/old"
-
-ver=$(curl -sSL "https://raw.githubusercontent.com/rudi9999/ADMRufu/main/vercion")
-echo "$ver" > ${ADMRufu}/vercion
-
-title -ama '[Proyect by @Rufu99]'
-print_center -ama 'INSTALANDO SCRIPT ADMRufu'
-sleep 2; del 1
-
-[[ ! -d ${SCPinstal} ]] && mkdir ${SCPinstal}
-print_center -ama 'Descarga de archivos.....'
-
-for arqx in $(echo $arch); do
-  wget --no-check-certificate -O ${SCPinstal}/${arqx} ${lisArq}/${arqx} > /dev/null 2>&1 && {
-    verificar_arq "${arqx}"
-  } || {
-    del 1
-    print_center -verm2 'Instalacion fallida'
-    sleep 2s
-    error_fun
-  }
-done
-
-
-url='https://github.com/rudi9999/ADMRufu/raw/main/Utils'
-
-autoStart="${ADMRufu}/bin" && [[ ! -d $autoStart ]] && mkdir $autoStart
-varEntorno="${ADMRufu}/sbin" && [[ ! -d $varEntorno ]] && mkdir $varEntorno
-
-cat <<EOF>$varEntorno/ls-cmd
-#!/bin/bash
-echo 'menu'
-ls /etc/ADMRufu/sbin|sed 's/ /\n/'
-EOF
-chmod +x $varEntorno/ls-cmd
-
-wget --no-cache -O $autoStart/autoStart "$url/autoStart/autoStart" &>/dev/null; chmod +x $autoStart/autoStart
-wget --no-cache -O $autoStart/auto-update "$url/auto-update/auto-update" &>/dev/null; chmod +x $autoStart/auto-update
-
-wget --no-cache -O ${ADMRufu}/install/udp-custom "$url/udp-custom/udp-custom" &>/dev/null; chmod +x ${ADMRufu}/install/udp-custom
-wget --no-cache -O ${ADMRufu}/install/psiphon-manager "$url/psiphon/psiphon-manager" &>/dev/null; chmod +x ${ADMRufu}/install/psiphon-manager
-wget --no-cache -O ${varEntorno}/dropBear "$url/dropBear/dropBear" &>/dev/null; chmod +x ${varEntorno}/dropBear
-
-wget --no-cache -O ${varEntorno}/protocolsUDP "$url/protocolsUDP/protocolsUDP" &>/dev/null;           chmod +x ${varEntorno}/protocolsUDP 
-wget --no-cache -O ${varEntorno}/udprequest   "$url/protocolsUDP/udprequest/udprequest" &>/dev/null;  chmod +x ${varEntorno}/udprequest
-wget --no-cache -O ${varEntorno}/udpcustom    "$url/protocolsUDP/udpcustom/udpcustom" &>/dev/null;    chmod +x ${varEntorno}/udpcustom
-#wget --no-cache -O ${varEntorno}/udp-zivpn    "$url/protocolsUDP/zivpn/udp-zivpn" &>/dev/null;        chmod +x ${varEntorno}/udp-zivpn
-wget --no-cache -O ${varEntorno}/udp-udpmod   "$url/protocolsUDP/udpmod/udp-udpmod" &>/dev/null;      chmod +x ${varEntorno}/udp-udpmod
-wget --no-cache -O ${varEntorno}/Stunnel      "$url/Stunnel/Stunnel" &>/dev/null;                     chmod +x ${varEntorno}/Stunnel
-wget --no-cache -O ${varEntorno}/Slowdns      "$url/SlowDNS/Slowdns" &>/dev/null;                     chmod +x ${varEntorno}/Slowdns
-wget --no-cache -O ${varEntorno}/cmd          "$url/mine_port/cmd" &>/dev/null;                       chmod +x ${varEntorno}/cmd
-wget --no-cache -O ${varEntorno}/epro-ws      "$url/epro-ws/epro-ws" &>/dev/null;                     chmod +x ${varEntorno}/epro-ws
-wget --no-cache -O ${varEntorno}/socksPY      "$url/socksPY/socksPY" &>/dev/null;                     chmod +x ${varEntorno}/socksPY
-
-wget --no-cache -O ${varEntorno}/monitor      "$url/user-manager/monitor/monitor" &>/dev/null;        chmod +x ${varEntorno}/monitor
-wget --no-cache -O ${varEntorno}/online       "$url/user-manager/monitor/online/online" &>/dev/null;  chmod +x ${varEntorno}/online
-wget --no-cache -O ${varEntorno}/user-info    "$url/user-managers/user-info" &>/dev/null;             chmod +x ${varEntorno}/user-info
-wget --no-cache -O ${varEntorno}/aToken-mng   "$url/aToken/aToken-mng" &>/dev/null;                   chmod +x ${varEntorno}/aToken-mng
-wget --no-cache -O ${varEntorno}/makeUser     "$url/user-managers/makeUser" &>/dev/null;              chmod +x ${varEntorno}/makeUser
-
-
-if [[ -e $autoStart/autoStart ]]; then
-  $autoStart/autoStart -e /etc/ADMRufu/autoStart
-fi
-
-#profileDir="/etc/profile.d" && [[ ! -d ${profileDir} ]] && mkdir ${profileDir}
-#echo '#!/bin/bash
-#export PATH="$PATH:/etc/ADMRufu/sbin"' > /etc/profile.d/rufu.sh
-#chmod +x /etc/profile.d/rufu.sh
-rm -rf /etc/profile.d/rufu.sh
-
-sbinList=$(ls ${varEntorno})
-for i in `echo $sbinList`; do
-  ln -s ${varEntorno}/$i /usr/bin/$i
-done
-
-del 1
-
-print_center -verd 'Instalacion completa'
-sleep 2s
-rm $HOME/lista-arq
-[[ -d ${SCPinstal} ]] && rm -rf ${SCPinstal}
-rm -rf /usr/bin/menu
-rm -rf /usr/bin/adm
-ln -s /usr/bin/ADMRufu /usr/bin/menu
-ln -s /usr/bin/ADMRufu /usr/bin/adm
-ln -s /etc/ADMRufu/reseller /etc/ADMRufu/tmp/message.txt
-sed -i '/Rufu/d' /etc/bash.bashrc
-sed -i '/Rufu/d' /root/.bashrc
-echo '[[ -e /etc/ADMRufu/bashrc ]] && source /etc/ADMRufu/bashrc' >> /etc/bash.bashrc
-update-locale LANG=en_US.UTF-8 LANGUAGE=en
-[[ ! $(cat /etc/shells|grep "/bin/false") ]] && echo -e "/bin/false" >> /etc/shells
-clear
-title "-- ADMRufu INSTALADOs --"
-
-mv -f ${module} /etc/ADMRufu/module
-time_reboot "10"
