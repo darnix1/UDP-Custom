@@ -52,17 +52,25 @@ msg() { ##-->> COLORES, TITULO, BARRAS
   esac
 }
 
-selection_fun() {
-  local selection
-  local options="$(seq 0 $1 | paste -sd "," -)"
-  read -p $'\033[1;97m  └⊳ Seleccione una opción:\033[1;32m ' selection
-  if [[ $options =~ (^|[^\d])$selection($|[^\d]) ]]; then
-    echo $selection
+selection_fun(){
+  local selection="null"
+  local range
+  if [[ -z $2 ]]; then
+    opcion=$1
+    col="-nazu"
   else
-    echo "Selección no válida: $selection" >&2
-    exit 1
+    opcion=$2
+    col=$1
   fi
+  for((i=0; i<=$opcion; i++)); do range[$i]="$i "; done
+  while [[ ! $(echo ${range[*]}|grep -w "$selection") ]]; do
+    msg "$col" " ${a_selection_fun:-Seleccione una Opcion}: " >&2
+    read selection
+    tput cuu1 >&2 && tput dl1 >&2
+  done
+  echo $selection
 }
+
 
 mportas () {
 unset portas
@@ -580,13 +588,13 @@ menu_file(){
 		fi
   
   echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m DESINSTALAR FILEBROWSER  \e[97m \n" && de="$nu"; in='a'
-  echo -ne " \e[1;93m [\e[1;32m2\e[1;93m]\033[1;31m > \033[1;97m \e[1;32mINICIAR\e[1;93m/\e[1;31mDETENER\e[1;97m $std \e[97m \n"
-  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m REINICIAR \e[97m \n"
+  echo -ne " \e[1;93m [\e[1;32m2\e[1;93m]\033[1;31m > \033[1;97m \e[1;32mINICIAR\e[1;93m/\e[1;31mDETENER\e[1;97m $std \e[97m \n" 
+  echo -ne " \e[1;93m [\e[1;32m3\e[1;93m]\033[1;31m > \e[1;97m REINICIAR \e[97m \n"
   msg -bar
-  echo -ne " \e[1;93m [\e[1;32m2\e[1;93m]\033[1;31m > \033[1;97m MODIFICAR NOMBRE DE USUARIO \e[97m \n"
-  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m MODIFICAR CONTRASEÑA  \e[97m \n"
+  echo -ne " \e[1;93m [\e[1;32m4\e[1;93m]\033[1;31m > \033[1;97m MODIFICAR NOMBRE DE USUARIO \e[97m \n"
+  echo -ne " \e[1;93m [\e[1;32m5\e[1;93m]\033[1;31m > \e[1;97m MODIFICAR CONTRASEÑA  \e[97m \n"
   msg -bar
-  echo -ne " \e[1;93m [\e[1;32m2\e[1;93m]\033[1;31m > \033[1;97m ACTIVAR/DESACTIVAR ACCESO ROOT\e[97m \n"
+  echo -ne " \e[1;93m [\e[1;32m6\e[1;93m]\033[1;31m > \033[1;97m ACTIVAR/DESACTIVAR ACCESO ROOT\e[97m \n"
   msg -bar
   echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > \033[1;97m" && msg -bra "  \e[97m\033[1;41m VOLVER \033[1;37m"
   msg -bar
