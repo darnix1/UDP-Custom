@@ -631,7 +631,7 @@ menu_file(){
 			5)set_pass;;
 			6)act_root;;
 			0)return 1;;
-                        *)menu;;
+                        
 	esac
 }
 
