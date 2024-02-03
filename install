@@ -52,23 +52,16 @@ msg() { ##-->> COLORES, TITULO, BARRAS
   esac
 }
 
-selection_fun(){
-  local selection="null"
-  local range
-  if [[ -z $2 ]]; then
-    opcion=$1
-    col="-nazu"
+selection_fun() {
+  local selection
+  local options="$(seq 0 $1 | paste -sd "," -)"
+  read -p $'\033[1;97m  └⊳ Seleccione una opción:\033[1;32m ' selection
+  if [[ $options =~ (^|[^\d])$selection($|[^\d]) ]]; then
+    echo $selection
   else
-    opcion=$2
-    col=$1
+    echo "Selección no válida: $selection" >&2
+    exit 1
   fi
-  for((i=0; i<=$opcion; i++)); do range[$i]="$i "; done
-  while [[ ! $(echo ${range[*]}|grep -w "$selection") ]]; do
-    msg "$col" " ${a_selection_fun:-Seleccione una Opcion}: " >&2
-    read selection
-    tput cuu1 >&2 && tput dl1 >&2
-  done
-  echo $selection
 }
 
 mportas () {
@@ -577,7 +570,7 @@ menu_file(){
 			std='\e[1m\e[32m[ON]'
 		fi
   
-  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m DESINSTALAR FILEBROWSER  \e[97m \n"
+  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m DESINSTALAR FILEBROWSER  \e[97m \n" && de="$nu"; in='a'
   echo -ne " \e[1;93m [\e[1;32m2\e[1;93m]\033[1;31m > \033[1;97m INICIAR/DETENER $std \e[97m \n"
   echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m REINICIAR \e[97m \n"
   msg -bar
@@ -592,8 +585,6 @@ menu_file(){
 		  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m INSTALAR FILEBROWSER  \e[97m \n" && in="$nu"; de='a'
                   msg -bar
                   echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > " && echo -e "\e[97m\033[1;41m VOLVER \033[0;37m"
-                  msg -bar
-                  echo -ne "\033[1;97m   └⊳ Seleccione una opcion [0-14]: \033[1;32m" && read num
                   msg -bar
 	fi
 	opcion=$(selection_fun $nu)
