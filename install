@@ -90,7 +90,7 @@ install_file(){
 		   *) clear
 		   	  msg -bar
 		   	  print_center -ama "instalacion conselada\narquitectura $unamem no soportada"
-		   	  enter
+		   	  read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
 		   	  return;;
 	esac
 
@@ -404,7 +404,8 @@ EOF
 		rm -rf /usr/local/bin/filebrowser
 		rm -rf /etc/systemd/system/filebrowser.service
                 echo -e "\033[1;33m >> falla de instalacion"
-		enter
+		read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 	fi
 }
 
@@ -459,7 +460,8 @@ desinstal_file(){
 	rm -rf /usr/local/bin/filebrowser
 	rm -rf /etc/systemd/system/filebrowser.service
 	echo -e "\033[1;33m >> filebrowser desinstalado!!!!"
-	enter
+        read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 }
 
 on(){
@@ -486,7 +488,8 @@ on_off_file(){
 		active)off;;
 		failed|inactive)on;;
 	esac
-	enter
+        read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 }
 
 reload_file(){
@@ -494,7 +497,8 @@ reload_file(){
 	systemctl restart filebrowser &>/dev/null
 	ufw allow $port_f/tcp &>/dev/null
 	echo -e "\033[1;33m >> servicio filebrowser reiniciado!!!"
-	enter
+	read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 }
 
 set_name_user(){
@@ -509,7 +513,8 @@ set_name_user(){
 		systemctl start filebrowser &>/dev/null
 	fi
 	echo -e "\033[1;33m >> nombre actualizado!!!"
-	enter
+        read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 }
 
 set_pass(){
@@ -524,7 +529,8 @@ set_pass(){
 		systemctl start filebrowser &>/dev/null
 	fi
 	echo -e "\033[1;33m >> Contraseña actualizada!!!"
-	enter
+	read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 }
 
 act_root(){
@@ -543,7 +549,8 @@ act_root(){
 	if [[ $act = 1 ]]; then
 		systemctl start filebrowser &>/dev/null
 	fi
-	enter
+	read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
+
 }
 
 menu_file(){
@@ -581,11 +588,13 @@ menu_file(){
   msg -bar
   echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > \033[1;97m" && msg -bra "  \e[97m\033[1;41m VOLVER \033[1;37m"
   msg -bar
+  echo -e "    \e[97m\033[1;41m ENTER SIN RESPUESTA REGRESA A MENU ANTERIOR \033[0;97m"
 	else
 		  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m INSTALAR FILEBROWSER  \e[97m \n" && in="$nu"; de='a'
                   msg -bar
                   echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > " && echo -e "\e[97m\033[1;41m VOLVER \033[0;37m"
                   msg -bar
+                  echo -e "    \e[97m\033[1;41m ENTER SIN RESPUESTA REGRESA A MENU ANTERIOR \033[0;97m"
 	fi
 	opcion=$(selection_fun $nu)
 	case $opcion in
@@ -597,6 +606,7 @@ menu_file(){
 			5)set_pass;;
 			6)act_root;;
 			0)return 1;;
+                        *)menu;;
 	esac
 }
 
