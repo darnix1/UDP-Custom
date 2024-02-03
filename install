@@ -555,15 +555,17 @@ act_root(){
 
 menu_file(){
         clear && clear
-	install_path="/usr/local/bin"
-	if [[ ! -d $install_path ]]; then
-		install_path="/usr/bin"
-	fi
         msg -bar
         msg -tit
         msg -bar
 	echo -e "\033[1;33m     ARCHIVOS WEB | SCRIPT LATAM \033[1;37m"
-	nu=1
+
+	install_path="/usr/local/bin"
+	if [[ ! -d $install_path ]]; then
+		install_path="/usr/bin"
+	fi
+        
+       nu=1
 	if [[ -e "$install_path/filebrowser" ]]; then
 
 		std='\e[1m\e[31m[OFF]'
