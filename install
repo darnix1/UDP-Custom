@@ -591,7 +591,6 @@ menu_file(){
 	if [[ -e "$install_path/filebrowser" ]]; then
 
 		std='\e[1m\e[31m[OFF]'
-                stx='\033[1;31m[ Servicio Desactivado ]'
 		if [[ $(systemctl is-active filebrowser) = 'active' ]]; then
 			port=$(grep 'port' /etc/filebrowser/.filebrowser.toml|cut -d ' ' -f3)
                          ip=$(curl -sS ifconfig.me)
