@@ -1,5 +1,25 @@
 #!/bin/bash
 
+
+selection_fun(){
+  local selection="null"
+  local range
+  if [[ -z $2 ]]; then
+    opcion=$1
+    col="-nazu"
+  else
+    opcion=$2
+    col=$1
+  fi
+  for((i=0; i<=$opcion; i++)); do range[$i]="$i "; done
+  while [[ ! $(echo ${range[*]}|grep -w "$selection") ]]; do
+    msg "$col" " ${a_selection_fun:-Seleccione una Opcion}: " >&2
+    read selection
+    tput cuu1 >&2 && tput dl1 >&2
+  done
+  echo $selection
+}
+
 mportas () {
 unset portas
 portas_var=$(lsof -V -i tcp -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND" | grep "LISTEN")
@@ -517,8 +537,12 @@ menu_file(){
   msg -bar
 	else
 		  echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m INSTALAR FILEBROWSER  \e[97m \n" && in="$nu"; de='a'
+                  msg -bar
+                  echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > " && echo -e "\e[97m\033[1;41m VOLVER \033[0;37m"
+                  msg -bar
+                  echo -ne "\033[1;97m   └⊳ Seleccione una opcion [0-14]: \033[1;32m" && read num
+                  msg -bar
 	fi
-	back
 	opcion=$(selection_fun $nu)
 	case $opcion in
 		"$in")install_file;;
