@@ -46,22 +46,30 @@ msg() { ##-->> COLORES, TITULO, BARRAS
   -azu) cor="${COLOR[6]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
   -verd) cor="${COLOR[2]}${NEGRITO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
   -bra) cor="${COLOR[0]}${SINCOLOR}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+  -nazu) cor="${COLOR[6]}${NEGRITO}" && echo -ne "${cor}${2}${SEMCOR}";;
   "-bar2" | "-bar") cor="${COLOR[1]}════════════════════════════════════════════════════" && echo -e "${SINCOLOR}${cor}${SINCOLOR}" ;;
   # Centrar texto
   -tit) echo -e " \e[48;5;214m\e[38;5;0m   💻 𝙎 𝘾 𝙍 𝙄 𝙋 𝙏 | 𝙇 𝘼 𝙏 𝘼 𝙈 💻   \e[0m  $vesaoSCT" ;;
   esac
 }
 
-selection_fun() {
-  local selection
-  local options="$(seq 0 $1 | paste -sd "," -)"
-  read -p $'\033[1;97m  └⊳ Seleccione una opción:\033[1;32m ' selection
-  if [[ $options =~ (^|[^\d])$selection($|[^\d]) ]]; then
-    echo $selection
+selection_fun(){
+  local selection="null"
+  local range
+  if [[ -z $2 ]]; then
+    opcion=$1
+    col="-nazu"
   else
-    echo "Selección no válida: $selection" >&2
-    exit 1
+    opcion=$2
+    col=$1
   fi
+  for((i=0; i<=$opcion; i++)); do range[$i]="$i "; done
+  while [[ ! $(echo ${range[*]}|grep -w "$selection") ]]; do
+    msg "$col" " ${a_selection_fun:-Seleccione una Opcion}: " >&2
+    read selection
+    tput cuu1 >&2 && tput dl1 >&2
+  done
+  echo $selection
 }
 
 
