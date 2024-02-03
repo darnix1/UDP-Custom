@@ -580,7 +580,7 @@ menu_file(){
         msg -bar
         msg -tit
         msg -bar
-	echo -e "\033[1;33m     ARCHIVOS WEB | SCRIPT LATAM \033[1;37m"
+	echo -e "\033[1;33m     ADMINISTRADOR WEB | SCRIPT LATAM \033[1;37m"
 
 	install_path="/usr/local/bin"
 	if [[ ! -d $install_path ]]; then
@@ -594,8 +594,7 @@ menu_file(){
 		if [[ $(systemctl is-active filebrowser) = 'active' ]]; then
 			port=$(grep 'port' /etc/filebrowser/.filebrowser.toml|cut -d ' ' -f3)
                          ip=$(curl -sS ifconfig.me)
-			  echo -e "        \e[97mEstado actual: $stx"
-                          echo -ne " \033[1;93m Accede con URL > http://$ip:$port\n"
+			  echo -e " \e[97mIngresa con: http://$ip:$port\n"
 			msg -bar
 			std='\e[1m\e[32m[ON]'
                         stx='\033[1;32m[ Servicio Activado ]'
