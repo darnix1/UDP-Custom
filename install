@@ -618,7 +618,7 @@ menu_file(){
                   msg -bar
                   echo -e "    \e[97m\033[1;41m ENTER SIN RESPUESTA REGRESA A MENU ANTERIOR \033[0;97m"
 	fi
-	opcion=$(selection_fun $nu )
+	opcion=$(selection_fun $nu & 6 )
 	case $opcion in
 		"$in")install_file;;
 		"$de")desinstal_file;;
