@@ -111,15 +111,18 @@ IiP="$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -
 cheklist="$(curl -sSL $IiP:81/dani/checkIP.log)"
 chekIP="$(echo -e "$cheklist" | grep ${Key} | awk '{print $3}')"
 chekDATE="$(echo -e "$cheklist" | grep ${Key} | awk '{print $7}')"
-msg -bar3
+msgi -bar3
 echo ""
 [[ ! -z ${chekIP} ]] && { 
 varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
-msg -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
+msgi -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
 echo ""
 msg -bar3
 } 
 }
+    varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
+msgi -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
+echo ""
     echo -ne "\033[1;97m DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;97m: \033[1;93m" && read incertar_key
     service apache2 restart >/dev/null 2>&1
     [[ "$incertar_key" = "s" || "$incertar_key" = "S" ]] && incertar_key
