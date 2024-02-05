@@ -100,16 +100,7 @@ ofus() {
     }
     echo -e "\033[1;31m               ¡# ERROR INESPERADO #¡\n          ESTA KEY YA FUE USADA O EXPIRO "
     echo -e "\033[0;93m    -SI EL ERROR PERCISTE REVISAR PUERTO 81 TCP -"
-    [[ "$list_fix" = "" ]] && {
-msgi -bar3 
-echo -e " ERROR (PORT 8888 TCP) ENTRE GENERADOR <--> VPS "
-echo -e "    NO EXISTE CONEXION ENTRE EL GENERADOR "
-echo -e "  - \e[3;32mGENERADOR O KEYGEN COLAPSADO\e[0m - "
-msgi -bar3
-echo -e "  - DIRIGETE AL BOT Y ESCRIBE /restart "
-echo -e "  - Y REINTENTA NUEVAMENTE CON SU KEY "
-msgi -bar3
-}
+    
 [[ "$list_fix" = "KEY INVALIDA!" ]] && {
 IiP="$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
 cheklist="$(curl -sSL $IiP:81/dani/checkIP.log)"
