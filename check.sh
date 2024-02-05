@@ -1,25 +1,13 @@
 #!/bin/bash
-### Color
-Green="\e[92;1m"
-RED="\033[31m"
-YELLOW="\033[33m"
-BLUE="\033[36m"
-FONT="\033[0m"
-GREENBG="\033[42;37m"
-REDBG="\033[41;37m"
-OK="${Green}--->${FONT}"
-ERROR="${RED}[ERROR]${FONT}"
-GRAY="\e[1;30m"
-NC='\e[0m'
-red='\e[1;31m'
-green='\e[0;32m'
-sudo apt-get install -y figlet boxes
-sudo apt-get install -y pv
-
-# ===================
-IVAR="/etc/http-instas"
-SCPT_DIR="/etc/SCRIPT"
-rm $(pwd)/$0
+##-->> INSTALADOR --- ACTUALIZADO EL 16-03-2023 -- >> By @Kalix1 << ---
+clear && clear
+colores="$(pwd)/colores"
+rm -rf ${colores}
+wget -O ${colores} "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/colores" &>/dev/null
+[[ ! -e ${colores} ]] && exit
+chmod +x ${colores} &>/dev/null
+##-->> CARGAR SC EXTERNO
+source $(pwd)/colores
 
 ofus() {
     unset server
@@ -44,128 +32,131 @@ ofus() {
     done
     echo "$txtofus" | rev
   }
-  
-# // Exporint IP AddressInformation
-export IP=$( curl -sS ipinfo.io/ip )
+  verificar_arq() {
+    case $1 in
+    "menu.sh" | "message.txt") ARQ="${SCPdir}/" ;;
+    "LATAMbot.sh") ARQ="${Filbot}/" ;;
+    "PDirect.py" | "PPub.py" | "PPriv.py" | "POpen.py" | "PGet.py") ARQ="${Filpy}/" ;;
+    *) ARQ="${Filotros}/" ;;
+    esac
+    mv -f ${SCPinstal}/$1 ${ARQ}/$1
+    chmod +x ${ARQ}/$1
+  }
+  #fun_ip
+  [[ $1 = "" ]] && fun_idi || {
+    [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
+  }
+  error_fun() {
+    msgi -bar2
+    msgi -bar2
+    sleep 3s
+    clear && clear
+    echo "Codificacion Incorrecta" >/etc/SCRIPT-LATAM/errorkey
+    msgi -bar2
+    [[ $1 = "" ]] && fun_idi || {
+      [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
+    }
+    echo -e "\033[1;31m               ¡# ERROR INESPERADO #¡\n          ESTA KEY YA FUE USADA O EXPIRO "
+    echo -e "\033[0;93m    -SI EL ERROR PERCISTE REVISAR PUERTO 81 TCP -"
+    msgi -bar2
+    echo -ne "\033[1;97m DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;97m: \033[1;93m" && read incertar_key
+    service apache2 restart >/dev/null 2>&1
+    [[ "$incertar_key" = "s" || "$incertar_key" = "S" ]] && incertar_key
+    clear && clear
+    msgi -bar2
+    msgi -bar2
+    rm -rf lista-arq
+    echo -e "\033[1;97m          ---- INSTALACION CANCELADA  -----"
+    msgi -bar2
+    msgi -bar2
+    exit 1
+  }
+  invalid_key() {
+    msgi -bar2
+    msgi -bar2
+    sleep 3s
+    clear && clear
+    echo "Codificacion Incorrecta" >/etc/SCRIPT-LATAM/errorkey
+    msgi -bar2
+    [[ $1 = "" ]] && fun_idi || {
+      [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
+    }
+    echo -e "\033[1;31m    CIFRADO INVALIDO -- #¡La Key fue Invalida#! "
+    msgi -bar2
+    echo -ne "\033[1;97m DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;93m: \033[1;93m" && read incertar_key
+    [[ "$incertar_key" = "s" || "$incertar_key" = "S" ]] && incertar_key
+    clear && clear
+    msgi -bar2
+    msgi -bar2
+    echo -e "\033[1;97m          ---- INSTALACION CANCELADA  -----"
+    msgi -bar2
+    msgi -bar2
+    exit 1
+  }
 
-# // Clear Data
-clear
-clear && clear && clear
-clear;clear;clear
+  incertar_key() {
 
-  # // Banner
-echo -e "${YELLOW}----------------------------------------------------------${NC}"
-echo -e "  Bienvenido al instalador de script ${YELLOW}(${NC}${green} Stable Edition ${NC}${YELLOW})${NC}"
-echo -e "     Tiempo de instalacion aprox 5 minutos"
-echo -e "         Auther : ${green}darnix ${NC}${YELLOW}(${NC} ${green}LATMX ${NC}${YELLOW})${NC}"
-echo -e "       © Recode By darnix ${YELLOW}(${NC} 2023 ${YELLOW})${NC}"
-echo -e "${YELLOW}----------------------------------------------------------${NC}"
-echo ""
-sleep 3
-clear
-###### IZIN SC 
+    [[ -d /etc/SCRIPT-LATAM/errorkey ]] && rm -rf /etc/SCRIPT-LATAM/errorkey >/dev/null 2>&1
+    echo "By Kalix1" >/etc/SCRIPT-LATAM/errorkey
+    msgi -bar2
+    echo -ne "\033[1;96m          >>> INTRODUZCA LA KEY ABAJO <<<\n\033[1;31m   " && read Key
+    [[ -z "$Key" ]] && Key="NULL"
+    tput cuu1 && tput dl1
+    msgi -ne "    \033[1;93m# Verificando Key # : "
+    cd $HOME
+    IPL=$(cat /root/.ssh/authrized_key.reg)
+    wget -O $HOME/lista-arq $(ofus "$Key")/$IPL >/dev/null 2>&1 && echo -e "\033[1;32m Codificacion Correcta" || {
+      echo -e "\033[1;31m Codificacion Incorrecta"
+      invalid_key
+      exit
+    }
+    IP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') && echo "$IP" >/usr/bin/vendor_code
+    sleep 1s
+    function_verify
+    updatedb
+    if [[ -e $HOME/lista-arq ]] && [[ ! $(cat /etc/SCRIPT-LATAM/errorkey | grep "Codificacion Incorrecta") ]]; then
+      msgi -bar2
+      msgi -verd " Ficheros Copiados \e[97m[\e[93m Key By @Panel_NetVPS_bot \e[97m]"
+      REQUEST=$(ofus "$Key" | cut -d'/' -f2)
+      [[ ! -d ${SCPinstal} ]] && mkdir ${SCPinstal}
+      pontos="."
+      stopping="Configurando Directorios"
+      for arqx in $(cat $HOME/lista-arq); do
+        msgi -verm "${stopping}${pontos}"
+        wget --no-check-certificate -O ${SCPinstal}/${arqx} ${IP}:81/${REQUEST}/${arqx} >/dev/null 2>&1 && verificar_arq "${arqx}" || {
+          error_fun
+          exit
+        }
+        tput cuu1 && tput dl1
+        pontos+="."
+      done
+  _hora=$(printf '%(%D-%H:%M:%S)T') 
+       #  msg -verd "    $(source trans -b es:${id} "Ficheros Copiados"|sed -e 's/[^a-z -]//ig'): \e[97m[\e[93m@conectedmx_bot\e[97m]"
+  API_KEY="6095735972:AAF6zwFFM1JfFNVLIbYE9GNanssgr4_S_5M"
+CHAT_ID="5745188704"
+MSG="❗️𝗞𝗘𝗬 𝗔𝗖𝗧𝗜𝗩𝗔𝗗𝗔❗️
+🔑 $Key
+🌐 $IPL $TUIP 
+👤 SLOGAN: $(cat ${SCPdir}/message.txt)
+🕥 $_hora "
+URL="https://api.telegram.org/bot$API_KEY/sendMessage"
+curl -s -X POST $URL -d chat_id=$CHAT_ID -d text="$MSG" > /dev/null
 
-veryfy_fun () {
-[[ ! -d ${IVAR} ]] && touch ${IVAR}
-[[ ! -d ${SCPT_DIR} ]] && mkdir ${SCPT_DIR}
-unset ARQ
-case $1 in
-"gerar.sh")ARQ="/usr/bin/";;
-"http-server.py")ARQ="/bin/";;
-*)ARQ="${SCPT_DIR}/";;
-esac
-mv -f $HOME/$1 ${ARQ}/$1
-chmod +x ${ARQ}/$1
+      sleep 1s
+      msgi -bar2
+      listaarqs="$(locate "lista-arq" | head -1)" && [[ -e ${listaarqs} ]] && rm $listaarqs
+      cat /etc/bash.bashrc | grep -v '[[ $UID != 0 ]] && TMOUT=15 && export TMOUT' >/etc/bash.bashrc.2
+      echo -e '[[ $UID != 0 ]] && TMOUT=15 && export TMOUT' >>/etc/bash.bashrc.2
+      mv -f /etc/bash.bashrc.2 /etc/bash.bashrc
+      echo "${SCPdir}/menu.sh" >/usr/bin/menu && chmod +x /usr/bin/menu
+      echo "${SCPdir}/menu.sh" >/usr/bin/MENU && chmod +x /usr/bin/MENU
+      echo "$Key" >${SCPdir}/key.txt
+      [[ -d ${SCPinstal} ]] && rm -rf ${SCPinstal}
+      [[ ${byinst} = "true" ]] && install_fim
+    else
+      invalid_key
+    fi
+  }
+  incertar_key
 }
-
-figlet " DARNIXMX " | boxes -d stone -p a2v1 | sed 's/\(.\)/\x1b[1;37m\1\x1b[0m/g'
-read -p $'\033[1;97;102mINGRESA TU CLAVE\033[0m ' Key
-[[ ! $Key ]] && {
-echo -e "\033[1;36m--------------------------------------------------------------------\033[0m"
-echo -e "\033[1;33mKey inválida!"
-echo -e "\033[1;36m--------------------------------------------------------------------\033[0m"
-exit
-}
-meu_ip () {
-MIP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
-MIP2=$(wget -qO- ipv4.icanhazip.com)
-[[ "$MIP" != "$MIP2" ]] && IP="$MIP2" || IP="$MIP"
-echo "$IP" > /usr/bin/vendor_code
-}
-meu_ip
-text="COMPILANDO CLAVE DE ACCESO "
-color="\033[1;37m"  # Blanco
-
-for ((i = 0; i < ${#text}; i++)); do
-    echo -n -e "${color}${text:$i:1}"
-    sleep 0.1  # Ajusta este valor según tu preferencia para el retraso entre letras
-done
-echo -e "\033[0m"  # Restaura el color predeterminado al final
-cd $HOME
-wget -O "$HOME/lista-arq" $(ofus "$Key")/$IP > /dev/null 2>&1
-IP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-sleep 1s
-[[ -e $HOME/lista-arq ]] && {
-REQUEST=$(ofus "$Key" |cut -d'/' -f2)
-for arqx in `cat $HOME/lista-arq`; do
-echo -ne "\033[38;5;15;48;5;208mCONEXION: \033[0m"
-wget -O $HOME/$arqx ${IP}:81/${REQUEST}/${arqx} > /dev/null 2>&1 && echo -e "\033[1;31m- \033[1;32mExitosa !" || { echo -e "\033[0;97;41mFallida (Saliendo)\033[0m" | pv -qL 10; exit 1; }
-[[ -e $HOME/$arqx ]] && veryfy_fun $arqx
-done
-[[ ! -e /usr/bin/trans ]] && wget -O /usr/bin/trans https://www.dropbox.com/s/l6iqf5xjtjmpdx5/trans?dl=0 &> /dev/null
-#mv -f /bin/http-server.py /bin/http-server.sh && chmod +x /bin/http-server.sh
-apt-get install bc -y &>/dev/null
-apt-get install screen -y &>/dev/null
-apt-get install nano -y &>/dev/null
-apt-get install curl -y &>/dev/null
-apt-get install netcat -y &>/dev/null
-#apt-get install apache2 -y &>/dev/null
-#sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf
-#service apache2 restart > /dev/null 2>&1 &
-IVAR2="/etc/key-gerador"
-echo "$Key" > $IVAR2
-rm $HOME/lista-arq
-} || {
-echo -e "\033[1;36m--------------------------------------------------------------------\033[0m"
-echo -e "\033[1;33mKey Invalida!"
-echo -e "\033[1;36m--------------------------------------------------------------------\033[0m"
-}
-echo -ne "\033[0m"
-
-echo -e " "
-    #echo -e " \033[3;97;41m REGISTRANDO CONEXION IP SSH \033[0m" | pv -qL 10
-    echo -e "\033[0;97;41mREGISTRANDO CONEXION IP SSH\033[0m" | pv -qL 10
-
-      sleep 5  # Pausa de 5 segundos
-       echo -e "\e[0;97;42mEXITOSO\e[0m" | pv -qL 10
-       sleep 2
-       sudo mv /etc/SCRIPT /usr/bin/
-
-    clear
-    clear
-    MI=$(wget -qO- ifconfig.me)
-ipsaya=$(wget -qO- ipinfo.io/ip)
-
-data_ip="https://raw.githubusercontent.com/darnix1/vip/main/izin"
-
-checking_sc() {
-  # Comentar las líneas relacionadas con la verificación de la fecha de vencimiento
-  # useexp=$(wget -qO- $data_ip | grep $ipsaya | awk '{print $3}')
-  # if [[ $date_list < $useexp ]]; then
-  #   echo -ne
-  # else
-  cols=$(tput cols)
-text="INSTALACION EN CURSO:"
-padding=$(((cols - ${#text}) / 3))
-    echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
-    echo -ne "\033[38;5;15;48;5;208m$(printf "%*s" $padding)${text}$(printf "%*s" $padding)\033[0m"
-    echo " "
-    #echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
-    echo " "
-    echo -e "\e[1;33m RESELLER: $(awk '{printf "%0s\n", $0}' /usr/bin/SCRIPT/message.txt) VERIFICADO \e[0m" | pv -qL 10
-    echo -e "            ${RED}PERMISO CONCEDIDO${NC}"  # Ajusta el mensaje según tus necesidades
-    echo -e "   \033[0;33mTu ip fue autorizado exitosamente.${NC}"
-    echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
-    # exit
-  # fi
-}
+Install_key
