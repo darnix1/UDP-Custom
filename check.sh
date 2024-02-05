@@ -118,13 +118,7 @@ varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
 msg -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
 echo ""
 msg -bar3
-} || {
-echo -e "    PRUEBA COPIAR BIEN TU KEY "
-[[ $(echo "$(ofus "$Key"|cut -d'/' -f2)" | wc -c ) = 18 ]] && echo -e "" || echo -e "\033[1;31m CONTENIDO DE LA KEY ES INCORRECTO"
-echo -e "   KEY NO COINCIDE CON EL CODEX DEL ADM "
-msg -bar3
-tput cuu1 && tput dl1
-}
+} 
 }
     echo -ne "\033[1;97m DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;97m: \033[1;93m" && read incertar_key
     service apache2 restart >/dev/null 2>&1
