@@ -9,6 +9,35 @@ chmod +x ${colores} &>/dev/null
 ##-->> CARGAR SC EXTERNO
 source $(pwd)/colores
 
+Install_key() {
+  wget /root/LATAM https://www.dropbox.com/s/qdrpwy7491z5q6d/LATAM -O /usr/bin/LATAM &>/dev/null
+  chmod +x /usr/bin/LATAM
+  /bin/cp /etc/skel/.bashrc ~/
+  clear && clear
+  SCPdir="/etc/SCRIPT-LATAM"
+  SCPinstal="$HOME/install"
+  Filbot="${SCPdir}/botmanager"
+  Filpy="${SCPdir}/filespy"
+  Filotros="${SCPdir}/temp"
+  IP=$(cat /root/.ssh/authrized_key.reg)
+  function_verify() {
+    permited=$(curl -sSL "https://raw.githubusercontent.com/DanssBot/DanBot/main/control")
+    [[ $(echo $permited | grep "${IP}") = "" ]] && {
+      clear && clear
+      echo -e "\n\n\n\033[1;91m————————————————————————————————————————————————————\n      ¡ESTA KEY NO CONCUERDA CON EL INSTALADOR! \n                 CONATACTE A @Kalix1\n————————————————————————————————————————————————————\n\n\n"
+      # [[ -d /etc/SCRIPT-LATAM ]] && rm -rf /etc/SCRIPT-LATAM
+      exit 1
+    } || {
+      ### INSTALAR VERSION DE SCRIPT
+      v1=$(curl -sSL "https://raw.githubusercontent.com/darnix1/up/main/version")
+      echo "$v1" >/etc/SCRIPT-LATAM/temp/version_instalacion
+      FIns=$(printf '%(%D-%H:%M:%S)T')
+      echo "$FIns" >/etc/SCRIPT-LATAM/F-Instalacion
+      last_check_file="/etc/SCRIPT-LATAM/temp/last_check"
+      date "+%Y-%m-%d %H:%M:%S" >"$last_check_file"
+    }
+  }
+  
 fun_idi() {
     clear && clear
     msgi -bar2
