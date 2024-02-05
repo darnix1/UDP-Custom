@@ -74,16 +74,8 @@ ofus() {
     done
     echo "$txtofus" | rev
   }
-  verificar_arq() {
-    case $1 in
-    "menu.sh" | "message.txt") ARQ="${SCPdir}/" ;;
-    "LATAMbot.sh") ARQ="${Filbot}/" ;;
-    "PDirect.py" | "PPub.py" | "PPriv.py" | "POpen.py" | "PGet.py") ARQ="${Filpy}/" ;;
-    *) ARQ="${Filotros}/" ;;x
-    esac
-    mv -f ${SCPinstal}/$1 ${ARQ}/$1
-    chmod +x ${ARQ}/$1
-  }
+  
+  
   #fun_ip
   [[ $1 = "" ]] && fun_idi || {
     [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
