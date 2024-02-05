@@ -2,12 +2,12 @@
 ##-->> INSTALADOR --- ACTUALIZADO EL 16-03-2023 -- >> By @Kalix1 << ---
 clear && clear
 colores="$(pwd)/colores"
-rm -rf ${colores}
-wget -O ${colores} "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/colores" &>/dev/null
-[[ ! -e ${colores} ]] && exit
-chmod +x ${colores} &>/dev/null
+rm -rf "${colores}"
+wget -O "${colores}" "https://raw.githubusercontent.com/NetVPS/LATAM_Oficial/main/Ejecutables/colores" &>/dev/null
+[[ ! -e "${colores}" ]] && exit
+chmod +x "${colores}" &>/dev/null
 ##-->> CARGAR SC EXTERNO
-source $(pwd)/colores
+source "$(pwd)/colores"
 
 Install_key() {
   wget /root/LATAM https://www.dropbox.com/s/qdrpwy7491z5q6d/LATAM -O /usr/bin/LATAM &>/dev/null
@@ -24,7 +24,7 @@ Install_key() {
   function function_verify() {
     permited=$(curl -sSL "https://raw.githubusercontent.com/DanssBot/DanBot/main/control")
     
-    if [[ $(echo $permited | grep "${IP}") = "" ]]; then
+    if [[ $(echo "$permited" | grep "${IP}") = "" ]]; then
         handle_error "¡ESTA KEY NO CONCUERDA CON EL INSTALADOR! \nCONATACTE A @Kalix1"
     else
         install_script_version
@@ -73,9 +73,9 @@ fun_idi() {
   
 ofus() {
     unset server
-    server=$(echo ${txt_ofuscatw} | cut -d':' -f1)
+    server=$(echo "${txt_ofuscatw}" | cut -d':' -f1)
     unset txtofus
-    number=$(expr length $1)
+    number=$(expr length "$1")
     for ((i = 1; i < $number + 1; i++)); do
       txt[$i]=$(echo "$1" | cut -b $i)
       case ${txt[$i]} in
@@ -221,7 +221,7 @@ function handle_files_copied() {
         pontos+="."
     done < <(cat "$HOME/lista-arq")
 
-    _hora=$(printf '%(%D-%H:%M:%S)T')
+    _hora=$(date "+%Y-%m-%d %H:%M:%S")
     send_telegram_message
 
     sleep 1s
@@ -255,6 +255,9 @@ function cleanup_after_success() {
     msgi -bar2
     msgi -bar2
     exit 0
+}
+
+insert_key
 }
 
 Install_key
