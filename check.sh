@@ -257,4 +257,4 @@ function cleanup_after_success() {
     exit 0
 }
 
-insert_key
+Install_key
