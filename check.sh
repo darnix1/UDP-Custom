@@ -95,34 +95,14 @@ ofus() {
     msgi -bar2
     sleep 3s
     clear && clear
-    [[ -e $HOME/lista-arq ]] && list_fix="$(cat < $HOME/lista-arq)" || list_fix=''
     echo "Codificacion Incorrecta" >/etc/SCRIPT-LATAM/errorkey
     msgi -bar2
     [[ $1 = "" ]] && fun_idi || {
       [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
     }
-    [[ "$list_fix" = "" ]] && {
     echo -e "\033[1;31m               ¡# ERROR INESPERADO #¡\n          ESTA KEY YA FUE USADA O EXPIRO "
     echo -e "\033[0;93m    -SI EL ERROR PERCISTE REVISAR PUERTO 81 TCP -"
     msgi -bar2
-    }
-    [[ "$list_fix" = "KEY INVALIDA!" ]] && {
-IiP="$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
-cheklist="$(curl -sSL $IiP:81/dani/checkIP.log)"
-chekIP="$(echo -e "$cheklist" | grep ${Key} | awk '{print $3}')"
-chekDATE="$(echo -e "$cheklist" | grep ${Key} | awk '{print $7}')"
-msgi -bar3
-echo ""
-[[ ! -z ${chekIP} ]] && { 
-varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
-msgi -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
-echo ""
-msg -bar3
-} 
-}
-    varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
-msgi -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
-echo ""
     echo -ne "\033[1;97m DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;97m: \033[1;93m" && read incertar_key
     service apache2 restart >/dev/null 2>&1
     [[ "$incertar_key" = "s" || "$incertar_key" = "S" ]] && incertar_key
