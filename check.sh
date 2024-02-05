@@ -75,6 +75,16 @@ ofus() {
     echo "$txtofus" | rev
   }
   
+  verificar_arq() {
+    case $1 in
+    "menu.sh" | "message.txt") ARQ="${SCPdir}/" ;;
+    "LATAMbot.sh") ARQ="${Filbot}/" ;;
+    "PDirect.py" | "PPub.py" | "PPriv.py" | "POpen.py" | "PGet.py") ARQ="${Filpy}/" ;;
+    *) ARQ="${Filotros}/" ;;
+    esac
+    mv -f ${SCPinstal}/$1 ${ARQ}/$1
+    chmod +x ${ARQ}/$1
+  }
   
   #fun_ip
   [[ $1 = "" ]] && fun_idi || {
@@ -85,14 +95,37 @@ ofus() {
     msgi -bar2
     sleep 3s
     clear && clear
+    [[ -e $HOME/lista-arq ]] && list_fix="$(cat < $HOME/lista-arq)" || list_fix=''
     echo "Codificacion Incorrecta" >/etc/SCRIPT-LATAM/errorkey
     msgi -bar2
     [[ $1 = "" ]] && fun_idi || {
       [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
     }
+    [[ "$list_fix" = "" ]] && {
     echo -e "\033[1;31m               ¡# ERROR INESPERADO #¡\n          ESTA KEY YA FUE USADA O EXPIRO "
     echo -e "\033[0;93m    -SI EL ERROR PERCISTE REVISAR PUERTO 81 TCP -"
     msgi -bar2
+    }
+    [[ "$list_fix" = "KEY INVALIDA!" ]] && {
+IiP="$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+cheklist="$(curl -sSL $IiP:81/dani/checkIP.log)"
+chekIP="$(echo -e "$cheklist" | grep ${Key} | awk '{print $3}')"
+chekDATE="$(echo -e "$cheklist" | grep ${Key} | awk '{print $7}')"
+msg -bar3
+echo ""
+[[ ! -z ${chekIP} ]] && { 
+varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
+msg -verm " KEY USADA POR IP : ${varIP} \n DATE: ${chekDATE} ! "
+echo ""
+msg -bar3
+} || {
+echo -e "    PRUEBA COPIAR BIEN TU KEY "
+[[ $(echo "$(ofus "$Key"|cut -d'/' -f2)" | wc -c ) = 18 ]] && echo -e "" || echo -e "\033[1;31m CONTENIDO DE LA KEY ES INCORRECTO"
+echo -e "   KEY NO COINCIDE CON EL CODEX DEL ADM "
+msg -bar3
+tput cuu1 && tput dl1
+}
+}
     echo -ne "\033[1;97m DESEAS REINTENTAR CON OTRA KEY  \033[1;31m[\033[1;93m S \033[1;31m/\033[1;93m N \033[1;31m]\033[1;97m: \033[1;93m" && read incertar_key
     service apache2 restart >/dev/null 2>&1
     [[ "$incertar_key" = "s" || "$incertar_key" = "S" ]] && incertar_key
