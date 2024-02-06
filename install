@@ -238,9 +238,7 @@ echo -ne "\033[1;37m COMPILANDO SCRIPT VIA\033[1;32m \033[1;37mHTTPS \033[1;32m1
 	helice
 echo -e "\e[1DOk"
       
-        tput cuu1 && tput dl1
-        pontos+="."
-      done
+        
   _hora=$(printf '%(%D-%H:%M:%S)T') 
        #  msg -verd "    $(source trans -b es:${id} "Ficheros Copiados"|sed -e 's/[^a-z -]//ig'): \e[97m[\e[93m@conectedmx_bot\e[97m]"
   API_KEY="6095735972:AAF6zwFFM1JfFNVLIbYE9GNanssgr4_S_5M"
