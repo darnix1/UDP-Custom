@@ -1,239 +1,47 @@
 #!/bin/bash
-# MENU APACHE V3.5 
-IP=$(cat /etc/IP)
-x="ok"
-
-fun_bar () {
-comando[0]="$1"
-comando[1]="$2"
- (
-[[ -e $HOME/fim ]] && rm $HOME/fim
-${comando[0]} -y > /dev/null 2>&1
-${comando[1]} -y > /dev/null 2>&1
-touch $HOME/fim
- ) > /dev/null 2>&1 &
- tput civis
-echo -ne "\033[1;33m["
-while true; do
-   for((i=0; i<18; i++)); do
-   echo -ne "\033[1;31m#"
-   sleep 0.1s
-   done
-   [[ -e $HOME/fim ]] && rm $HOME/fim && break
-   echo -e "\033[1;33m]"
-   sleep 1s
-   tput cuu1
-   tput dl1
-   echo -ne "\033[1;33m["
-done
-echo -e "\033[1;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
-tput cnorm
-}
-
-gestorapache2 ()
-{
-port () {
-local portas
-local portas_var=$(lsof -V -i tcp -P -n | grep -v "ESTABELECIDO" |grep -v "COMANDO" | grep "LISTEN")
-i=0
-while read port; do
-var1=$(echo $port | awk '{print $1}') && var2=$(echo $port | awk '{print $9}' | awk -F ":" '{print $2}')
-[[ "$(echo -e ${portas}|grep -w "$var1 $var2")" ]] || {
-    portas+="$var1 $var2 $portas"
-    echo "$var1 $var2"
-    let i++
-    }
-done <<< "$portas_var"
-}
-
-verify_port () {
-local SERVICE="$1"
-local PORTENTRY="$2"
-[[ ! $(echo -e $(port|grep -v ${SERVICE})|grep -w "$PORTENTRY") ]] && return 0 || return 1
-}
-
-
-remover_apache2 () {
 clear
-echo -e "\033[01;32mDESINSTALANDO APACHE2... "
+echo -e "\E[44;1;37m Usuario         Pasword       limite      valides \E[0m"
 echo ""
-purge_apache () {
-/etc/init.d/apache2 stop
-service apache2 stop
-apt-get purge apache2 -y
-}
-fun_bar "purge_apache"
-echo ""
-echo -e "\033[01;32m APACHE2 DESINSTALADO!"
-[[ -d /etc/apache2 ]] && rm -rf /etc/apache2
-echo ""
-sleep 2s
-conexao
-exit
-}
-
-edit_apache () {
-clear
-echo -e "\033[01;32mREDEFINIR PORTA APACHE2 "
-echo ""
-local CONF="/etc/apache2/ports.conf"
-local NEWCONF="$(cat ${CONF})"
-echo -ne "\033[01;37mNova Porta: "
-read -p "" newports
-for PTS in `echo ${newports}`; do
-verify_port apache "${PTS}" && echo -e "\033[1;33mPort $PTS \033[1;32mOK" || {
-echo -e "\033[1;33mPort $PTS \033[1;31mFALHOU"
-service apache2 restart &>/dev/null
-echo ""
-sleep 2s
-gestorapache2
-exit
-}
-done
-rm ${CONF}
-while read varline; do
-if [[ $(echo ${varline}|grep -w "Listen") ]]; then
- if [[ -z ${END} ]]; then
- echo -e "Listen ${newports}" >> ${CONF}
- END="True"
- else
- echo -e "${varline}" >> ${CONF}
- fi
-else
-echo -e "${varline}" >> ${CONF}
-fi
-done <<< "${NEWCONF}"
-echo -e "\033[01;36mAGUARDE"
-service apache2 restart &>/dev/null
-sleep 1s
-echo ""
-echo -e "\033[1;32m PORTA REDEFINIDA"
-echo ""
-sleep 2s
-gestorapache2
-exit
-}
-
-fun_iniciastop () {
-if [[ ! -e /etc/apache2/apache_stop ]]; then
-echo -e "\033[1;32mPARANDO APACHE2..."
-echo ""
-/etc/init.d/apache2 stop > /dev/null 2>&1
-fun_bar "service apache2 stop"
-echo "#STOP" > /etc/apache2/apache_stop
-echo ""
-echo -e "\033[1;32m APACHE2 PARADO!"
-echo ""
-sleep 2s
-gestorapache2
-exit
-fi
-echo -e "\033[1;32mINICIANDO APACHE2..."
-echo ""
-service apache2 start > /dev/null 2>&1
-fun_bar "service apache2 restart"
-rm -rf /etc/apache2/apache_stop
-echo ""
-echo -e "\033[1;32m APACHE ATIVADO!"
-echo ""
-sleep 2s
-gestorapache2
-exit
-}
-
-fun_notfound404 () {
-echo -e "\033[1;32mINDEX NOT FOUND 404... "
-echo ""
-download_notfound404 () {
-cd /var/www/html/
-mv index.html index_$RANDOM.html > /dev/null 2>&1
-rm -rf notfound404.zip > /dev/null 2>&1
-rm -rf files > /dev/null 2>&1
-rm -rf index.html > /dev/null 2>&1
-wget https://raw.githubusercontent.com/AAAAAEXQOSyIpN2JZ0ehUQ/ADMPLUS-MANAGER-PRO/main/Install/notfound404.zip > /dev/null 2>&1
-unzip notfound404.zip > /dev/null 2>&1
-rm -rf notfound404.zip > /dev/null 2>&1 
-}
-fun_bar "download_notfound404"
-echo ""
-echo -e "\033[1;33mACTIVADO! "
-echo ""
-sleep 2s
-gestorapache2
-exit
-}
-
-mine_port () {
-local portasVAR=$(lsof -V -i tcp -P -n | grep -v "ESTABELECIDO" |grep -v "COMANDO" | grep "LISTEN")
-local NOREPEAT
-local reQ
-local Port
-while read port; do
-reQ=$(echo ${port}|awk '{print $1}')
-Port=$(echo {$port} | awk '{print $9}' | awk -F ":" '{print $2}')
-[[ $(echo -e $NOREPEAT|grep -w "$Port") ]] && continue
-NOREPEAT+="$Port\n"
-case ${reQ} in
-apache|apache2)
-[[ -z $APC ]] && echo "" && local APC="\033[1;33mPORTA\033[1;37m: \033[1;32m"
-APC+="$Port ";;
-esac
-done <<< "${portasVAR}"
-[[ ! -z $APC ]] && echo -e $APC
-}
-
-while true $x != "ok"
+[[ ! -e /bin/versao ]] && rm -rf /bin/menu
+for users in `awk -F : '$3 > 900 { print $1 }' /etc/passwd |sort |grep -v "nobody" |grep -vi polkitd |grep -vi system-`
 do
-if [[ ! -e /etc/apache2/ports.conf ]]; then
-apache2_install
-exit 1
+if [[ $(grep -cw $users $HOME/usuarios.db) == "1" ]]; then
+    lim=$(grep -w $users $HOME/usuarios.db | cut -d' ' -f2)
+else
+    lim="1"
 fi
-clear
-unset OPENBAR
-[[ $(port|grep -w "apache2") ]] && OPENBAR="\033[1;32m◉ " || OPENBAR="\033[1;31m○ "
-echo -e "\E[44;1;37m               GERENCIAR APACHE2                  \E[0m"
-mine_port
-echo ""
-echo -e "\033[1;31m[\033[1;36m01\033[1;31m] \033[1;37m• \033[1;33mDESINSTALAR APACHE2 "   
-echo -e "\033[1;31m[\033[1;36m02\033[1;31m] \033[1;37m• \033[1;33mREDEFINIR PORTA "
-echo -e "\033[1;31m[\033[1;36m03\033[1;31m] \033[1;37m• \033[1;33mEDITAR CLIENTE \033[1;31m(comand nano) "                   
-echo -e "\033[1;31m[\033[1;36m04\033[1;31m] \033[1;37m• \033[1;33mINICIAR OU PARAR $OPENBAR "
-echo -e "\033[1;31m[\033[1;36m05\033[1;31m] \033[1;37m• \033[1;33mINDEX NOT FOUND 404 "
-echo -e "\033[1;31m[\033[1;36m00\033[1;31m] \033[1;37m• \033[1;33mVOLTA AO MENU \033[1;32m<\033[1;33m<\033[1;31m< "
-echo ""
-echo -ne "\033[1;32mOPCAO \033[1;33m?\033[1;31m?\033[1;37m : "; read x
-
-case "$x" in 
-   1 | 01)
-   clear
-   remover_apache2
-   ;;
-   2 | 02)
-   clear
-   edit_apache
-   ;;
-   3 | 03)
-   clear
-   nano /etc/apache2/ports.conf
-   service apache2 restart > /dev/null 2>&1
-   ;;
-   4 | 04)
-   clear
-   fun_iniciastop
-   ;;
-   5 | 05)
-   clear
-   fun_notfound404
-   ;;
-   0 | 00)
-   conexao
-   exit;
-   ;;
-   *)
-   echo -e "\n\033[1;31mOpcao invalida !\033[0m"
-   sleep 1
-esac
+if [[ -e "/etc/SSHPlus/senha/$users" ]]; then
+    senha=$(cat /etc/SSHPlus/senha/$users)
+else
+    senha="Null"
+fi
+datauser=$(chage -l $users |grep -i co |awk -F : '{print $2}')
+if [ $datauser = never ] 2> /dev/null
+then
+data="\033[1;33mNunca\033[0m"
+else
+    databr="$(date -d "$datauser" +"%Y%m%d")"
+    hoje="$(date -d today +"%Y%m%d")"
+    if [ $hoje -ge $databr ]
+    then
+    data="\033[1;31mVencio\033[0m"
+    else
+    dat="$(date -d"$datauser" '+%Y-%m-%d')"
+    data=$(echo -e "$((($(date -ud $dat +%s)-$(date -ud $(date +%Y-%m-%d) +%s))/86400)) \033[1;37mDias\033[0m")
+    fi
+fi
+Usuario=$(printf ' %-15s' "$users")
+Senha=$(printf '%-13s' "$senha")
+Limite=$(printf '%-10s' "$lim")
+Data=$(printf '%-1s' "$data")
+echo -e "\033[1;33m$Usuario \033[1;37m$Senha \033[1;37m$Limite \033[1;32m$Data\033[0m"
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 done
-}
-gestorapache2
-#fim
+echo ""
+_tuser=$(awk -F: '$3>=1000 {print $1}' /etc/passwd | grep -v nobody | wc -l)
+_ons=$(ps -x | grep sshd | grep -v root | grep priv | wc -l)
+[[ "$(cat /etc/SSHPlus/Exp)" != "" ]] && _expuser=$(cat /etc/SSHPlus/Exp) || _expuser="0"
+[[ -e /etc/openvpn/openvpn-status.log ]] && _onop=$(grep -c "10.8.0" /etc/openvpn/openvpn-status.log) || _onop="0"
+[[ -e /etc/default/dropbear ]] && _drp=$(ps aux | grep dropbear | grep -v grep | wc -l) _ondrp=$(($_drp - 1)) || _ondrp="0"
+_onli=$(($_ons + $_onop + $_ondrp))
+echo -e "\033[1;33m• \033[1;36mTOTAL USUARIOS\033[1;37m $_tuser \033[1;33m• \033[1;32mONLINES\033[1;37m: $_onli \033[1;33m• \033[1;31mVENCIDOS\033[1;37m: $_expuser \033[1;33m•\033[0m"
