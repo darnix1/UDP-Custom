@@ -105,7 +105,16 @@ menu_func(){
   done
  }
 
-
+title(){
+    clear
+    msg -bar
+    if [[ -z $2 ]]; then
+      print_center -azu "$1"
+    else
+      print_center "$1" "$2"
+    fi
+    msg -bar
+ }
 
 
 selection_fun() {
