@@ -301,6 +301,7 @@ add_port(){
 }
 
 menu_badvpn(){
+         clear&clear
 	 print_center echo -e "\e[1;93m    INSTALADOR BADVPN-UDPGW | SCRIPT LATAM"
 	#_services=$(systemctl --all|grep badvpn|awk '{print $1}'|wc -l)
 	_services=$(ls /etc/systemd/system |grep 'badvpn.'|wc -l)
