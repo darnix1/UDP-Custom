@@ -1,6 +1,30 @@
 #!/bin/bash
 
+# varibles
+export _hora=$(printf '%(%H:%M:%S)T') 
+export _fecha=$(printf '%(%D)T')
+
+export numero='^[0-9]+$'
+export texto='^[A-Za-z]+$'
+export txt_num='^[A-Za-z0-9]+$'
+
 #Colores Instalador
+msg() {
+    BLANCO='\033[1;37m' && ROJO='\e[1;31m' && VERDE='\e[32m' && AMARELO='\e[33m'
+    AZUL='\e[34m' && MAGENTA='\e[35m' && MAG='\033[1;36m' && NEGRITA='\e[1m' && SINCOLOR='\e[0m'
+   GRIS='\033[90m'
+    case $1 in
+    -ne) cor="${ROJO}${NEGRITA}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
+    -ama) cor="${AMARELO}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+    -verm) cor="${AMARELO}${NEGRITA}[!] ${ROJO}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+    -azu) cor="${MAG}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+    -verd) cor="${VERDE}${NEGRITA}" && echo -e "${cor}${2}${SINCOLOR}" ;;
+    -bra) cor="${ROJO}" && echo -ne "${cor}${2}${SINCOLOR}" ;;
+    "-bar2" | "-bar") cor="${ROJO}════════════════════════════════════════════════════" && echo -e "${SINCOLOR}${cor}${SINCOLOR}" ;;
+    "-barg" | "-barng") cor="${GRIS}════════════════════════════════════════════════════" && echo -e "${SINCOLOR}${cor}${SINCOLOR}" ;;
+    esac
+}
+
 msgi() {
     BLANCO='\033[1;37m' && ROJO='\e[1;31m' && VERDE='\e[32m' && AMARELO='\e[33m'
     AZUL='\e[34m' && MAGENTA='\e[35m' && MAG='\033[1;36m' && NEGRITA='\e[1m' && SINCOLOR='\e[0m'
@@ -105,6 +129,8 @@ menu_func(){
   done
  }
 
+#Título
+
 title(){
     clear
     msg -bar
@@ -116,6 +142,47 @@ title(){
     msg -bar
  }
 
+# finalizacion de tareas
+ enter(){
+  msg -bar
+  text="►► ${a_enter:-Presione enter para continuar} ◄◄"
+  if [[ -z $1 ]]; then
+    print_center -ama "$text"
+  else
+    print_center "$1" "$text"
+  fi
+  read
+ }
+
+# opcion, regresar volver/atras
+back(){
+    msg -bar
+    echo -ne "$(msg -verd " [0]") $(msg -verm2 ">") " && msg -bra "\033[1;41m${a_back:-VOLVER}"
+    msg -bar
+ }
+
+in_opcion(){
+  unset opcion
+  if [[ -z $2 ]]; then
+      msg -nazu " $1: " >&2
+  else
+      msg $1 " $2: " >&2
+  fi
+  read opcion
+  echo "$opcion"
+}
+
+in_opcion_down(){
+  dat=$1
+  length=${#dat}
+  cal=$(( 22 - $length / 2 ))
+  line=''
+  for (( i = 0; i < $cal; i++ )); do
+    line+='╼'
+  done
+  echo -e " $(msg -verm3 "╭$line╼[")$(msg -azu "$dat")$(msg -verm3 "]")"
+  echo -ne " $(msg -verm3 "╰╼")\033[37;1m> " && read opcion
+}
 
 selection_fun() {
   local selection
@@ -128,3 +195,19 @@ selection_fun() {
     exit 1
   fi
 }
+del(){
+  for (( i = 0; i < $1; i++ )); do
+    tput cuu1 && tput dl1
+  done
+}
+export -f msgi
+export -f msg
+export -f selection_fun
+export -f menu_func
+export -f print_center
+export -f title
+export -f back
+export -f enter
+export -f in_opcion
+export -f in_opcion_down
+export -f del
