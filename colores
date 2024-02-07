@@ -63,7 +63,7 @@ barra_intall() {
     sleep 0.5s
 }
 # ------- BARRA CENTRADORA
-txt_center(){
+print_center(){
   if [[ -z $2 ]]; then
     text="$1"
   else
