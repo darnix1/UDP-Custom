@@ -302,6 +302,9 @@ add_port(){
 
 menu_badvpn(){
          clear&clear
+               msg -bar
+               msg -tit
+               msg -bar
 	 print_center echo -e "\e[1;93m    INSTALADOR BADVPN-UDPGW | SCRIPT LATAM"
 	#_services=$(systemctl --all|grep badvpn|awk '{print $1}'|wc -l)
 	_services=$(ls /etc/systemd/system |grep 'badvpn.'|wc -l)
@@ -313,21 +316,25 @@ menu_badvpn(){
                 msg -bar
 		_num=3
 		if [[ $(systemctl list-units --all --state=active|grep badvpn|awk '{print $1}'|wc -l) -gt 0 ]]; then
-                       echo -e "\e[1;93m  [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m PARAR PUERTOS BADVPN-UDPGW \033[0;31m] "
+                       echo -e "\e[1;93m  [\e[1;32m$_num\e[1;93m]\033[1;31m > \e[1;97m PARAR PUERTOS BADVPN-UDPGW \033[0;31m] "
 			op1=$_num; let _num++
 		fi
 		msg -bar
 		print_center -ama 'OPCIONES DE PUERTOS'
-		msg -bar3
-		echo " $(msg -verd "[$_num]") $(msg -verm2 '>') $(msg -azu 'AGREGAR PUERTO BADVPN-UDPGW')"
+		msg -bar
+                echo -ne " \e[1;93m [\e[1;32m$_num\e[1;93m]\033[1;31m > \e[1;97m AGREGAR PUERTO BADVPN-UDPGW\e[97m \n"
 		op2=$_num
 		if [[ $_services -gt 1 ]]; then
 			let _num++
-			echo " $(msg -verd "[$_num]") $(msg -verm2 '>') $(msg -azu 'QUITAR UN PUERTO BADVPN-UDPGW')"
+		        echo -ne " \e[1;93m [\e[1;32m$_num\e[1;93m]\033[1;31m > \e[1;97m QUITAR UN PUERTO BADVPN-UDPGW\e[97m \n"
 			op3=$_num
 		fi
 	else
-		echo " $(msg -verd '[1]') $(msg -verm2 '>') $(msg -verd 'INSTALAR BADVPN-UDPGW')"
+               clear && clear
+               msg -bar
+               msg -tit
+               msg -bar
+                echo -ne " \e[1;93m [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;97m INSTALAR BADVPN-UDPGW\e[97m \n"
 		_num=1
 	fi
 	back
