@@ -1,409 +1,348 @@
 #!/bin/bash
-#By @ChumoGH|Plus}
 
+module="$(pwd)/module"
+rm -rf ${module}
+wget -O ${module} "https://raw.githubusercontent.com/rudi9999/Herramientas/main/module/module" &>/dev/null
+[[ ! -e ${module} ]] && exit
+chmod +x ${module} &>/dev/null
+source ${module}
 
-[[ -e /file ]] && _double=$(cat < /file) ||  {
-_double=$(curl -sSL "https://raw.githubusercontent.com/DanssBot/DanBot/main/control")
-echo -e "$(echo -e "$_double" | grep ${IiP})" > /file
-}
-[[ -z ${_check2} ]] && {
-echo -e " BINARY NO FOUND"
-exit
-}
+service_badvpn(){
 
-install_fim () {
-fecha=`date +"%d-%m-%y"`;
-[[ ! -d /etc/ADMcgh ]] && mkdir /etc/ADMcgh
-unset name
-[[ -d /bin/ejecutar ]] && rm -rf /bin/ejecutar
-[[ -e /etc/adm-lite/gerar.sh ]] && rm -f /etc/adm-lite/gerar.sh
-mkdir /bin/ejecutar
-[[ -e /bin/ejecutar/menu_credito ]] && echo "" || echo "$(cat /etc/adm-lite/menu_credito|head -1)" > /bin/ejecutar/menu_credito && chmod +x /bin/ejecutar/menu_credito
-wget -q -O /bin/toolmaster https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Complementos/toolmaster 
-chmod +x /bin/toolmaster
-echo 'source <(curl -sSL https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Complementos/free-men.sh)' > /bin/ejecutar/echo-ram.sh
-echo 'wget -q -O /bin/ejecutar/v-new.log https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/version/v-new.log' >> /bin/ejecutar/echo-ram.sh && bash /bin/ejecutar/echo-ram.sh
-echo '#!/bin/bash
-' > /bin/autoboot
-chmod +x /bin/autoboot
-crontab -l > /root/cron &> /dev/null 
-echo "@reboot /bin/autoboot" >> /root/cron
-crontab /root/cron &>/dev/null
-rm -f /root/cron
-echo "* * * * * root bash  /bin/autoboot" >> /etc/crontab
-service cron restart >/dev/null 2>&1
-if cat /etc/bash.bashrc | grep ADMcgh; then
-sed -i "/ADMcgh/d" /etc/bash.bashrc
-echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games/
-[[ -z $(locale | grep "LANG=" | cut -d "=" -f2) ]] && export LANG=en_US.UTF-8 
-DATE=$(date +"%d-%m-%y")
-TIME=$(date +"%T") 
-figlet -f slant "ChumoGH" | lolcat 
-echo -e "" 
-killall menu &> /dev/null
-/bin/autoboot &> /dev/null
-bash /bin/ejecutar/echo-ram.sh               
-echo -e " VPS SE INSTALO EL : " $(cat < /bin/ejecutar/fecha) 
-echo -e " NOMBRE DEL SERVIDOR : $HOSTNAME" 
-echo -e " TIEMPO EN LINEA : $(uptime -p)" 
-echo -e " MEMORIA RAM LIBRE : $(cat < /bin/ejecutar/raml)" 
-echo -e " Fecha/Hora del Servidor : $DATE" 
-echo -e " Hora del Servidor : $TIME" 
-echo -e "" 
-echo -e "\tRESELLER: \e[1;31m$(cat /etc/adm-lite/menu_credito|head -1)"
-echo -e "\033[1;39m" 
-echo -e " Bienvenido!"
-echo -e "\033[1;43m Teclee cgh , menu o adm para ver el MENU\033[0m." 
-echo -e "" 
-' > /etc/ADMcgh/bashrc
-echo "STARTUP AGREGADO EXITOSAMENTE"
-echo -e 'source /etc/ADMcgh/bashrc' >> /etc/bash.bashrc
-else
-#echo ""
-#echo -e "\t\033[92mRESELLER : "
-#echo -e "\t\e[1;33mVERSION: \e[1;31m$(cat /etc/)"
-#echo -e "\t\033[1;100mPARA MOSTAR PANEL BASH ESCRIBA:\e[0m\e[1;41m sudo menu \e[0m"
-sed -i "/ADMcgh/d" /etc/bash.bashrc
-echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games/
-[[ -z $(locale | grep "LANG=" | cut -d "=" -f2) ]] && export LANG=en_US.UTF-8 
-DATE=$(date +"%d-%m-%y")
-TIME=$(date +"%T") 
-figlet -f slant "ChumoGH" | lolcat 
-echo -e "" 
-killall menu &> /dev/null
-/bin/autoboot &> /dev/null
-bash /bin/ejecutar/echo-ram.sh
-echo -e " VPS SE INSTALO EL : " $(cat < /bin/ejecutar/fecha) 
-echo -e " NOMBRE DEL SERVIDOR : $HOSTNAME" 
-echo -e " TIEMPO EN LINEA : $(uptime -p)" 
-echo -e " MEMORIA RAM LIBRE : $(cat < /bin/ejecutar/raml)" 
-echo -e " Fecha/Hora del Servidor : $DATE" 
-echo -e " Hora del Servidor : $TIME" 
-echo -e "" 
-echo -e "\tRESELLER: \e[1;31m$(cat /etc/adm-lite/menu_credito|head -1)"
-echo -e "\033[1;39m" 
-echo -e " Bienvenido!"
-echo -e "\033[1;43m Teclee cgh , menu o adm para ver el MENU\033[0m." 
-echo -e "" 
-' > /etc/ADMcgh/bashrc
-#echo -e 'source /etc/ADMcgh/bashrc' >> /etc/bash.bashrc
-echo " STARTUP AGREGADO EXITOSAMENTE"
-echo -e 'source /etc/ADMcgh/bashrc' >> /etc/bash.bashrc
-fi
-[[ -e $HOME/lista ]] && rm $HOME/lista
-echo -e "0" > /bin/ejecutar/uskill
-[[ -e /bin/ejecutar/menu_credito ]] && echo "" || echo "$(cat /etc/adm-lite/menu_credito|head -1)" > /bin/ejecutar/menu_credito && chmod +x /bin/ejecutar/menu_credito
-echo "Verified【 $(cat /bin/ejecutar/menu_credito)" > /bin/ejecutar/exito
-echo -e "${cor[5]}NOMBRE AGREGADO EXITOSAMENTE"
-echo -e " \033[0m"
-echo "$fecha" > /bin/ejecutar/fecha
-clear
-msg -bar3
-echo -e "\033[0;33m
-       Nombre de tu servidor.... OPCIONAL
-       RECOMENDABLE 10 Caracteres Maximo!"
-msg -bar3
-echo -ne "\033[1;97m NOMBRE DEL SERVIDOR : \033[0m" && read name
-[[ -z "${name}" ]] || {
-echo $name > /etc/adm-lite/name
-chmod +x /etc/adm-lite/name
-echo $name > /root/name 
-figlet $name
-}
-clear
-msg -bar3
-echo -e "AÑADE TU DOMINIO ( OPCIONAL ) "
-msg -bar3
-echo -e "\033[0;33m
-       NO posees un Subdominio enlazado a
-       este IP Droplet, PRESIONA ENTER 
-	   CASO CONTRARIO, Colocalo AQUI!!"
-msg -bar3
-echo -ne "\033[1;97m Domain : \033[0m" && read dom
-[[ -z "${dom}" ]] && { 
-echo -e " OMITIENDO DOMAIN -> IP !!" | pv -qL 30 | lolcat
-rm -f /dominio.txt
-} || {
-echo ${dom} > /dominio.txt
-chmod +x /dominio.txt
-echo -e " DOMINIO ${dom} REGISTRADO" | pv -qL 30 | lolcat
-sleep 2s
-}
-clear
-msg -bar3
-echo -e "\033[1;32mCAMBIAR ZONA HORARIA EN ( * \033[1;33mMenu 7 \033[1;32m*\033[1;33m opcion 14 \033[1;32m)"
-msg -bar3
-echo -e "${cor[3]} ChumoGH-ADM Configurado Exitosamente!"
-msg -bar3
-echo -e "${cor[3]} |∆| ${cor[2]} Ahora puedes acceder al PANNEL"
-msg -bar3
-echo -e " \033[1;41m Use los Comandos: cgh, menu, adm"
-msg -bar3
-echo -e "${cor[2]} Para acceder al MENU, DISFRUTA LA ESTANCIA!"
-echo -e "${cor[2]} Reinicie para completar Instalacion - OPCIONAL - "
-echo -e " RECOMENDABLE ACCEDER COMO ROOT y/o ADMINISTRADOR\033[0m"
-echo -e " Fecha de Instalacion : $(cat < /bin/ejecutar/fecha)" 
-msg -bar3 
-echo -e "${cor[1]}       YA TIENES ACCESO ROOT A TU VPS?\n ESTO ES ESPECIAL PARA [AWS,GOOGLE,AZURE,ORACLE,ETC]\n SI ENTRASTE CON UN USUARIO DIFERENTE AL ROOT\n PRESIONA S, CASO CONTRARIO, IGNORA EL MENSAJE"
-msg -bar
-echo -e "\033[1;42m APLICAR FIX de PASSWD para LIBERAR ACCESO "
-echo -e "SI YA ERES ROOT, SE CAMBIARA TU CLAVE \033[0;33m "
-echo -ne "\033[0;32m"
-read -t 20 -p " Responde [ s | n ] : " -e -i "n" x
-[[ $x = @(s|S|y|Y) ]] && source <(curl -sSL  https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/Complementos/root-pass.sh) || echo -e "\033[1;32mAplica FIX en ( * \033[1;33m Menu 7\033[1;32m *\033[1;33m opcion 9 \033[1;32m*\033[1;32m)"
-[[ -e /root/name ]] && figlet "$(less /root/name)" | lolcat || tittle
-return
+	echo -e "[Unit]
+Description=BadVPN UDPGW Service
+After=network.target\n
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+ExecStart=/usr/bin/badvpn-udpgw --listen-addr 127.0.0.1:$1 --max-clients 1000 --max-connections-for-client 10
+Restart=always
+RestartSec=3s\n
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/badvpn.$1.service
+
+	systemctl enable badvpn.$1 &>/dev/null
+    systemctl start badvpn.$1 &>/dev/null
+
+    if [[ $(systemctl is-active badvpn.$1) = 'active' ]]; then
+    	echo 'active'
+    else
+    	echo 'inactive'
+    fi
 }
 
-install_ini () {
-#_TIME_START="$(date +%s)"
-_error=0
-msg -bar3
-declare -A cpu_model=$(uname -m)
-[[ $cpu_model = "aarch64" ]] && cpu_model=" ARM64 Pro" 
-echo -e "\033[97m"
-echo -e "\033[41m     -- INSTALAREMOS LO NECESARIO PARA EL ADM --"
-echo -e "     \033[44mSU IP REGISTRADA ES : $(wget -qO- ifconfig.me)\033[41m"
-echo -e "   \033[41m--  Arch : $(lscpu | grep "Vendor ID" | awk '{print $3}') SISTEMA  $(lsb_release -si) $(lsb_release -sr) --"
-echo -e "\033[100m   ATENCION A INSTALACION POR SI DEVUELVE UN ERROR "
-echo -e "\033[97m"
-msg -bar3
-locale-gen en_US.UTF-8 > /dev/null 2>&1
-update-locale LANG=en_US.UTF-8 > /dev/null 2>&1 && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # Instalando Paqueteria UTF............ $ESTATUS "
-#bsdmainutils
-[[ $(dpkg --get-selections|grep -w "bsdmainutils"|head -1) ]] || apt-get install bsdmainutils -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "bsdmainutils"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "bsdmainutils"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install bsdmainutils......... $ESTATUS "
-#screen
-[[ $(dpkg --get-selections|grep -w "screen"|head -1) ]] || apt-get install screen -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "screen"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "screen"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install screen............... $ESTATUS "
-#python
-[[ $(dpkg --get-selections|grep -w "python"|head -1) ]] || apt-get install python -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "python"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "python"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install python............... $ESTATUS "
-#python3
-[[ $(dpkg --get-selections|grep -w "python3"|head -1) ]] || apt-get install python3 -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "python3"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "python3"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install python3.............. $ESTATUS "
-#python3-pip
-[[ $(dpkg --get-selections|grep -w "python3-pip"|head -1) ]] || apt-get install python3-pip -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "python3-pip"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "python3-pip"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install python3-pip.......... $ESTATUS "
-#npm
-[[ $(dpkg --get-selections|grep -w "npm"|head -1) ]] || apt-get install npm -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "npm"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "npm"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install npm.................. $ESTATUS "
-#nodejs
-[[ $(dpkg --get-selections|grep -w "nodejs"|head -1) ]] || apt-get install nodejs -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "nodejs"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "nodejs"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install nodejs............... $ESTATUS "
-#lsof
-[[ $(dpkg --get-selections|grep -w "lsof"|head -1) ]] || apt-get install lsof -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "lsof"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "lsof"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install lsof................. $ESTATUS "
-#snapd
-#ESTATUS=`echo -e "\e[3;32mDELETED .\e[0m"` &>/dev/null
-#[[ $(dpkg --get-selections|grep -w "snapd"|head -1) ]] && apt purge snapd -y &>/dev/null
-#echo -e "\033[97m  # apt-get purge snapd ................. $ESTATUS "
-#apache2
-[[ $(dpkg --get-selections|grep -w "apache2"|head -1) ]] || {
- apt-get install apache2 -y &>/dev/null
- sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf
- service apache2 restart > /dev/null 2>&1 &
- }
-[[ $(dpkg --get-selections|grep -w "apache2"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "apache2"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install apache2.............. $ESTATUS "
-#nmap
-[[ $(dpkg --get-selections|grep -w "nmap"|head -1) ]] || apt-get install nmap -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "nmap"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "nmap"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install nmap................. $ESTATUS "
-#socat
-[[ $(dpkg --get-selections|grep -w "socat"|head -1) ]] || apt-get install socat -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "socat"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "socat"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install socat................ $ESTATUS "
-#bc
-[[ $(dpkg --get-selections|grep -w "bc"|head -1) ]] || apt-get install bc -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "bc"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "bc"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install bc................... $ESTATUS "
-#netcat
-[[ $(dpkg --get-selections|grep -w "netcat"|head -1) ]] || apt-get install netcat -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "netcat"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "netcat"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install netcat............... $ESTATUS "
-#net-tools
-[[ $(dpkg --get-selections|grep -w "net-tools"|head -1) ]] || apt-get net-tools -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "net-tools"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "net-tools"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install net-tools............ $ESTATUS "
-#cowsay
-[[ $(dpkg --get-selections|grep -w "cowsay"|head -1) ]] || apt-get install cowsay -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "cowsay"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "cowsay"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install cowsay............... $ESTATUS "
-#nmap
-[[ $(dpkg --get-selections|grep -w "nmap"|head -1) ]] || apt-get install nmap -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "nmap"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "nmap"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install nmap................. $ESTATUS "
-#jq
-[[ $(dpkg --get-selections|grep -w "jq"|head -1) ]] || apt-get install jq -y &>/dev/null
-[[ $(dpkg --get-selections|grep -w "jq"|head -1) ]] || {
-ESTATUS=`echo -e "\033[91mFALLO DE INSTALACION"` &>/dev/null
-let _error++ 
-}
-[[ $(dpkg --get-selections|grep -w "jq"|head -1) ]] && ESTATUS=`echo -e "\e[3;32mINSTALADO\e[0m"` &>/dev/null
-echo -e "\033[97m  # apt-get install jq................... $ESTATUS "
-msg -bar3
-echo -e "\033[92m La instalacion de paquetes necesarios a finalizado"
-[[ ${_error} > 0 ]] && {
-echo -e ""
-echo -e "     SE ENCONTRARON ${_error} ERRORES "
-echo -e "  PRUEBA COPIAR LOS NOMBRES DE LOS PAQUETES "
-echo -e "      E INSTALARLOS DE FORMA MANUAL "
-echo -e "      apt install nombre-paquete -y"
-echo -e ""
-read -p " PRESIONA ENTER PARA CONTINUAR"
-}
-msg -bar3
-}
+IN_PORT(){
+	while [[ -z $_PORT ]]; do
+		read -rp " $(msg -ama "INGRESE UN PUERTO [DEFAULT 7300]:") " -e -i  7300 _PORT
+		del 1
+		if [[ -z $_PORT ]]; then
+			_PORT='7300'
+		elif [[ ! $_PORT =~ $numero ]]; then
+			print_center -verm2 'ingresa solo numeros'
+			sleep 2
+			unset _PORT
+			del 1
+			continue
+		fi
 
-valid_fun () {
-_check2BOT="$(echo -e "$_double" | grep ${IiP} | awk '{print $5}')"
-_check2RES="$(echo -e "$_double" | grep ${IiP} | awk '{print $7}')"
-msg -bar3
-echo -e ""
-echo -e "${cor[2]}\n\033[1;37m  SCRIPT DESARROLLADO por: @ChumoGH - Henry Chumo" | pv -qL 12
-echo -e ""
-msg -bar3
-echo -e "  ${cor[5]} ADM-LITE Mod ChumoGH-ADM REFACTORIZADO 2023" 
-msg -bar3
-echo -e "${cor[3]}     VERIFICANDO RAIZ DE DATOS DE LA LLAVE !!! "
-msg -bar3
-[[ -e ${SCPdir}/menu_credito ]] && ress="$(cat ${SCPdir}/menu_credito|head -1) " || ress="NULL ( no found ) "
-echo -ne "${cor[2]}\n\033[1;37m  RESELLER  : " | pv -qL 50 && sleep 1s && echo -e "\033[0;35m$ress" | pv -qL 50
-echo
-msg -bar3
-echo -ne "${cor[2]}\033[1;37m BOT -> " && sleep 1s && echo -ne "\033[0;35m$_check2BOT" | pv -qL 30 | lolcat 
-echo -ne "${cor[2]}\033[1;37m  ADMIN : " && sleep 1s && echo -ne "\033[0;35m$_check2RES" | pv -qL 30 | lolcat
-echo ""
+		TTOTAL=($_PORT)
+  		for((i=0; i<${#TTOTAL[@]}; i++)); do
+  			[[ $(mportas|grep "${TTOTAL[$i]}") = "" ]] && {
+  				echo " $(msg -azu 'Puerto Elegido:') $(msg -verd "${TTOTAL[$i]} OK")"
+  				PORT="$PORT ${TTOTAL[$i]}"
+  			} || {
+  				echo " $(msg -azu 'Puerto Elegido:') $(msg -verm2 "${TTOTAL[$i]} FAIL")"
+  			}
+  		done
 
-[[ ! -e /bin/autoboot ]] && {
-echo '#!/bin/bash
-clear
-#INICIO AUTOMATICO' >/bin/autoboot
-	chmod +x /bin/autoboot
-} || {
-	for proc in $(ps x | grep 'dmS' | grep -v 'grep' | awk {'print $1'}); do
-		screen -r -S "$proc" -X quit
+  		[[ -z $PORT ]] && {
+  			msg -bar
+  			print_center -verm2 'Ningun Puerto Valida Fue Elegido'
+  			sleep 2
+  			del $((${#TTOTAL[@]} + 2))
+  			unset _PORT
+  			unset PORT
+  			continue
+  		}
 	done
-	screen -wipe >/dev/null
-echo '#!/bin/bash
-clear
-#INICIO AUTOMATICO' >/bin/autoboot
-	chmod +x /bin/autoboot
-}
-crontab -r >/dev/null 2>&1
-(
-	crontab -l 2>/dev/null
-	echo "@reboot /bin/autoboot"
-	echo "* * * * * /bin/autoboot"
-) | crontab -
-echo ""
-#
-echo '#!/bin/bash
-# Creado por @ChumoGH
-SCPdir="/etc/adm-lite"
-cd ${SCPdir} && ./menu' > /bin/menu && chmod +x /bin/menu
-#
-echo '#!/bin/bash
-# Creado por @ChumoGH
-SCPdir="/etc/adm-lite"
-[[ $1 = "-fix" ]] && {
-rm -f /etc/folteto
-rm -f /var/log/auth.log*
-echo '' > /var/log/auth.log
-cp /bin/adm /bin/menu
-}
-cd ${SCPdir} && ./menu' > /bin/cgh && chmod +x /bin/cgh
-#
-echo '#!/bin/bash
-# Creado por @ChumoGH
-SCPdir="/etc/adm-lite"
-cd ${SCPdir} && ./menu' > /bin/adm && chmod +x /bin/adm
-#
-service cron restart >/dev/null 2>&1
-service ssh restart >/dev/null 2>&1
-#[[ -e ${SCPdir}/cabecalho ]] && bash ${SCPdir}/cabecalho --instalar
-install_ini
-cor[2]="\033[1;37m"
-wget -q -O /var/www/html/index.html https://raw.githubusercontent.com/emirjorge/Script-Z/master/CHUMO/html/index.html
-install_fim
-#[[ -e ${SCPdir}/cabecalho ]] && bash ${SCPdir}/cabecalho --instalar
-return
+	unset _PORT
 }
 
-[[ $1 = '--finish' ]] && valid_fun || echo -e "HYSTERIA BINARY NO FOUND"
+install(){
+	clr(){
+		cd $HOME
+        rm -rf ${ADM_src}/badvpn-master*
+	}
+	if [[ $(type -p badvpn-udpgw) ]]; then
+		_services=$(systemctl list-unit-files|grep badvpn|awk '{print $1}')
 
-#FIN
+		print_center -ama 'REMOVIENDO BADVPN'
+		while [[ ! -z $_services ]] && read line; do
+			systemctl stop $line &>/dev/null
+			systemctl disable $line &>/dev/null
+		done <<< $(echo "$_services")
+		rm -rf /etc/systemd/system/badvpn*
+		rm -rf $(type -p badvpn-udpgw)
+		del 1
+		print_center -verd 'BADVPN REMOVIDO!!!'
+		enter
+	else
+		title 'instalador badvpn-udpgw by @Rufu99'
+		IN_PORT
+		msg -bar
+		print_center -ama "INSTALADO BADVPN"
+		msg -bar
+		rm -rf ${ADM_src}/badvpn-master*
+		msg -nazu " INSTALADO DEPENDECIAS... "
+		if apt install cmake -y &>/dev/null; then
+			msg -verd "[OK]"
+		else
+			del 1
+            print_center -verm2 'FALLA AL INSTALAR DEPENDENCIAS "cmake"\nINTENTE INSTALAR DE FORMA MANUAL\n\napt install cmake\n\nE INTENTE NUEVAMENTE'
+            enter
+            return
+        fi
+
+        cd ${ADM_src}
+        msg -nazu " DESCARGANDO BADVPN...... "
+        if wget https://github.com/rudi9999/ADMRufu/raw/main/Utils/badvpn/badvpn-master.zip &>/dev/null; then
+            msg -verd "[OK]"
+        else
+        	clr
+        	del 1
+        	print_center -verm2 'FALLA AL DESCARGAR BADVPN'
+            enter
+            return
+        fi
+
+        msg -nazu " DESCOMPRIMIENDO......... "
+        if unzip badvpn-master.zip &>/dev/null; then
+            msg -verd "[OK]"
+        else
+        	clr
+        	del 1
+            print_center -verm2 'FALLA AL DESCOMPRIMIR PAQUETE ZIP'
+            enter
+            return
+        fi
+
+        msg -nazu " COMPILANDO BADVPN....... "
+
+        cd badvpn-master
+        mkdir build
+        cd build
+
+        if cmake .. -DCMAKE_INSTALL_PREFIX="/" -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 &>/dev/null ; then
+            msg -verd "[OK]"
+        else
+        	clr
+        	del 1
+            print_center -verm2 'FALLA DE COMPILACION'
+            enter
+            return 1
+        fi
+
+        msg -nazu ' INSTALANDO.............. '
+        if make install &>/dev/null; then
+        	msg -verd "[OK]"
+        else
+        	clr
+        	del 1
+        	print_center -verm2 'FALLA DE INSTALACION'
+        	enter
+        	return
+        fi
+        clr
+
+        msg -nazu ' INICIANDO............... '
+        if [[ $(service_badvpn $PORT) = 'active' ]]; then
+        	msg -verd "[OK]"
+        else
+        	del 1
+        	print_center -verm2 'FALLA AL INICIAR SERVICIO BADVPN'
+        fi
+        enter
+	fi
+}
+
+all_service(){
+	n=1
+	while read line; do
+		serv_por[$n]=$line
+		viw_port=$(echo "$line"|awk -F '.' '{print $2}')
+		if [[ $(systemctl is-active $line) = 'active' ]]; then
+			sta="\e[1m\e[32mON"
+		else
+			sta="\e[1m\e[31mOFF"
+		fi
+		echo -e " $(msg -verd "[$n]") $(msg -verm2 '>') $(msg -azu "$viw_port") $sta"
+		let n++
+	done <<< $(echo "$_services")
+
+}
+
+restart(){
+	print_center -ama 'BUSCANDO SERVICIOS...'
+	_services=$(systemctl list-unit-files|grep badvpn|awk '{print $1}')
+	#_services=$(systemctl --all|grep badvpn|awk '{print $1}')
+	if [[ $(echo "$_services"|wc -l) = 1 ]]; then
+		if [[ $(systemctl is-enabled $_services) = 'disabled' ]]; then
+			systemctl enable $_services &>/dev/null
+		fi
+		systemctl restart $_services &>/dev/null
+		del 1
+		print_center -verd 'BADVPN REINICIADO!!!'
+		enter
+		return
+	fi
+	title 'REINICIO DE SERVICIOS'
+	all_service
+	echo " $(msg -verd "[$n]") $(msg -verm2 '>') $(msg -azu 'REINICIAR TODOS')"
+	back
+	_opcion=$(selection_fun $n)
+	[[ $_opcion = 0 ]] && return
+	print_center -ama 'REINICIANDO BADVPN'
+	while [[ $_opcion = $n ]] && read line; do
+		if [[ $(systemctl is-enabled $line) = 'enabled' ]]; then
+			systemctl enable $line &>/dev/null
+		fi
+		systemctl restart $line &>/dev/null
+	done <<< $(echo "${serv_por[@]}")
+	if [[ ! $_opcion = $n ]]; then
+		if [[ $(systemctl is-enabled ${serv_por[$_opcion]}) = 'disabled' ]]; then
+			systemctl enable ${serv_por[$_opcion]} &>/dev/null
+		fi
+		systemctl restart ${serv_por[$_opcion]} &>/dev/null
+	fi
+	del 1
+	print_center -verd 'BADVPN REINICIADO'
+	enter
+}
+
+stop(){
+	#_services=$(systemctl list-unit-files|grep badvpn|awk '{print $1}')
+	#_services=$(systemctl list-units --type=service|grep badvpn|awk '{print $1}')
+	_services=$(systemctl list-units --all --state=active|grep badvpn|awk '{print $1}')
+	if [[ $(echo "$_services"|wc -l) = 1 ]]; then
+		print_center -ama 'PARANDO BADVPN'
+		if [[ $(systemctl is-enabled $_services) = 'enabled' ]]; then
+			systemctl disable $_services &>/dev/null
+		fi
+		systemctl stop $_services &>/dev/null
+		del 1
+		print_center -verd 'BADVPN PARANDO!!!'
+		enter
+		return
+	fi
+
+	title 'DETENER SERVICIOS BADVPN'
+	all_service
+	echo " $(msg -verd "[$n]") $(msg -verm2 '>') $(msg -azu 'PARAR TODOS')"
+	back
+	_opcion=$(selection_fun $n)
+	[[ $_opcion = 0 ]] && return
+
+	print_center -ama 'PARANDO SERVICIO BADVPN'
+
+	while [[ $_opcion = $n ]] && read line; do
+		if [[ $(systemctl is-enabled $line) = 'enabled' ]]; then
+			systemctl disable $line &>/dev/null
+		fi
+		systemctl stop $line &>/dev/null
+	done <<< $(echo "${serv_por[@]}")
+
+	if [[ ! $_opcion = $n ]]; then
+		if [[ $(systemctl is-enabled ${serv_por[$_opcion]}) = 'enabled' ]]; then
+			systemctl disable ${serv_por[$_opcion]} &>/dev/null
+		fi
+		systemctl stop ${serv_por[$_opcion]} &>/dev/null
+	fi
+
+	del 1
+	print_center -verd 'SERVICIO BADVPN PARADO'
+	enter
+}
+
+del_port(){
+	#_services=$(systemctl list-unit-files|grep badvpn|awk '{print $1}')
+	_services=$(ls /etc/systemd/system |grep 'badvpn.')
+	while [[ $(echo "$_services"|wc -l) -gt 1 ]]; do
+		title -ama 'QUITAR PUERTOS BADVPN'
+		all_service
+		back
+		_opcion=$(selection_fun $n)
+		[[ $_opcion = 0 ]] && break
+		viw_port=$(echo "${serv_por[$_opcion]}"|awk -F '.' '{print $2}')
+		print_center -ama "REMOVIENDO BADVPN $viw_port"
+		if [[ $(systemctl is-enabled ${serv_por[$_opcion]}) = 'enabled' ]]; then
+			systemctl disable ${serv_por[$_opcion]} &>/dev/null
+		fi
+		systemctl stop ${serv_por[$_opcion]} &>/dev/null
+		rm -rf /etc/systemd/system/${serv_por[$_opcion]}
+		_services=$(ls /etc/systemd/system |grep 'badvpn.')
+		del 1
+		print_center -verd "BADVPN $viw_port REMOVIENDO"
+		enter
+	done
+}
+
+add_port(){
+	title 'AGREGAR NUEVOS PUERTOS'
+	IN_PORT
+	msg -bar
+	if [[ $(service_badvpn $PORT) = 'active' ]]; then
+        print_center -verd 'PUERTO BADVPN AGREGADO'
+    else
+        print_center -verm2 'FALLA AL AGREGAR PUERTO BADVPN'
+    fi
+    unset PORT
+    enter
+}
+
+menu_badvpn(){
+	title -ama 'BADVPN-UDPGW BY @Rufu99'
+	#_services=$(systemctl --all|grep badvpn|awk '{print $1}'|wc -l)
+	_services=$(ls /etc/systemd/system |grep 'badvpn.'|wc -l)
+
+	if [[ $(type -p badvpn-udpgw) ]]; then
+		unset op1 op2 op3
+		echo " $(msg -verd '[1]') $(msg -verm2 '>') $(msg -verm2 'DESINSTALAR BADVPN-UDPGW')"
+		msg -bar
+		print_center -ama 'OPCIONES DE INICIO'
+		msg -bar3
+		echo " $(msg -verd '[2]') $(msg -verm2 '>') $(msg -verd 'INICIAR/REINICIAR BADVPN-UDPGW')"
+		_num=3
+		if [[ $(systemctl list-units --all --state=active|grep badvpn|awk '{print $1}'|wc -l) -gt 0 ]]; then
+			echo " $(msg -verd "[$_num]") $(msg -verm2 '>') $(msg -ama 'PARAR PUERTOS BADVPN-UDPGW')"
+			op1=$_num; let _num++
+		fi
+		msg -bar
+		print_center -ama 'OPCIONES DE PUERTOS'
+		msg -bar3
+		echo " $(msg -verd "[$_num]") $(msg -verm2 '>') $(msg -azu 'AGREGAR PUERTO BADVPN-UDPGW')"
+		op2=$_num
+		if [[ $_services -gt 1 ]]; then
+			let _num++
+			echo " $(msg -verd "[$_num]") $(msg -verm2 '>') $(msg -azu 'QUITAR UN PUERTO BADVPN-UDPGW')"
+			op3=$_num
+		fi
+	else
+		echo " $(msg -verd '[1]') $(msg -verm2 '>') $(msg -verd 'INSTALAR BADVPN-UDPGW')"
+		_num=1
+	fi
+	back
+	opcion=$(selection_fun $_num)
+	case $opcion in
+		1)install;;
+		2)restart;;
+		"$op1")stop;;
+		"$op2")add_port;;
+		"$op3")del_port;;
+		0)return 1;;
+	esac
+}
+
+while [[  $? -eq 0 ]]; do
+  menu_badvpn
+done
