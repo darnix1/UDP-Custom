@@ -346,6 +346,7 @@ menu_badvpn(){
 		"$op3")del_port;;
 		*)menu;;
 	esac
+exit 0
 }
 
 while [[  $? -eq 0 ]]; do
