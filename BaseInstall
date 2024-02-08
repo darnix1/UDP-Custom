@@ -319,7 +319,6 @@ menu_badvpn(){
                        echo -e "\e[1;93m  [\e[1;32m$_num\e[1;93m]\033[1;31m > \e[1;97m PARAR PUERTOS BADVPN-UDPGW \033[0;31m] "
 			op1=$_num; let _num++
 		fi
-		msg -bar
 		print_center -ama 'OPCIONES DE PUERTOS'
 		msg -bar
                 echo -ne " \e[1;93m [\e[1;32m$_num\e[1;93m]\033[1;31m > \e[1;97m AGREGAR PUERTO BADVPN-UDPGW\e[97m \n"
@@ -345,7 +344,7 @@ menu_badvpn(){
 		"$op1")stop;;
 		"$op2")add_port;;
 		"$op3")del_port;;
-		0)return 1;;
+		*)menu;;
 	esac
 }
 
