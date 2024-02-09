@@ -182,14 +182,13 @@ title(){
 # finalizacion de tareas
  enter(){
   msg -bar
-  text="<< ${a_enter:-Presione enter para continuar} >>"
   if [[ -z $1 ]]; then
-    print_center -ama "$text"
+    read -t 60 -n 1 -rsp $'\033[1;39m       << Presiona enter para Continuar >>\n'
   else
-    print_center "$1" "$text"
+    read -t 60 -n 1 -rsp $'\033[1;39m       << '"$1"$' >>\n'
   fi
-  read
- }
+}
+
 
 # opcion, regresar volver/atras
 back(){
