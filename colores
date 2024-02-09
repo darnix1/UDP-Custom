@@ -220,16 +220,23 @@ in_opcion_down(){
   echo -ne " $(msg -verm3 "╰╼")\033[37;1m> " && read opcion
 }
 
-selection_fun() {
-  local selection
-  local options="$(seq 0 $1 | paste -sd "," -)"
-  read -p $'\033[1;97m  └⊳ Seleccione una opción:\033[1;32m ' selection
-  if [[ $options =~ (^|[^\d])$selection($|[^\d]) ]]; then
-    echo $selection
+selection_fun(){
+  local selection="null"
+  local range
+  if [[ -z $2 ]]; then
+    opcion=$1
+    col="-nazu"
   else
-    echo "Selección no válida: $selection" >&2
-    exit 1
+    opcion=$2
+    col=$1
   fi
+  for((i=0; i<=$opcion; i++)); do range[$i]="$i "; done
+  while [[ ! $(echo ${range[*]}|grep -w "$selection") ]]; do
+    msg "$col" " ${a_selection_fun:-Seleccione una Opcion}: " >&2
+    read selection
+    tput cuu1 >&2 && tput dl1 >&2
+  done
+  echo $selection
 }
 del(){
   for (( i = 0; i < $1; i++ )); do
