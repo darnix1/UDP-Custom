@@ -233,7 +233,7 @@ stop(){
 		del 1
 		print_center -verd 'BADVPN PARANDO!!!'
 		enter
-		return
+		#return
 	fi
 
 	title 'DETENER SERVICIOS BADVPN'
@@ -354,9 +354,10 @@ menu_badvpn(){
 		"$op1")stop;;
 		"$op2")add_port;;
 		"$op3")del_port;;
+		0)return 1;;
 		*)menu;;
 	esac
-exit 0
+
 }
 
 while [[  $? -eq 0 ]]; do
