@@ -172,7 +172,6 @@ title(){
     clear
     msg -bar
     if [[ -z $2 ]]; then
-      msg -bar
       msg -tit
       msg -bar
       print_center -ama "$1"
