@@ -156,6 +156,9 @@ stop_ws () {
  }
 
 encab(){
+        msg -bar
+        msg -tit
+        msg -bar
 	title "SSH OVER WEBSOCKET CDN CLOUDFLARE"
  }
 
