@@ -157,7 +157,7 @@ stop_ws () {
 
 encab(){
         
-	title "SSH OVER WEBSOCKET CDN CLOUDFLARE"
+	title "SSH OVER WEBSOCKET CDN CLOUDFLARE byR"
  }
 
 encab
@@ -171,7 +171,7 @@ case ${selection} in
 	1) conf;;
 	2) stop_ws && read foo;;
 	3) stop_port;;
-	0)return 1;;
-        *)menu
+	0) return 1;;
+        *) menu
 	;;
 esac
