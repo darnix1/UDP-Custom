@@ -328,6 +328,11 @@ menu_badvpn(){
                msg -bar
                
 		fi
+               msg -bar
+               echo -e "    \e[97m\033[1;41m ENTER SIN RESPUESTA REGRESA A MENU ANTERIOR \033[0;97m"
+               msg -bar
+               echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > " && echo -e "\e[97m\033[1;41m VOLVER \033[0;37m"
+               msg -bar
 	else
                clear && clear
                msg -bar
