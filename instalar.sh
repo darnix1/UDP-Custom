@@ -172,4 +172,6 @@ case ${selection} in
 	2) stop_ws && read foo;;
 	3) stop_port;;
 	0)return 1;;
+        *)menu
+	;;
 esac
