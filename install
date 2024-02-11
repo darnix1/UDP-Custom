@@ -149,6 +149,13 @@ Install_key() {
     [[ $1 = "" ]] && fun_idi || {
       [[ ${#1} -gt 2 ]] && fun_idi || id="$1"
     }
+    [[ -e $HOME/lista-arq ]] && list_fix="$(cat < $HOME/lista-arq)" || list_fix=""
+    [[ "$list_fix" = "" ]] && {
+msg -bar 
+echo -e " ERROR (PORT 8888 TCP) ENTRE GENERADOR <--> VPS "
+echo -e "    NO EXISTE CONEXION ENTRE EL GENERADOR "
+echo -e "  - \e[3;32mGENERADOR O KEYGEN COLAPZADO\e[0m - "
+
     echo -e "\033[1;31m               ¡# ERROR INESPERADO #¡\n          ESTA KEY YA FUE USADA O EXPIRO "
     echo -e "\033[0;93m    -SI EL ERROR PERCISTE REVISAR PUERTO 81 TCP -"
     msgi -bar2
@@ -163,6 +170,7 @@ Install_key() {
     msgi -bar2
     msgi -bar2
     exit 1
+}
   }
   invalid_key() {
     msgi -bar2
