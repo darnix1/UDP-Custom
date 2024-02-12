@@ -27,7 +27,7 @@ display_menu() {
         1) activate_ws_epro ;;
         2) modify_ws_epro_port ;;
         3) deactivate_ws_epro ;;
-        0) exit ;;
+        0) menu ;;
         *) echo -e "Opcion Invalida." ;;
     esac
 
@@ -53,8 +53,8 @@ activate_ws_epro() {
     download_and_install "https://docs.google.com/uc?export=download&id=1h9QvOnXScplGTnfpbJ7KJDn4CDkwUKWa" "/usr/bin/ws-port"
 
     # Set port configurations
-    read -p " ✓ PORTA PARA PHYTON : " wsopenssh
-    read -p " ✓ PORTA LOCAL (ssh|ssl|openvpn): " openssh
+    read -p " ✓ AÑADE UN PUERTO PYTHON: " wsopenssh
+    read -p " ✓ PUERTO LOCAL (ssh|ssl|openvpn): " openssh
 
     WS_DIR="/usr/local/etc/ws-epro"
     [ -d "$WS_DIR" ] && rm -rf "$WS_DIR"
