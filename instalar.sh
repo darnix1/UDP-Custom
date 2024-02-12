@@ -21,8 +21,9 @@ display_menu() {
     msg -bar
     echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > " && echo -e "\e[97m\033[1;41m VOLVER \033[0;37m"
     msg -bar
-    echo -ne "\033[1;97m   └⊳ Seleccione una opcion [0-3]: \033[1;32m" && option
-    case $option in
+    echo -ne "\033[1;97mDigite solo el numero segun su respuesta:\e[32m "
+  read option
+      case $option in
         1) activate_ws_epro ;;
         2) modify_ws_epro_port ;;
         3) deactivate_ws_epro ;;
