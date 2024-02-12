@@ -95,7 +95,7 @@ download_and_install() {
     local download_url=$1
     local install_path=$2
 
-    wget -q --progress=bar:fun_bar --load-cookies /tmp/cookies.txt "$download_url" -O "$install_path" && rm -rf /tmp/cookies.txt
+    wget -q --show-progress --load-cookies /tmp/cookies.txt "$download_url" -O "$install_path" && rm -rf /tmp/cookies.txt
 chmod +x "$install_path"
 
 }
