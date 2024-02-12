@@ -15,19 +15,19 @@ enc_darnix() {
 # Function to display the menu options
 display_menu() {
     enc_darnix
-    echo -e "${YELLOW}[${GREEN}1${YELLOW}]${RESET} ATIVAR WS-EPRO CLOUDFLARE"
-    echo -e "${YELLOW}[${GREEN}2${YELLOW}]${RESET} MODIFICAR PORTA WS-EPRO"
-    echo -e "${YELLOW}[${GREEN}3${YELLOW}]${RESET} DESATIVAR WS-EPRO"
-    echo -e "${YELLOW}[${GREEN}0${YELLOW}]${RESET} SAIR DOS PROTOCOLOS"
-    echo
-    read -p " SELECIONE UMA OPÇÃO : " option
-
+    echo -e "\e[1;93m  [\e[1;32m1\e[1;93m]\033[1;31m > \e[1;91mACTIVAR WS-EPRO CLOUFLARE"
+    echo -e "\e[1;93m  [\e[1;32m2\e[1;93m]\033[1;31m > \e[1;93mMODIFICAR PUERTO"
+    echo -e "\e[1;93m  [\e[1;32m3\e[1;93m]\033[1;31m > \e[1;93mELIMINAR EPRO"
+    msg -bar
+    echo -ne " \e[1;93m [\e[1;32m0\e[1;93m]\033[1;31m > " && echo -e "\e[97m\033[1;41m VOLVER \033[0;37m"
+    msg -bar
+    read -p "\033[1;97m   └⊳ Seleccione una opcion [0-2]: \033[1;32m" option
     case $option in
         1) activate_ws_epro ;;
         2) modify_ws_epro_port ;;
         3) deactivate_ws_epro ;;
         0) exit ;;
-        *) echo -e "Opção inválida. Tente novamente." ;;
+        *) echo -e "Opcion Invalida." ;;
     esac
 
     echo -ne "\nPressione Enter para continuar"
@@ -82,13 +82,10 @@ EOF
     sleep 0.3
     enc_darnix
     echo
-    echo -e "${YELLOW}          INSTALADO WS-EPRO (TURBONET-PRO) ${RESET}"
-    echo -e "${YELLOW}          PORTAS UTILIZADAS PARA CONEXÃO: ${RESET}"
-    echo -e "${YELLOW}        ╔═══════════════════════╗${RESET}"
+    print_center -ama "CONFIGURACIÓN EXITOSA WS EPRO INSTALADO"
     echo -e "${YELLOW}             Puerto Local SSH: ${GREEN}$openssh${RESET}"
     echo -e "${YELLOW}             Puerto Phyton: ${GREEN}$wsopenssh${RESET}"
-    echo -e "${YELLOW}          ╚═══════════════════════╝${RESET}"
-}
+    }
 
 # Function to download and install a file
 download_and_install() {
@@ -112,7 +109,7 @@ deactivate_ws_epro() {
     pkill -f ws-epro
     WS_DIR="/usr/local/etc/ws-epro"
     [ -d "$WS_DIR" ] && rm -rf "$WS_DIR"
-    echo -e "${YELLOW}.  >>> PROTOCOLO WS-EPRO DESATIVADO <<< ${RESET}"
+    echo -e "${YELLOW}.  >>> PROTOCOLO WS-EPRO DESACTIVADO <<< ${RESET}"
 }
 
 # Main execution starts here
