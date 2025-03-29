@@ -1,61 +1,48 @@
 #!/bin/bash
 
-# Función para generar la animación
-animate_bar() {
-    local width=50  # Ancho de la barra
-    local delay=0.05  # Retardo entre cada actualización
-    local direction=1  # Dirección: 1 = derecha, -1 = izquierda
-    local position=0  # Posición inicial de la barra
+# Función para mostrar una barra de progreso animada con colores dinámicos
+fun_bar() {
+    CMD[0]="$1"
+    CMD[1]="$2"
+    (
+        [[ -e $HOME/fim ]] && rm $HOME/fim
+        ${CMD[0]} -y >/dev/null 2>&1
+        ${CMD[1]} -y >/dev/null 2>&1
+        touch $HOME/fim
+    ) >/dev/null 2>&1 &
+    tput civis
+    echo -ne "  \033[0;33mProcesando \033[1;37m- \033[0;33m["
+    
+    # Colores dinámicos para la barra de progreso
+    COLORS=("\033[0;31m" "\033[0;32m" "\033[0;33m" "\033[0;34m" "\033[0;35m" "\033[0;36m")
+    COLOR_INDEX=0
 
-    # Ciclo infinito para la animación
     while true; do
-        # Limpia la línea actual
-        printf "\r"
-
-        # Genera la barra con colores
-        for ((i = 0; i < width; i++)); do
-            if ((i == position)); then
-                # Cambia el color según la posición
-                case $((position % 6)) in
-                    0) color="\e[31m" ;;  # Rojo
-                    1) color="\e[32m" ;;  # Verde
-                    2) color="\e[33m" ;;  # Amarillo
-                    3) color="\e[34m" ;;  # Azul
-                    4) color="\e[35m" ;;  # Magenta
-                    5) color="\e[36m" ;;  # Cian
-                esac
-                printf "${color}>"  # Caracter de la barra en movimiento
-            else
-                printf " "  # Espacios vacíos
-            fi
+        for ((i = 0; i < 18; i++)); do
+            # Cambia el color de cada carácter en la barra
+            echo -ne "${COLORS[$((COLOR_INDEX % ${#COLORS[@]}))]}#"
+            sleep 0.1s
+            COLOR_INDEX=$((COLOR_INDEX + 1))
         done
-
-        # Restaura el color por defecto
-        printf "\e[0m"
-
-        # Actualiza la posición
-        position=$((position + direction))
-
-        # Invierte la dirección si llega al límite
-        if ((position >= width - 1)); then
-            direction=-1
-        elif ((position <= 0)); then
-            direction=1
-        fi
-
-        # Espera un breve tiempo antes de la siguiente iteración
-        sleep "$delay"
+        [[ -e $HOME/fim ]] && rm $HOME/fim && break
+        echo -e "\033[0;33m]"
+        sleep 1s
+        tput cuu1
+        tput dl1
+        echo -ne "  \033[0;33mProcesando \033[1;37m- \033[0;33m["
     done
+    
+    echo -e "\033[0;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
+    tput cnorm
 }
 
-# Ejecuta la animación en segundo plano
-animate_bar &
-animation_pid=$!
+# Función simulada para la tarea en segundo plano
+simulated_task() {
+    echo "Simulando tarea en segundo plano..."
+    sleep 5  # Simula un proceso que tarda 5 segundos
+}
 
-# Simula una tarea larga (por ejemplo, instalación de un archivo)
-echo "Instalando archivo..."
-sleep 5  # Reemplaza esto con tu comando real, por ejemplo: `make install`
-
-# Detiene la animación después de que la tarea termine
-kill "$animation_pid"
-printf "\rInstalación completada.                           \n"
+# Ejemplo de uso
+echo -e "\033[36;1m│      EJEMPLO DE BARRA DE PROGRESO CON COLORES DINÁMICOS     \033[0m"
+echo ""
+fun_bar 'simulated_task' 'echo "Tarea finalizada"'
