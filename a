@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Función para generar la animación
+animate_bar() {
+    local width=50  # Ancho de la barra
+    local delay=0.05  # Retardo entre cada actualización
+    local direction=1  # Dirección: 1 = derecha, -1 = izquierda
+    local position=0  # Posición inicial de la barra
+
+    # Ciclo infinito para la animación
+    while true; do
+        # Limpia la línea actual
+        printf "\r"
+
+        # Genera la barra con colores
+        for ((i = 0; i < width; i++)); do
+            if ((i == position)); then
+                # Cambia el color según la posición
+                case $((position % 6)) in
+                    0) color="\e[31m" ;;  # Rojo
+                    1) color="\e[32m" ;;  # Verde
+                    2) color="\e[33m" ;;  # Amarillo
+                    3) color="\e[34m" ;;  # Azul
+                    4) color="\e[35m" ;;  # Magenta
+                    5) color="\e[36m" ;;  # Cian
+                esac
+                printf "${color}>"  # Caracter de la barra en movimiento
+            else
+                printf " "  # Espacios vacíos
+            fi
+        done
+
+        # Restaura el color por defecto
+        printf "\e[0m"
+
+        # Actualiza la posición
+        position=$((position + direction))
+
+        # Invierte la dirección si llega al límite
+        if ((position >= width - 1)); then
+            direction=-1
+        elif ((position <= 0)); then
+            direction=1
+        fi
+
+        # Espera un breve tiempo antes de la siguiente iteración
+        sleep "$delay"
+    done
+}
+
+# Ejecuta la animación en segundo plano
+animate_bar &
+animation_pid=$!
+
+# Simula una tarea larga (por ejemplo, instalación de un archivo)
+echo "Instalando archivo..."
+sleep 5  # Reemplaza esto con tu comando real, por ejemplo: `make install`
+
+# Detiene la animación después de que la tarea termine
+kill "$animation_pid"
+printf "\rInstalación completada.                           \n"
