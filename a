@@ -23,10 +23,11 @@ fun_bar() {
     COLOR_INDEX=0
 
     while true; do
-        # Limpiar la barra actual
-        echo -ne "\033[0;33m["
+        # Mover el cursor al inicio de la barra (evita corchetes duplicados)
+        echo -ne "\r"
+        echo -ne "  \033[0;33mProcesando \033[1;37m- \033[0;33m["
         
-        # Dibujar la barra con el punto en la posición actual
+        # Dibujar espacios y el punto animado
         for ((i = 0; i < BAR_LENGTH; i++)); do
             if [ $i -eq $POSITION ]; then
                 echo -ne "${COLORS[$((COLOR_INDEX % ${#COLORS[@]}))]}."
@@ -35,6 +36,9 @@ fun_bar() {
             fi
         done
         
+        # Cerrar con UN solo corchete
+        echo -ne "\033[0;33m]"
+        
         # Actualizar posición y dirección
         ((POSITION += DIRECTION))
         if [ $POSITION -eq $((BAR_LENGTH - 1)) ] || [ $POSITION -eq 0 ]; then
@@ -42,18 +46,14 @@ fun_bar() {
             ((COLOR_INDEX++))
         fi
         
-        # Cerrar la barra (solo un corchete)
-        echo -ne "\033[0;33m]"
-        
-        # Comprobar si ha terminado
+        # Comprobar si el proceso terminó
         [[ -e $HOME/fim ]] && rm $HOME/fim && break
         
-        # Retroceder y repetir
+        # Pausa para la animación
         sleep 0.1s
-        echo -ne "\r"
-        echo -ne "  \033[0;33mProcesando \033[1;37m- \033[0;33m"
     done
     
+    # Mensaje final (OK)
     echo -e "\033[1;37m -\033[1;32m OK !\033[1;37m"
     tput cnorm
 }
