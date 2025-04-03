@@ -26,10 +26,10 @@ fun_bar() {
         # Limpiar la barra actual
         echo -ne "\033[0;33m["
         
-        # Dibujar la barra con la posición actual del cursor
+        # Dibujar la barra con el punto en la posición actual
         for ((i = 0; i < BAR_LENGTH; i++)); do
             if [ $i -eq $POSITION ]; then
-                echo -ne "${COLORS[$((COLOR_INDEX % ${#COLORS[@]}))]}-"
+                echo -ne "${COLORS[$((COLOR_INDEX % ${#COLORS[@]}))]}."
             else
                 echo -ne " "
             fi
@@ -42,7 +42,7 @@ fun_bar() {
             ((COLOR_INDEX++))
         fi
         
-        # Cerrar la barra
+        # Cerrar la barra (solo un corchete)
         echo -ne "\033[0;33m]"
         
         # Comprobar si ha terminado
@@ -54,14 +54,14 @@ fun_bar() {
         echo -ne "  \033[0;33mProcesando \033[1;37m- \033[0;33m"
     done
     
-    echo -e "\033[0;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
+    echo -e "\033[1;37m -\033[1;32m OK !\033[1;37m"
     tput cnorm
 }
 
 # Función simulada para la tarea en segundo plano
 simulated_task() {
     echo "Simulando tarea en segundo plano..."
-    sleep 5  # Simula un proceso que tarda 5 segundos
+    sleep 10  # Simula un proceso que tarda 5 segundos
 }
 
 # Ejemplo de uso
