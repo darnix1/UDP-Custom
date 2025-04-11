@@ -324,7 +324,7 @@ apt-get install bc -y
 apt-get install python -y
 apt-get install at -y
 apt-get install apache2 -y
-sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf
+#sed -i "s;Listen 80;Listen 81;g" /etc/apache2/ports.conf
 service apache2 restart
 clear
 clear
