@@ -6,6 +6,13 @@ if [ `whoami` != 'root' ]
      rm *
      exit 
 fi
+mkdir /etc/darnix
+
+
+dnxroj() { echo -e "\e[1;37;41m${*}\e[0m";}
+dnxver() { echo -e "\e[1;37;42m${*}\e[0m";}
+dnxvern() { echo -ne "\e[1;37;42m${*}\e[0m";}
+
 msg () {
 BRAN='\033[1;37m' && VERMELHO='\e[31m' && VERDE='\e[32m' && AMARELO='\e[33m'
 AZUL='\e[34m' && MAGENTA='\e[35m' && MAG='\033[1;36m' &&NEGRITO='\e[1m' && SEMCOR='\e[0m'
@@ -592,45 +599,87 @@ msg -bar2 && msg -verm "ERROR DE GENERADOR | ARCHIVOS INCOMPLETOS\n	KEY USADA" &
 rm -rf lista-arq
 exit 1
 }
-invalid_key () {
 
+invalid_key () {
+[[ -e $HOME/lista-arq ]] && list_fix="$(cat < $HOME/lista-arq)" || list_fix=''
+[[ "$list_fix" = "KEY INVALIDA!" ]] && {
+IiP="$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+cheklist="$(curl -sSL $IiP:81/dani/checkIP.log)"
+chekIP="$(echo -e "$cheklist" | grep ${Key} | awk '{print $3}')"
+chekDATE="$(echo -e "$cheklist" | grep ${Key} | awk '{print $7}')"
+msg -bar3
 echo ""
-msg -bar2 && msg -verm "  Code Invalido -- #¡Key Invalida#! " && msg -bar2
+[[ ! -z ${chekIP} ]] && { 
+varIP=$(echo ${chekIP}| sed 's/[1-5]/X/g')
+dnxroj "KEY DETECTA EN LA BASE DE DATOS @botgenmx_bot"
+echo -e ""
+msg -verm "USADA IP : ${varIP} \n FECHA : ${chekDATE} ! "
+echo ""
+msg -bar3
+read -p "  Responde [ s | n ] : " -e -i "s" x
+[[ $x = @(s|S|y|Y) ]] && update_pak || {
+exit&&exit
+}
+} || {
+echo -e "    PRUEBA COPIAR BIEN TU KEY "
+[[ $(echo "$(ofus "$Key"|cut -d'/' -f2)" | wc -c ) = 18 ]] && echo -e "" || echo -e "\033[1;31m CONTENIDO DE LA KEY ES INCORRECTO"
+echo -e "   KEY NO COINCIDE CON EL CODEX DEL ADM "
+msg -bar3
+tput cuu1 && tput dl1
+}
+}
+msg -bar2 && msg -verm "KEY NO VALIDA! " && msg -bar2
 [[ -e $HOME/lista-arq ]] && rm $HOME/lista-arq
-rm -rf lista-arq
-exit 1
+dnxroj "KEY RECHAZADA POR EL GENERADOR @botgenmx_bot"
+echo -ne "\033[0;32m "
+read -p "  Responde [ s | n ] : " -e -i "s" x
+[[ $x = @(s|S|y|Y) ]] && update_pak || {
+exit&&exit
+}
 }
 
 
-while [[ ! $Key ]]; do
-msg -bar2 && msg -ne "\033[1;93m          >>> INGRESE SU KEY ABAJO <<<\n   \033[1;37m" && read Key
-tput cuu1 && tput dl1
-done
-msg -ne "    # Verificando Key # : "
-cd $HOME
-wget -O $HOME/lista-arq $(ofus "$Key")/$IP > /dev/null 2>&1 && echo -e "\033[1;32m Ofus Correcto" |pv -qL 30 || {
-   echo -e "\033[1;91m Ofus Incorrecto"
-   invalid_key
-   exit
-   }
-IP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') && echo "$IP" > /usr/bin/venip
-#sleep 1s
-function_verify
-#updatedb
-if [[ -e $HOME/lista-arq ]] && [[ ! $(cat $HOME/lista-arq|grep "Code de KEY Invalido!") ]]; then
-   msg -bar2
-   msg -verd "    Ficheros Copiados: \e[97m[\e[93m@conectedmx_bot\e[97m]"
-   REQUEST=$(ofus "$Key"|cut -d'/' -f2)
-   [[ ! -d ${SCPinstal} ]] && mkdir ${SCPinstal}
-   pontos="." 
-   stopping="Descargando Ficheros"
-   for arqx in $(cat $HOME/lista-arq); do
-   msg -verm "${stopping}${pontos}" 
-   wget --no-check-certificate -O ${SCPinstal}/${arqx} ${IP}:81/${REQUEST}/${arqx} > /dev/null 2>&1 && verificar_arq "${arqx}" || error_fun
-#
-   tput cuu1 && tput dl1
-   pontos+="."
-   done
+    while [[ ! $Key ]]; do
+        msg -bar2
+        figlet ' -DARNIX- ' | boxes -d stone -p a0v0 | lolcat
+        msg -bar2
+        msg -ne "KEY: " && read Key
+        tput cuu1 && tput dl1
+    done
+
+    msg -ne "CHECKEY: "
+    cd $HOME
+    wget -O $HOME/lista-arq $(ofus "$Key")/$IP > /dev/null 2>&1 && echo -e "\033[1;32m Verified" || {
+        echo -e "\033[1;32m Verified"
+        invalid_key
+        exit
+    }
+    
+    IP=$(ofus "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') && echo "$IP" > /usr/bin/vendor_code
+    sleep 1s
+    updatedb
+    
+    if [[ -e $HOME/lista-arq ]] && [[ ! $(cat $HOME/lista-arq|grep "KEY INVALIDA!") ]]; then
+        msg -bar2
+        dnxver " TU IP SE ENLAZO EXITOSAMENTE AL BOT "
+        
+        REQUEST=$(ofus "$Key"|cut -d'/' -f2)
+        [[ ! -d ${SCPinstal} ]] && mkdir ${SCPinstal}
+        pontos="."
+        stopping="📍"
+        colors=("\033[31m" "\033[32m" "\033[33m" "\033[34m" "\033[35m" "\033[36m")  # Red, Green, Yellow, Blue, Magenta, Cyan
+        reset_color="\033[0m"
+        
+        for arqx in $(cat $HOME/lista-arq); do
+            color_index=$(( ${#pontos} % ${#colors[@]} ))
+            msg -verm "${stopping}${colors[$color_index]}${pontos}${reset_color}"
+            wget -O ${SCPinstal}/${arqx} ${IP}:81/${REQUEST}/${arqx} > /dev/null 2>&1 && verificar_arq "${arqx}" || error_fun
+            tput cuu1 && tput dl1
+            pontos+="."
+        done
+        
+        
+
  #  msg -verd "    $(source trans -b es:${id} "Ficheros Copiados"|sed -e 's/[^a-z -]//ig'): \e[97m[\e[93m@conectedmx_bot\e[97m]"
   wget -qO- ifconfig.me > /etc/VPS-MX/IP.log
   userid="${SCPdir}/ID"
