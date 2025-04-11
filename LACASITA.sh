@@ -419,20 +419,7 @@ else
 fi
 
 }  
-function_verify () {
-[[ $(dpkg --get-selections|grep -w "curl"|head -1) ]] || apt-get install curl -y &>/dev/null
-  permited=$(curl -sSL "https://raw.githubusercontent.com/darnix1/permission/refs/heads/main/ipmini")
-  [[ $(echo $permited|grep "${IP}") = "" ]] && {
-  clear
-  echo -e "\n\n\n\033[1;91m————————————————————————————————————————————————————\n      ¡ESTA KEY NO CONCUERDA CON EL INSTALADOR! \n      BOT: @CONECTEDMX_BOT \n————————————————————————————————————————————————————\n\n\n"
-  [[ -d /etc/VPS-MX ]] && rm -rf /etc/VPS-MX
-  exit 1
-  } || {
-  ### INTALAR VERSION DE SCRIPT
-  v1=$(curl -sSL "https://raw.githubusercontent.com/lacasitamx/version/master/vercion")
-  echo "$v1" > /etc/versin_script
-  }
-}
+
 
 funcao_idioma () {
 
@@ -520,29 +507,31 @@ service ssh restart &>/dev/null
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games/
 #exit
 }
-ofus() {
-      unset server
-      server=$(echo ${txt_ofuscatw} | cut -d':' -f1)
-      unset txtofus
-      number=$(expr length $1)
-      for ((i = 1; i < $number + 1; i++)); do
+
+ofus () {
+unset server
+    server=$(echo ${txt_ofuscatw} | cut -d':' -f1)
+    unset txtofus
+    number=$(expr length $1)
+    for ((i = 1; i < $number + 1; i++)); do
         txt[$i]=$(echo "$1" | cut -b $i)
         case ${txt[$i]} in
-        ".")txt[$i]="C";;
-"C")txt[$i]=".";;
-"3")txt[$i]="@";;
-"@")txt[$i]="3";;
-"4")txt[$i]="9";;
-"9")txt[$i]="4";;
-"6")txt[$i]="P";;
-"P")txt[$i]="6";;
-"L")txt[$i]="K";;
-"K")txt[$i]="L";;
-esac
+            ".") txt[$i]="C" ;;
+            "C") txt[$i]="." ;;
+            "3") txt[$i]="@" ;;
+            "@" ) txt[$i]="3" ;;
+            "4") txt[$i]="9" ;;
+            "9") txt[$i]="4" ;;
+            "6") txt[$i]="P" ;;
+            "P") txt[$i]="6" ;;
+            "L") txt[$i]="K" ;;
+            "K") txt[$i]="L" ;;
+        esac
         txtofus+="${txt[$i]}"
-      done
-      echo "$txtofus" | rev
+    done
+    echo "$txtofus" | rev
 }
+
 verificar_arq () {
 [[ ! -d ${SCPdir} ]] && mkdir ${SCPdir}
 [[ ! -d ${SCPusr} ]] && mkdir ${SCPusr}
