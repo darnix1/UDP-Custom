@@ -4,13 +4,13 @@ fun_bar() {
     #== Comando a ejecutar ==
     comando="$1"
 
-    #== Colores (Bandera de México: verde, blanco, rojo) ==
+    #== Colores ==
     verde="\033[1;32m"
     blanco="\033[1;37m"
     rojo="\033[1;31m"
     reset="\033[0m"
 
-    #== Animación de puntos que se desplazan ==
+    #== Animación de puntos ==
     bar=(
         "${verde}•${reset}                   "
         " ${verde}•${reset}                  "
@@ -48,16 +48,17 @@ fun_bar() {
     _=$($comando > /dev/null 2>&1) & > /dev/null
     pid=$!
 
-    #== Mostrar animación mientras el comando se ejecuta ==
+    #== Animación ==
     while [[ -d /proc/$pid ]]; do
         for i in "${bar[@]}"; do
             echo -ne "\r [ESPERE] $i"
-            sleep 0.1  # Velocidad de animación (ajustable)
+            sleep 0.1
         done
     done
 
-    #== Mensaje final ==
+    #== Finalización ==
     echo -e "\r [LISTO]   ${verde}•${blanco}•${rojo}•${reset}   "
 }
 
-fun_bar sleep 20
+# Llamada de prueba
+fun_bar "sleep 10"  # Simula un comando que tarda 3 segundos
