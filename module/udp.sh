@@ -1,309 +1,432 @@
 #!/bin/bash
 
-clear&&clear
-echo -e "\033[1;31m———————————————————————————————————————————————————\033[1;37m"
-echo -e "\033[1;32m              WS+ SSL |2023 "
-echo -e "\033[1;31m———————————————————————————————————————————————————\033[1;37m"
-echo -e "\033[1;36m              SCRIPT AUTOCONFIGURACION "
-echo -e "\033[1;31m———————————————————————————————————————————————————\033[1;37m"
-echo -e "\033[1;37mRequisitos: puerto libre ,443, 80 y 777"
-echo
-echo -e "\033[1;33m                 INSTALANDO SSL... "
 
-# Instalación de Stunnel
-apt-get install stunnel4 -y
-
-# Configuración adicional para Stunnel en el puerto 777
-echo -e "client = no\n[SSL-777]\ncert = /etc/stunnel/stunnel-777.pem\naccept = 777 \nconnect = 127.0.0.1:1080" > /etc/stunnel/stunnel-777.conf
-
-# Generar certificado SSL para el puerto 777
-openssl genrsa -out stunnel-777.key 2048 > /dev/null 2>&1
-(echo "" ; echo "" ; echo "" ; echo "" ; echo "" ; echo "" ; echo "@cloudflare" )|openssl req -new -key stunnel-777.key -x509 -days 1000 -out stunnel-777.crt 
-cat stunnel-777.crt stunnel-777.key > stunnel-777.pem 
-mv stunnel-777.pem /etc/stunnel/
-
-# Limpieza de archivos temporales
-rm -rf /root/stunnel-777.crt
-rm -rf /root/stunnel-777.key
-
-# Iniciar Stunnel en el puerto 777
-stunnel /etc/stunnel/stunnel-777.conf
-
-# Detener procesos existentes y preparar el proxy Python
-pkill python
-apt install python -y
-apt install screen -y
-
-pt=$(netstat -nplt |grep 'sshd' | awk -F ":" NR==1{'print $2'} | cut -d " " -f 1)
-
-cat <<EOF > proxy.py
-import socket, threading, thread, select, signal, sys, time, getopt
-
-# CONFIG
-LISTENING_ADDR = '0.0.0.0'
-LISTENING_PORT = 1080
-PASS = ''
-
-# CONST
-BUFLEN = 4096 * 4
-TIMEOUT = 60
-DEFAULT_HOST = "127.0.0.1:$pt"
-RESPONSE = 'HTTP/1.1 101 <b><font color="yellow"> SSL+PY </color></b><font color="gray">diegovip7</font>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\nHTTP/1.1 200 Connection Established\r\n\r\n'
-
-class Server(threading.Thread):
-    def __init__(self, host, port):
-        threading.Thread.__init__(self)
-        self.running = False
-        self.host = host
-        self.port = port
-        self.threads = []
-    self.threadsLock = threading.Lock()
-    self.logLock = threading.Lock()
-
-    def run(self):
-        self.soc = socket.socket(socket.AF_INET)
-        self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.soc.settimeout(2)
-        self.soc.bind((self.host, self.port))
-        self.soc.listen(0)
-        self.running = True
-
-        try:                    
-            while self.running:
-                try:
-                    c, addr = self.soc.accept()
-                    c.setblocking(1)
-                except socket.timeout:
-                    continue
-                
-                conn = ConnectionHandler(c, self, addr)
-                conn.start();
-                self.addConn(conn)
-        finally:
-            self.running = False
-            self.soc.close()
-            
-    def printLog(self, log):
-        self.logLock.acquire()
-        print log
-        self.logLock.release()
-    
-    def addConn(self, conn):
-        try:
-            self.threadsLock.acquire()
-            if self.running:
-                self.threads.append(conn)
-        finally:
-            self.threadsLock.release()
-                    
-    def removeConn(self, conn):
-        try:
-            self.threadsLock.acquire()
-            self.threads.remove(conn)
-        finally:
-            self.threadsLock.release()
-                
-    def close(self):
-        try:
-            self.running = False
-            self.threadsLock.acquire()
-            
-            threads = list(self.threads)
-            for c in threads:
-                c.close()
-        finally:
-            self.threadsLock.release()
-            
-
-class ConnectionHandler(threading.Thread):
-    def __init__(self, socClient, server, addr):
-        threading.Thread.__init__(self)
-        self.clientClosed = False
-        self.targetClosed = True
-        self.client = socClient
-        self.client_buffer = ''
-        self.server = server
-        self.log = 'Connection: ' + str(addr)
-
-    def close(self):
-        try:
-            if not self.clientClosed:
-                self.client.shutdown(socket.SHUT_RDWR)
-                self.client.close()
-        except:
-            pass
-        finally:
-            self.clientClosed = True
-            
-        try:
-            if not self.targetClosed:
-                self.target.shutdown(socket.SHUT_RDWR)
-                self.target.close()
-        except:
-            pass
-        finally:
-            self.targetClosed = True
-
-    def run(self):
-        try:
-            self.client_buffer = self.client.recv(BUFLEN)
-        
-            hostPort = self.findHeader(self.client_buffer, 'X-Real-Host')
-            
-            if hostPort == '':
-                hostPort = DEFAULT_HOST
-
-            split = self.findHeader(self.client_buffer, 'X-Split')
-
-            if split != '':
-                self.client.recv(BUFLEN)
-            
-            if hostPort != '':
-                passwd = self.findHeader(self.client_buffer, 'X-Pass')
-                
-                if len(PASS) != 0 and passwd == PASS:
-                    self.method_CONNECT(hostPort)
-                elif len(PASS) != 0 and passwd != PASS:
-                    self.client.send('HTTP/1.1 400 WrongPass!\r\n\r\n')
-                elif hostPort.startswith('127.0.0.1') or hostPort.startswith('localhost'):
-                    self.method_CONNECT(hostPort)
-                else:
-                    self.client.send('HTTP/1.1 403 Forbidden!\r\n\r\n')
-            else:
-                print '- No X-Real-Host!'
-                self.client.send('HTTP/1.1 400 NoXRealHost!\r\n\r\n')
-
-        except Exception as e:
-            self.log += ' - error: ' + e.strerror
-            self.server.printLog(self.log)
-        pass
-        finally:
-            self.close()
-            self.server.removeConn(self)
-
-    def findHeader(self, head, header):
-        aux = head.find(header + ': ')
-    
-        if aux == -1:
-            return ''
-
-        aux = head.find(':', aux)
-        head = head[aux+2:]
-        aux = head.find('\r\n')
-
-        if aux == -1:
-            return ''
-
-        return head[:aux];
-
-    def connect_target(self, host):
-        i = host.find(':')
-        if i != -1:
-            port = int(host[i+1:])
-            host = host[:i]
-        else:
-            if self.method=='CONNECT':
-                port = 443
-            else:
-                port = 80
-
-        (soc_family, soc_type, proto, _, address) = socket.getaddrinfo(host, port)[0]
-
-        self.target = socket.socket(soc_family, soc_type, proto)
-        self.targetClosed = False
-        self.target.connect(address)
-
-    def method_CONNECT(self, path):
-        self.log += ' - CONNECT ' + path
-        
-        self.connect_target(path)
-        self.client.sendall(RESPONSE)
-        self.client_buffer = ''
-
-        self.server.printLog(self.log)
-        self.doCONNECT()
-
-    def doCONNECT(self):
-        socs = [self.client, self.target]
-        count = 0
-        error = False
-        while True:
-            count += 1
-            (recv, _, err) = select.select(socs, [], socs, 3)
-            if err:
-                error = True
-            if recv:
-                for in_ in recv:
-            try:
-                        data = in_.recv(BUFLEN)
-                        if data:
-                if in_ is self.target:
-                self.client.send(data)
-                            else:
-                                while data:
-                                    byte = self.target.send(data)
-                                    data = data[byte:]
-
-                            count = 0
-            else:
-                break
-            except:
-                        error = True
-                        break
-            if count == TIMEOUT:
-                error = True
-
-            if error:
-                break
+[[ -e /bin/xdarnix/msg ]] && source /bin/xdarnix/msg || source <(curl -sSL https://raw.githubusercontent.com/darnix1/license/main/msg)
 
 
-def print_usage():
-    print 'Usage: proxy.py -p <port>'
-    print '       proxy.py -b <bindAddr> -p <port>'
-    print '       proxy.py -b 0.0.0.0 -p 1080'
+# ===== 1. Configuración de idioma =====
+LANG_FILE="/bin/xdarnix/user_lang"
+DEFAULT_LANG="es"  # Idioma por defecto
 
-def parse_args(argv):
-    global LISTENING_ADDR
-    global LISTENING_PORT
-    
-    try:
-        opts, args = getopt.getopt(argv,"hb:p:",["bind=","port="])
-    except getopt.GetoptError:
-        print_usage()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print_usage()
-            sys.exit()
-        elif opt in ("-b", "--bind"):
-            LISTENING_ADDR = arg
-        elif opt in ("-p", "--port"):
-            LISTENING_PORT = int(arg)
-    
+# Cargar idioma del usuario (si existe) o usar el predeterminado
+if [[ -e $LANG_FILE ]]; then
+    source $LANG_FILE
+else
+    USER_LANG="$DEFAULT_LANG"
+fi
 
-def main(host=LISTENING_ADDR, port=LISTENING_PORT):
-    
-    print "\n ==============================\n"
-    print "\n         PYTHON PROXY          \n"
-    print "\n ==============================\n"
-    print "corriendo ip: " + LISTENING_ADDR
-    print "corriendo port: " + str(LISTENING_PORT) + "\n"
-    print "Se ha Iniciado Por Favor Cierre el Terminal\n"
-    
-    server = Server(LISTENING_ADDR, LISTENING_PORT)
-    server.start()
 
-    while True:
-        try:
-            time.sleep(2)
-        except KeyboardInterrupt:
-            print 'Stopping...'
-            server.close()
-            break
-    
-if __name__ == '__main__':
-    parse_args(sys.argv[1:])
-    main()
-EOF
+# ===== 3. Cargar textos según idioma =====
+TEXTOS_URL="https://raw.githubusercontent.com/darnix1/license/refs/heads/main/textos_${USER_LANG}.sh"
+[[ -e "/bin/xdarnix/textos_${USER_LANG}" ]] && source "/bin/xdarnix/textos_${USER_LANG}" || source <(curl -sSL "$TEXTOS_URL")
 
-screen -dmS pythonwe python proxy.py -p 1080&
+_reset="\033[0m"
+white()   { echo -e "\033[1;97m$@$_reset"; }  # Blanco brillante
+
+#TERMINA TODO   
+
+
+biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
+colornow=$(cat /etc/rmbl/theme/color.conf)
+export NC="\e[0m"
+export YELLOW='\033[0;33m';
+export RED="\033[0;31m"
+export COLOR1="$(cat /etc/rmbl/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
+export COLBG1="$(cat /etc/rmbl/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')"
+WH='\033[1;37m'
+tram=$( free -h | awk 'NR==2 {print $2}' )
+uram=$( free -h | awk 'NR==2 {print $3}' )
+ISP=$(curl -s ipinfo.io/org | cut -d " " -f 2-10 )
+CITY=$(curl -s ipinfo.io/city )
+ipsaya=$(wget -qO- ipinfo.io/ip)
+data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+
+MYIP=$(curl -sS ipv4.icanhazip.com)
+
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+clear
+source /etc/os-release
+Versi_OS=$VERSION
+ver=$VERSION_ID
+Tipe=$NAME
+URL_SUPPORT=$HOME_URL
+basedong=$ID
+REGION=$( curl -s ipinfo.io/region )
+CITY=$( curl -s ipinfo.io/city )
+oovpn=$(systemctl status openvpn | grep Active | awk '{print $2}' | cut -d "(" -f2 | cut -d ")" -f1)
+tls_v2ray_status=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+nontls_v2ray_status=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+vless_tls_v2ray_status=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+vless_nontls_v2ray_status=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+shadowsocks=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+trojan_server=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+dropbear_status=$(/etc/init.d/dropbear status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+stunnel_service=$(/etc/init.d/stunnel4 status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+ssh_service=$(/etc/init.d/ssh status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+vnstat_service=$(/etc/init.d/vnstat status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+cron_service=$(/etc/init.d/cron status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+fail2ban_service=$(/etc/init.d/fail2ban status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+wstls=$(systemctl status ws-stunnel.service | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+wsovpn=$(systemctl status ws-ovpn | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+osslh=$(systemctl status sslh | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+udp=$(systemctl status udp-custom | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+sls=$(systemctl status server | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+slc=$(systemctl status client | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+RED='\033[0;31m'
+NC='\033[0m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
+clear
+if [[ $oovpn == "active" ]]; then
+status_openvpn=" ${GREEN}Running ${NC}( No Error )"
+else
+status_openvpn="${RED}  Not Running ${NC}  ( Error )"
+fi
+if [[ $ssh_service == "running" ]]; then
+status_ssh=" ${GREEN}Running ${NC}( No Error )"
+else
+status_ssh="${RED}  Not Running ${NC}  ( Error )"
+fi
+if [[ $squid_service == "running" ]]; then
+status_squid=" ${GREEN}Running ${NC}( No Error )"
+else
+status_squid="${RED}  Not Running ${NC}  ( Error )"
+fi
+if [[ $vnstat_service == "running" ]]; then
+status_vnstat=" ${GREEN}Running ${NC}( No Error )"
+else
+status_vnstat="${RED}  Not Running ${NC}  ( Error )"
+fi
+if [[ $cron_service == "running" ]]; then
+status_cron=" ${GREEN}Running ${NC}( No Error )"
+else
+status_cron="${RED}  Not Running ${NC}  ( Error )"
+fi
+if [[ $fail2ban_service == "running" ]]; then
+status_fail2ban=" ${GREEN}Running ${NC}( No Error )"
+else
+status_fail2ban="${RED}  Not Running ${NC}  ( Error )"
+fi
+if [[ $tls_v2ray_status == "running" ]]; then
+status_tls_v2ray=" ${GREEN}Running${NC} ( No Error )"
+else
+status_tls_v2ray="${RED}  Not Running${NC}   ( Error )"
+fi
+if [[ $nontls_v2ray_status == "running" ]]; then
+status_nontls_v2ray=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+status_nontls_v2ray="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $vless_tls_v2ray_status == "running" ]]; then
+status_tls_vless=" ${GREEN}Running${NC} ( No Error )"
+else
+status_tls_vless="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $vless_nontls_v2ray_status == "running" ]]; then
+status_nontls_vless=" ${GREEN}Running${NC} ( No Error )"
+else
+status_nontls_vless="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $trojan_server == "running" ]]; then
+status_virus_trojan=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+status_virus_trojan="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $dropbear_status == "running" ]]; then
+status_beruangjatuh=" ${GREEN}Running${NC} ( No Error )${NC}"
+else
+status_beruangjatuh="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $stunnel_service == "running" ]]; then
+status_stunnel=" ${GREEN}Running ${NC}( No Error )"
+else
+status_stunnel="${RED}  Not Running ${NC}  ( Error )}"
+fi
+if [[ $wstls == "running" ]]; then
+swstls=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+swstls="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $osslh == "running" ]]; then
+sosslh=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+sosslh="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $udp == "running" ]]; then
+udp=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+udp="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $sls == "running" ]]; then
+sls=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+sls="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $slc == "running" ]]; then
+slc=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+slc="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+if [[ $shadowsocks == "running" ]]; then
+status_shadowsocks=" ${GREEN}Running ${NC}( No Error )${NC}"
+else
+status_shadowsocks="${RED}  Not Running ${NC}  ( Error )${NC}"
+fi
+total_ram=`grep "MemTotal: " /proc/meminfo | awk '{ print $2}'`
+totalram=$(($total_ram/1024))
+kernelku=$(uname -r)
+DATE=$(date +'%Y-%m-%d')
+datediff() {
+d1=$(date -d "$1" +%s)
+d2=$(date -d "$2" +%s)
+echo -e "$COLOR1 $NC Expiry In   : $(( (d1 - d2) / 86400 )) Days"
+}
+mai="datediff "$Exp" "$DATE""
+today=`date -d "0 days" +"%Y-%m-%d"`
+Exp2=$(curl -sS https://raw.githubusercontent.com/SatanFusionOfficial/permission/main/ip | grep $MYIP | awk '{print $3}')
+d1=$(date -d "$Exp2" +%s)
+d2=$(date -d "$today" +%s)
+certificate=$(( (d1 - d2) / 86400 ))
+Name2=$(curl -sS https://raw.githubusercontent.com/SatanFusionOfficial/permission/main/ip | grep $MYIP | awk '{print $2}')
+Domen="$(cat /etc/xray/domain)"
+function restartservice(){
+clear
+fun_bar() {
+CMD[0]="$1"
+CMD[1]="$2"
+(
+[[ -e $HOME/fim ]] && rm $HOME/fim
+${CMD[0]} -y >/dev/null 2>&1
+${CMD[1]} -y >/dev/null 2>&1
+touch $HOME/fim
+) >/dev/null 2>&1 &
+tput civis
+echo -ne "  \033[0;33mPlease Wait Loading \033[1;37m- \033[0;33m["
+while true; do
+for ((i = 0; i < 18; i++)); do
+echo -ne "\033[0;32m#"
+sleep 0.1s
+done
+[[ -e $HOME/fim ]] && rm $HOME/fim && break
+echo -e "\033[0;33m]"
+sleep 1s
+tput cuu1
+tput dl1
+echo -ne "  \033[0;33mPlease Wait Loading \033[1;37m- \033[0;33m["
+done
+echo -e "\033[0;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
+tput cnorm
+}
+res1() {
+systemctl restart nginx
+systemctl restart xray
+systemctl restart daemon
+systemctl restart udp-custom
+systemctl restart client
+systemctl restart server
+systemctl restart ws-dropbear
+systemctl restart ws-stunnel
+systemctl restart openvpn
+systemctl restart cron
+systemctl restart netfilter-persistent
+systemctl restart squid
+systemctl restart badvpn1
+systemctl restart badvpn2
+systemctl restart badvpn3
+systemctl restart kyt
+}
+clear
+msg -bar
+msg -tit
+msg -bar
+amacen " $run_sub "
+msg -bar
+echo -e ""
+red "$run_sub1"
+fun_bar 'res1'
+echo -e ""
+read -n 1 -s -r -p "$(dnxroj " ${PRESS_ENTER}")"
+menu
+}
+function menuservice(){
+clear
+clear
+msg -bar
+msg -tit
+msg -bar
+amacen "$run_sub "
+msg -bar
+amacen " $run_sub3 "
+msg -bar
+white " $run_menu"
+echo -e " "
+white " $run_menu1"
+echo -e " "
+white " $run_menu2"
+echo -e " "
+white " $run_menu3"
+echo -e " "
+msg -bar
+until [[ $serr =~ ^[0-3]+$ ]]; do
+read -rp "$(green "   ${menu_select}: ")" -e serr
+done
+if [[ $serr == "0" ]]; then
+menu
+elif [[ $serr == "1" ]]; then
+restartservice
+elif [[ $serr == "2" ]]; then
+clear
+clear
+msg -bar
+msg -tit
+msg -bar
+amacen " $run_sub "
+msg -bar
+dnxama " $run_sub3 "
+echo -e "$COLOR1┌──────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1│  [ 1 ]  \033[1;37mSTOP SERVICE OVPN      ${NC}"
+echo -e "$COLOR1│  [ 2 ]  \033[1;37mSTOP SERVICE SLOWDNS     ${NC}"
+echo -e "$COLOR1│  [ 3 ]  \033[1;37mSTOP SERVICE UDP COSTUM     ${NC}"
+echo -e "$COLOR1│  [ 4 ]  \033[1;37mSTOP SERVICE SSH ${NC}"
+echo -e "$COLOR1│  [ 5 ]  \033[1;37mSTOP SERVICE XRAY ${NC}"
+echo -e "$COLOR1│  [ 6 ]  \033[1;37mSTOP SERVICE NGINX ${NC}"
+echo -e "$COLOR1│  "
+echo -e "$COLOR1│  "
+echo -e "$COLOR1│  [ 0 ]  \033[1;37m Menu ${NC}"
+echo -e "$COLOR1└──────────────────────────────────────────┘${NC}"
+until [[ $vice =~ ^[0-6]+$ ]]; do
+read -rp "$(green "   ${menu_select}: ")" -e vice
+done
+if [[ $vice == "0" ]]; then
+menu
+elif [[ $vice == "1" ]]; then
+systemctl stop openvpn
+systemctl stop ws-ovpn
+systemctl disable openvpn
+systemctl disable ws-ovpn
+read -n 1 -s -r -p "$(dnxroj " ${enter_off}")"
+menu
+elif [[ $vice == "2" ]]; then
+systemctl stop client
+systemctl stop server
+systemctl disable client
+systemctl disable server
+read -n 1 -s -r -p "$(dnxroj " ${enter_off}")"
+menu
+elif [[ $vice == "3" ]]; then
+systemctl stop udp-custom
+systemctl disable udp-custom
+read -n 1 -s -r -p "$(dnxroj " ${enter_off}")"
+menu
+elif [[ $vice == "4" ]]; then
+systemctl stop ws-stunnel
+systemctl disable ws-stunnel
+read -n 1 -s -r -p "$(dnxroj " ${enter_off}")"
+menu
+elif [[ $vice == "5" ]]; then
+systemctl stop xray
+systemctl disable xray
+read -n 1 -s -r -p "$(dnxroj " ${enter_off}")"
+menu
+elif [[ $vice == "6" ]]; then
+systemctl stop nginx
+systemctl disable nginx
+read -n 1 -s -r -p "$(dnxroj " ${enter_off}")"
+menu
+fi
+elif [[ $serr == "3" ]]; then
+clear
+clear
+msg -bar
+msg -tit
+msg -bar
+amacen " $run_sub "
+msg -bar
+red " $run_sub3 "
+msg -bar
+menu_var "$run_start1 " \
+"$run_start2 " \
+"$run_start3 " \
+"$run_start4 " \
+"$run_start5 " \
+"$run_start6 "
+#"${run_start7} " \
+back
+msg -bar
+until [[ $vice =~ ^[0-6]+$ ]]; do
+read -rp "$(green "   ${menu_select}: ")" -e vice
+done
+if [[ $vice == "0" ]]; then
+menu
+elif [[ $vice == "1" ]]; then
+systemctl enable openvpn
+systemctl enable ws-ovpn
+systemctl restart openvpn
+systemctl restart ws-ovpn
+read -n 1 -s -r -p "$(dnxroj " ${enter_onn}")"
+menu
+elif [[ $vice == "2" ]]; then
+systemctl enable client
+systemctl enable server
+systemctl restart client
+systemctl restart server
+read -n 1 -s -r -p "$(dnxver " ${enter_onn}")"
+menu
+elif [[ $vice == "3" ]]; then
+systemctl enable udp-custom
+systemctl restart udp-custom
+read -n 1 -s -r -p "$(dnxver " ${enter_onn}")"
+menu
+elif [[ $vice == "4" ]]; then
+systemctl enable ws-stunnel
+systemctl restart ws-stunnel
+read -n 1 -s -r -p "$(dnxver " ${enter_onn}")"
+menu
+elif [[ $vice == "5" ]]; then
+systemctl enable xray
+systemctl restart xray
+read -n 1 -s -r -p "$(dnxver " ${enter_onn}")"
+menu
+elif [[ $vice == "6" ]]; then
+systemctl stop nginx
+systemctl disable nginx
+read -n 1 -s -r -p "$(dnxver " ${enter_onn}")"
+menu
+fi
+fi
+menu
+}
+clear
+msg -bar
+msg -tit
+msg -bar
+amacen " $run_sub2 "
+msg -bar
+
+echo -e "$COLOR1┌───────────────────────────────────────────────────┐${NC}"
+echo -e "$COLOR1 $NC  ${WH} SSH / TUN               ${COLOR1}: ${WH}$status_ssh${NC}"
+echo -e "$COLOR1 $NC  ${WH} OpenVPN                 ${COLOR1}: ${WH}$status_openvpn${NC}"
+echo -e "$COLOR1 $NC  ${WH} Dropbear                ${COLOR1}: ${WH}$status_beruangjatuh${NC}"
+echo -e "$COLOR1 $NC  ${WH} Stunnel4                ${COLOR1}: ${WH}$status_stunnel${NC}"
+echo -e "$COLOR1 $NC  ${WH} Crons                   ${COLOR1}: ${WH}$status_cron${NC}"
+echo -e "$COLOR1 $NC  ${WH} Vnstat                  ${COLOR1}: ${WH}$status_vnstat${NC}"
+echo -e "$COLOR1 $NC  ${WH} XRAYS Vmess TLS         ${COLOR1}: ${WH}$status_tls_v2ray${NC}"
+echo -e "$COLOR1 $NC  ${WH} XRAYS Vmess None TLS    ${COLOR1}: ${WH}$status_nontls_v2ray${NC}"
+echo -e "$COLOR1 $NC  ${WH} XRAYS Vless TLS         ${COLOR1}: ${WH}$status_tls_vless${NC}"
+echo -e "$COLOR1 $NC  ${WH} XRAYS Vless None TLS    ${COLOR1}: ${WH}$status_nontls_vless${NC}"
+echo -e "$COLOR1 $NC  ${WH} XRAYS Trojan            ${COLOR1}: ${WH}$status_virus_trojan${NC}"
+echo -e "$COLOR1 $NC  ${WH} Shadowsocks             ${COLOR1}: ${WH}$status_shadowsocks${NC}"
+echo -e "$COLOR1 $NC  ${WH} Websocket TLS           ${COLOR1}: ${WH}$swstls${NC}"
+echo -e "$COLOR1 $NC  ${WH} Websocket None TLS      ${COLOR1}: ${WH}$swstls${NC}"
+echo -e "$COLOR1 $NC  ${WH} Websocket None TLS      ${COLOR1}: ${WH}$swstls${NC}"
+echo -e "$COLOR1 $NC  ${WH} SSH UDP COSTUM          ${COLOR1}: ${WH}$udp${NC}"
+#echo -e "$COLOR1 $NC  ${WH} SlowDNS CLIENT          ${COLOR1}: ${WH}$slc${NC}"
+#echo -e "$COLOR1 $NC  ${WH} SlowDNS SERVER          ${COLOR1}: ${WH}$sls${NC}"
+echo -e "$COLOR1└───────────────────────────────────────────────────┘${NC}"
+read -n 1 -s -r -p "$(dnxroj " ${PRESS_ENTER}")"
+menuservice
